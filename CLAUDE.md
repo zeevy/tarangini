@@ -10,6 +10,17 @@ Tarangini is an Android media player for local MP3 and AAC files (`.mp3`, `.aac`
 - The work is in GitHub issues under milestones M1 to M10. Work them in milestone order and respect each issue's "Depends on" list. One issue, one branch, one PR.
 - When a decision is made, record it in the "Decisions made" table of `docs/FEATURES.md`. A design decision made during the build also gets a short ADR in `docs/adr/`.
 
+## Writing in this repo
+
+This repo is public. Everything written here is read by strangers and stands under the maintainer's name: code comments, KDoc, docs, commit messages, pull requests, issues and comments on them.
+
+- Write as the maintainer. Where a person speaks, use the first person ("I moved CI to a hosted runner"). Never write about the maintainer as someone else: no "the user wants", "the user said", "the owner asked for". In this repo "the user" means only the person who uses the app.
+- Never mention an assistant, an agent, a session or the mode a tool runs in, and add no AI attribution line to a commit, pull request, issue or comment.
+- Write a decision as the decision and its reason ("Linux runner, because the build needs nothing from macOS"), not as who decided it.
+- Code comments say why the code is the way it is, in short plain sentences that a new contributor understands without the issue history. Every public class and function has KDoc. No comment that only repeats the code, and no pointer to a chat or a private note.
+- Nothing private goes in: no personal email address, no path of a personal machine, nothing from the private premium repo, no secret.
+- Plain simple English and short sentences, in every text.
+
 ## Build, test and lint
 
 Use JDK 21 (`JAVA_HOME`) and the Android SDK (`sdk.dir` in `local.properties`, or `ANDROID_HOME`). Gradle is run through the wrapper only.
