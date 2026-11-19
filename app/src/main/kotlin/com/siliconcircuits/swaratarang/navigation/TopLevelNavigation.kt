@@ -17,7 +17,7 @@ import androidx.navigation.NavDestination.Companion.hierarchy
  * tab is on the back stack at a time, so Back from the first screen of any
  * tab leaves the app.
  */
-fun NavController.navigateToTopLevel(destination: TopLevelDestination) {
+internal fun NavController.navigateToTopLevel(destination: TopLevelDestination) {
     navigate(destination.route) {
         popUpTo(graph.id) { saveState = true }
         launchSingleTop = true
@@ -26,5 +26,5 @@ fun NavController.navigateToTopLevel(destination: TopLevelDestination) {
 }
 
 /** The tab this destination belongs to, or null when it is not inside a tab. */
-fun NavDestination.topLevelDestination(): TopLevelDestination? =
+internal fun NavDestination.topLevelDestination(): TopLevelDestination? =
     TopLevelDestination.entries.firstOrNull { tab -> hierarchy.any { it.hasRoute(tab.route::class) } }

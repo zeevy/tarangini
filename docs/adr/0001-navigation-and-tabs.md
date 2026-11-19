@@ -21,7 +21,7 @@ The app needs one navigation graph, a bottom bar and a way for each feature to o
 - The bottom bar has the four tabs of the approved design: Home, Library, Radio and Favourites. Settings opens from the Home top bar and has no tab.
 - Only one tab is on the back stack at a time. Back from the first screen of any tab leaves the app. A tab keeps its screens and their state while the user is on another tab.
 - The bottom bar shows only on the tabs. A screen opened on top of a tab, such as Settings, has a back arrow instead.
-- A tab label stays on one line. It follows the font size the user picked and shrinks only as far as needed to fit, never below its size at the standard font setting.
+- A tab label stays on one line. It follows the font size the user picked and shrinks only as far as needed to fit, never below its size at the standard font setting. Each label is sized by itself, so at the largest font on a narrow screen a long label such as Favourites is smaller than the short ones.
 
 ## Result
 

@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.sp
 
 /** The bottom bar: one item per tab, with [selected] marked. */
 @Composable
-fun SwaraTarangBottomBar(
+internal fun SwaraTarangBottomBar(
     selected: TopLevelDestination?,
     onSelect: (TopLevelDestination) -> Unit,
     modifier: Modifier = Modifier,

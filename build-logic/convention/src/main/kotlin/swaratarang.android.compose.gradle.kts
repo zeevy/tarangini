@@ -29,8 +29,10 @@ pluginManager.withPlugin("com.android.application") {
 }
 
 // Screenshot tests compare with the saved pictures. -PrecordScreenshots saves new pictures instead.
-val recordScreenshots = providers.gradleProperty("recordScreenshots").isPresent
+val recordScreenshots = providers.gradleProperty("recordScreenshots").map { it != "false" }.getOrElse(false)
 tasks.withType<Test>().configureEach {
+    // The tests read the saved pictures, so a changed picture must run them again.
+    inputs.files(fileTree("src/test/screenshots")).withPropertyName("savedScreenshots")
     systemProperty("roborazzi.test.record", recordScreenshots)
     systemProperty("roborazzi.test.verify", !recordScreenshots)
 }

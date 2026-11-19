@@ -24,7 +24,7 @@ import androidx.navigation.compose.rememberNavController
  * draws its own top bar.
  */
 @Composable
-fun SwaraTarangShell(
+internal fun SwaraTarangShell(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
     miniPlayer: @Composable () -> Unit = {},
