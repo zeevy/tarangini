@@ -4,12 +4,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project state
 
-Swara Tarang is an Android media player for local MP3 and AAC files (`.mp3`, `.aac`, `.m4a`) and online radio, on the phone and in Android Auto. The owner started the build on 19 Nov 2026. There is no app code and no Gradle build yet; issue #1 creates them. The git repo is `silicon-circuits/swara-tarang` on GitHub (private for now, default branch `main`).
+Swara Tarang is an Android media player for local MP3 and AAC files (`.mp3`, `.aac`, `.m4a`) and online radio, on the phone and in Android Auto. The build started on 19 Nov 2026. The Gradle project and its modules exist; the app shows an empty screen until the feature issues land. The git repo is `silicon-circuits/swara-tarang` on GitHub (private for now, default branch `main`).
 
 - Read [RULES.md](RULES.md) and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) before any change. `RULES.md` has the hard stops and the coding standards. `docs/ARCHITECTURE.md` has the layers, the modules and the folder structure. [docs/FEATURES.md](docs/FEATURES.md) says what the app does.
 - The work is in GitHub issues under milestones M1 to M10. Work them in milestone order and respect each issue's "Depends on" list. One issue, one branch, one PR.
 - When a decision is made, record it in the "Decisions made" table of `docs/FEATURES.md`. A design decision made during the build also gets a short ADR in `docs/adr/`.
-- Issue #1 replaces this section with the real build, lint and test commands (including how to run a single test).
+
+## Build, test and lint
+
+Use JDK 21 (`JAVA_HOME`) and the Android SDK (`sdk.dir` in `local.properties`, or `ANDROID_HOME`). Gradle is run through the wrapper only.
+
+| Task | Command |
+|---|---|
+| Build the debug app | `./gradlew assembleDebug` |
+| All unit tests, with the build logic tests | `./gradlew test` |
+| Unit tests of one module | `./gradlew :core:domain:test` (plain Kotlin module) or `./gradlew :feature:library:testDebugUnitTest` (Android module) |
+| One test class or one test | `./gradlew :core:domain:test --tests "*.SomeTest"` or `--tests "*.SomeTest.some test name"` |
+| Only the build logic tests (module rules) | `./gradlew :build-logic:convention:test` |
+| Android lint | `./gradlew lintDebug` |
+| Install on a connected device | `./gradlew :app:installDebug` |
+
+- Application id and base package: `com.siliconcircuits.swaratarang`. A module's namespace follows its path (`:feature:library` is `com.siliconcircuits.swaratarang.feature.library`).
+- Every version number lives in `gradle/libs.versions.toml`. A library is added there by the change that first uses it.
+- Module build files apply a convention plugin and list their own dependencies, nothing more. The plugins are in `build-logic/convention` (`swaratarang.android.feature`, `swaratarang.android.library`, `swaratarang.android.application`, `swaratarang.android.compose`, `swaratarang.kotlin.library`).
+- Every build fails when a module breaks the dependency table. The rule is in `build-logic/convention/src/main/kotlin/ModuleRules.kt`; change it only together with the table in `docs/ARCHITECTURE.md`.
+- ktlint, detekt, the licence check and CI come with issue #4.
 
 ## Decisions already made
 

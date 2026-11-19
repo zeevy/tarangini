@@ -1,0 +1,27 @@
+# The only place with version numbers. Every version is exact and the latest
+# stable one, checked at the source. A library is added here by the change
+# that first uses it.
+
+[versions]
+agp = "9.5.1"
+kotlin = "2.4.21"
+androidxActivity = "1.13.0"
+androidxComposeBom = "2026.09.00"
+junit = "4.13.2"
+
+[libraries]
+# Build logic
+android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
+kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+compose-compiler-gradle-plugin = { group = "org.jetbrains.kotlin", name = "compose-compiler-gradle-plugin", version.ref = "kotlin" }
+
+# Compose (versions come from the BOM)
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidxActivity" }
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "androidxComposeBom" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+
+# Test
+junit = { group = "junit", name = "junit", version.ref = "junit" }
