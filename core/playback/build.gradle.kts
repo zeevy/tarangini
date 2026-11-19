@@ -6,10 +6,14 @@
 
 plugins {
     id("swaratarang.android.library")
+    id("swaratarang.android.hilt")
 }
 
 dependencies {
     implementation(project(":core:domain"))
     implementation(libs.media3.exoplayer)
+    implementation(libs.kotlinx.coroutines.android)
     implementation(libs.media3.session)
+
+    testImplementation(libs.kotlinx.coroutines.test)
 }
