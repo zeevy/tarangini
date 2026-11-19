@@ -12,20 +12,11 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
-// One Robolectric settings file for every module.
-val robolectricSettings = rootProject.file("config/robolectric")
-
 pluginManager.withPlugin("com.android.library") {
-    extensions.configure<LibraryExtension> {
-        buildFeatures { compose = true }
-        sourceSets.getByName("test").resources.srcDir(robolectricSettings)
-    }
+    extensions.configure<LibraryExtension> { buildFeatures { compose = true } }
 }
 pluginManager.withPlugin("com.android.application") {
-    extensions.configure<ApplicationExtension> {
-        buildFeatures { compose = true }
-        sourceSets.getByName("test").resources.srcDir(robolectricSettings)
-    }
+    extensions.configure<ApplicationExtension> { buildFeatures { compose = true } }
 }
 
 // Screenshot tests compare with the saved pictures. -PrecordScreenshots saves new pictures instead.
@@ -46,7 +37,6 @@ dependencies {
     "implementation"(libs.findLibrary("androidx-compose-ui-tooling-preview").get())
     "debugImplementation"(libs.findLibrary("androidx-compose-ui-tooling").get())
     "testImplementation"(libs.findLibrary("androidx-compose-ui-test-junit4").get())
-    "testImplementation"(libs.findLibrary("robolectric").get())
     "testImplementation"(libs.findLibrary("roborazzi").get())
     "testImplementation"(libs.findLibrary("roborazzi-compose").get())
 }

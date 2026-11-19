@@ -26,6 +26,7 @@ dependencies {
     implementation(libs.kotlin.serialization.gradle.plugin)
     implementation(libs.ksp.gradle.plugin)
     implementation(libs.hilt.gradle.plugin)
+    implementation(libs.room.gradle.plugin)
     implementation(libs.ktlint.gradle.plugin)
     implementation(libs.detekt.gradle.plugin)
     implementation(libs.licensee.gradle.plugin)

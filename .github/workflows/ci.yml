@@ -52,6 +52,13 @@ jobs:
       - name: Unit tests and build checks
         run: ./gradlew test --stacktrace
 
+      # The build writes the schema of the Room database again. A difference means an entity
+      # changed with no new database version, or a schema file was not committed.
+      - name: Committed database schemas match the entities
+        run: |
+          git add --intent-to-add -- core/data/schemas
+          git diff --exit-code -- core/data/schemas
+
       - name: Style (ktlint)
         run: ./gradlew ktlintCheck
 

@@ -30,10 +30,14 @@ android {
     testOptions {
         unitTests.isIncludeAndroidResources = true
     }
+
+    // One Robolectric settings file for every module.
+    sourceSets.getByName("test").resources.srcDir(rootProject.file("config/robolectric"))
 }
 
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
 dependencies {
     "testImplementation"(libs.findLibrary("junit").get())
+    "testImplementation"(libs.findLibrary("robolectric").get())
 }
