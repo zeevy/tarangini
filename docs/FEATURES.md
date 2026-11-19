@@ -394,6 +394,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D22 | Android Auto limits checked at the source (check C3). No paging in the car, artwork only as local URIs, no auto play on connect, tab limit read from the root hints. Tree depth and "browsable or playable, never both" stay as our own choices | 19 Nov 2026 | Section 4 has the limits and their source pages; the Auto issues were updated |
 | D23 | Radio Browser checked at the source (check C1): it may be used in paid software and asks for no credit. We credit it anyway, send click reports only for directory stations, use HTTPS only and never ask for the whole list. Decided by dev in auto mode | 19 Nov 2026 | Section 2.3 has the rules; the privacy text must name Radio Browser and the click report |
 | D24 | Radio Browser stays out of the MVP (owner). Radio in the MVP plays only stations the user adds by name and URL. The station directory, its search and the India section move to v1.1 | 19 Nov 2026 | Issues #25 and #26 moved to v1.1. In the MVP the core app makes one kind of outside call: the stream the user picked |
+| D25 | The playback service: Media3 1.11.1, one player and one session. Only this app and callers the system trusts for media control may connect; a caller can play only MediaStore audio files. Decided by dev in auto mode; see [ADR 0004](adr/0004-playback-service-and-session-access.md) | 19 Nov 2026 | Android Auto and Assistant are let in by signing certificate with the Auto setup |
 
 ## 9. Checks before building
 
