@@ -49,13 +49,15 @@ internal class FakePlayer : SimpleBasePlayer(Looper.getMainLooper()) {
 
     override fun handleSetPlayWhenReady(playWhenReady: Boolean): ListenableFuture<*> {
         commands += if (playWhenReady) "play" else "pause"
+        if (playWhenReady && heldBack) return Futures.immediateVoidFuture()
         now = now.buildUpon().setPlayWhenReady(playWhenReady, PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST).build()
         return Futures.immediateVoidFuture()
     }
 
     override fun handlePrepare(): ListenableFuture<*> {
         commands += "prepare"
-        now = now.buildUpon().setPlayerError(null).setPlaybackState(STATE_READY).build()
+        val prepared = if (now.playlist.isEmpty()) STATE_ENDED else STATE_READY
+        now = now.buildUpon().setPlayerError(null).setPlaybackState(prepared).build()
         return Futures.immediateVoidFuture()
     }
 
@@ -66,12 +68,76 @@ internal class FakePlayer : SimpleBasePlayer(Looper.getMainLooper()) {
     ): ListenableFuture<*> {
         commands += "load ${mediaItems.map { it.mediaId }} from $startIndex"
         now = now.buildUpon()
-            .setPlaylist(mediaItems.map(::queued))
+            .setPlaylist(mediaItems.map(::loaded))
             .setCurrentMediaItemIndex(startIndex)
             .build()
         positionMs = startPositionMs.coerceAtLeast(0)
         return Futures.immediateVoidFuture()
     }
+
+    override fun handleAddMediaItems(index: Int, mediaItems: List<MediaItem>): ListenableFuture<*> {
+        commands += "add ${mediaItems.map { it.mediaId }} at $index"
+        changeQueue { addAll(index, mediaItems.map(::loaded)) }
+        val hook = afterNextAdd
+        afterNextAdd = null
+        hook?.invoke()
+        return Futures.immediateVoidFuture()
+    }
+
+    override fun handleMoveMediaItems(fromIndex: Int, toIndex: Int, newIndex: Int): ListenableFuture<*> {
+        commands += "move $fromIndex to $newIndex"
+        changeQueue {
+            val moved = subList(fromIndex, toIndex).toList()
+            subList(fromIndex, toIndex).clear()
+            addAll(newIndex, moved)
+        }
+        return Futures.immediateVoidFuture()
+    }
+
+    override fun handleRemoveMediaItems(fromIndex: Int, toIndex: Int): ListenableFuture<*> {
+        commands += if (toIndex - fromIndex == now.playlist.size) "clear" else "remove $fromIndex until $toIndex"
+        changeQueue { subList(fromIndex, toIndex).clear() }
+        return Futures.immediateVoidFuture()
+    }
+
+    override fun handleSetShuffleModeEnabled(shuffleModeEnabled: Boolean): ListenableFuture<*> {
+        commands += "shuffle $shuffleModeEnabled"
+        now = now.buildUpon().setShuffleModeEnabled(shuffleModeEnabled).build()
+        return Futures.immediateVoidFuture()
+    }
+
+    override fun handleSetRepeatMode(repeatMode: Int): ListenableFuture<*> {
+        commands += "repeat $repeatMode"
+        now = now.buildUpon().setRepeatMode(repeatMode).build()
+        return Futures.immediateVoidFuture()
+    }
+
+    /** True makes the player take a "play" command and stay silent, as a real player does during a call. */
+    var heldBack = false
+
+    /** Runs once, right after the next "add" command. A test uses it to do something in the middle of a long load. */
+    var afterNextAdd: (() -> Unit)? = null
+
+    /** Changes the queue the way a real player does: the current item stays the current one when it is still there. */
+    private fun changeQueue(change: MutableList<MediaItemData>.() -> Unit) {
+        val before = now.playlist
+        val oldIndex = currentMediaItemIndex
+        val currentUid = before.getOrNull(oldIndex)?.uid
+        val after = before.toMutableList().apply(change)
+        val newIndex = after.indexOfFirst { it.uid == currentUid }.takeIf { it >= 0 }
+            ?: oldIndex.coerceIn(0, (after.size - 1).coerceAtLeast(0))
+        now = now.buildUpon()
+            .setPlaylist(after)
+            .setCurrentMediaItemIndex(newIndex)
+            .apply { if (after.isEmpty() && now.playbackState != STATE_IDLE) setPlaybackState(STATE_ENDED) }
+            .build()
+    }
+
+    private var loadedCount = 0
+
+    /** A queue entry with its own key, so that the same file can be in the queue twice. */
+    private fun loaded(item: MediaItem): MediaItemData =
+        MediaItemData.Builder("loaded ${loadedCount++}").setMediaItem(item).build()
 
     override fun handleSeek(mediaItemIndex: Int, positionMs: Long, seekCommand: Int): ListenableFuture<*> {
         val position = positionMs.coerceAtLeast(0)
