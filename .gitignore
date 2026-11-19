@@ -1,0 +1,27 @@
+# Gradle
+.gradle/
+build/
+.kotlin/
+
+# Local settings
+local.properties
+
+# IDE
+*.iml
+.idea/
+.vscode/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# OS
+.DS_Store
+
+# Signing keys and service files - never commit
+*.jks
+*.keystore
+keystore.properties
+google-services.json
+
+# Tools
+graphify-out/
