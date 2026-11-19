@@ -17,7 +17,7 @@ One service plays everything. Its media session must be reachable by the system 
 | A caller can ask the player to open only one audio item of MediaStore (`content://media/<volume>/audio/media/<number>`). The player gets a new item with only the id and that address; subtitles, artwork, advert and licence addresses a caller sent are dropped | Pass every URI a caller sends to the player; check only the main address | A caller must not be able to make the app read its own private files, another app's content or a web address, and an item can carry such addresses in more than one field. Library and station ids replace raw URIs when the library and the radio are built |
 | The service is not guarded by a permission | A signature permission | The system and the car hold no permission of ours. The caller check in the session does the job |
 | The service keeps Media3's own handling when the app is swiped away | Our own `onTaskRemoved` | Media3 keeps the service while music plays and stops it when nothing plays. Checked on the emulator |
-| The player takes a wake lock for local playback and sets the audio usage to media. Audio focus is not handled yet | Handle audio focus now | Audio focus, headphones and media buttons are one piece of work with its own checks |
+| The player sets the audio usage to media, asks for audio focus by itself and pauses when headphones are unplugged. It keeps the processor awake for a file and the network too for a stream | Our own audio focus code | ExoPlayer already does what the app needs: pause for a call and go on after it, a lower volume for a short prompt, a pause for good when another app plays. Less code of ours to get wrong. The checks a person must do are in `docs/MANUAL-TESTS.md` |
 
 ## Result
 
@@ -25,5 +25,6 @@ One service plays everything. Its media session must be reachable by the system 
 - A song with no tags shows no title in the notification until the library gives the session its own titles.
 - A media key (play, pause, next, previous) sent to the service does not pass the caller check. This is left as it is: Android lets any app send media keys to the active session, so a check here would add no safety. Such a key can only control the queue that is there.
 - A tap on the notification or the lock screen card opens the app through an immutable pending intent.
-- The wake lock mode is for local files. Radio needs the network mode, set when radio playback is built.
+- A headset or Bluetooth button works while the service is alive. A button pressed after the service has stopped does nothing: starting playback again from a button needs the saved queue, which is not built yet.
+- The wake mode follows the current item (`WakeModeSwitch`): local for a file, network for an `http` or `https` stream.
 - `RULES.md` P8 asks for a run on the Desktop Head Unit before a change to the player or session is merged. The app cannot show there before the Auto setup is built, so this change was checked on the phone emulator, and the head unit run of the service is part of the Auto setup.
