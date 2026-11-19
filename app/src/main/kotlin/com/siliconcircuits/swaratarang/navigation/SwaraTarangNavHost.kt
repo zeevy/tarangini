@@ -20,7 +20,7 @@ import com.siliconcircuits.swaratarang.feature.settings.navigation.settingsScree
 
 /** The one navigation graph of the app. Features meet only here. */
 @Composable
-fun SwaraTarangNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
+internal fun SwaraTarangNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
     NavHost(navController = navController, startDestination = HomeRoute, modifier = modifier) {
         homeScreen(onSettingsClick = navController::navigateToSettings)
         libraryScreen()

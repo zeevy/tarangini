@@ -10,8 +10,5 @@ import androidx.compose.ui.unit.dp
 
 /** The gaps and paddings every screen uses, so screens line up with each other. */
 object Spacing {
-    val extraSmall = 4.dp
-    val small = 8.dp
-    val medium = 16.dp
     val large = 24.dp
 }
