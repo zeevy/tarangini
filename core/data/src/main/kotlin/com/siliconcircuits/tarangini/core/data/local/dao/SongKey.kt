@@ -14,4 +14,8 @@ internal data class SongKey(
     @ColumnInfo(name = "source_id") val sourceId: String,
     @ColumnInfo(name = "date_modified") val dateModified: Long,
     @ColumnInfo(name = "missing_since") val missingSince: Long?,
+    @ColumnInfo(name = "file_name") val fileName: String,
+    @ColumnInfo(name = "size_bytes") val sizeBytes: Long,
+    /** The path of the folder the file was in, or null when it had none. */
+    @ColumnInfo(name = "folder_path") val folderPath: String?,
 )
