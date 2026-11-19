@@ -6,8 +6,15 @@
 
 plugins {
     id("swaratarang.android.library")
+    id("swaratarang.android.hilt")
+    id("swaratarang.android.room")
 }
 
 dependencies {
     implementation(project(":core:domain"))
+
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.kotlinx.coroutines.android)
+
+    testImplementation(libs.kotlinx.coroutines.test)
 }

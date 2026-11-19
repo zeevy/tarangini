@@ -33,6 +33,9 @@ android {
     testOptions {
         unitTests.isIncludeAndroidResources = true
     }
+
+    // One Robolectric settings file for every module.
+    sourceSets.getByName("test").resources.srcDir(rootProject.file("config/robolectric"))
 }
 
 // Fails the build when a library that ships in the app has a licence outside this list.
@@ -55,4 +58,5 @@ val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
 dependencies {
     "testImplementation"(libs.findLibrary("junit").get())
+    "testImplementation"(libs.findLibrary("robolectric").get())
 }
