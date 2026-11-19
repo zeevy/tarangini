@@ -52,7 +52,9 @@ Every list and search has an index behind it (D2). Tables under 1,000 rows need 
 | Recently played stations | Warm | `station_plays(last_played_at)` |
 | A station by its directory id | Warm | Unique `stations(radio_browser_uuid)` |
 | Stream URLs of a station | Hot | Unique `station_streams(station_id, position)` |
-| Saved queue in order, the resume state | On start | Primary keys |
+| Saved queue in order as file ids, the resume state | On start | Primary keys |
+| The row id of every song by its file id, to save a new queue | When the queue changed | One pass over `songs` |
+| The resume state is written | Every 5 seconds while something plays | Primary key, one row |
 | A scan marks songs as gone, gives a song a new file id, removes songs | Per changed file | Primary key |
 | A scan removes albums, artists and folders that no song uses | Once, only in a scan that changed or removed a song | The indexes on `songs(album_id, ...)`, `songs(artist_id, ...)`, `songs(folder_id, ...)`, `albums(artist_id, ...)` and `folders(parent_id, ...)` |
 | Rows that go when a song or a station goes | Rare | An index on every foreign key column |

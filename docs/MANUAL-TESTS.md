@@ -52,6 +52,14 @@ Run on a mid range phone. A scan is started from the library screen.
 | 19 | Put 10,000 songs on the phone. Install the app new, allow access and time the first scan. Scroll a list while it runs | The scan ends in under 10 seconds and the list scrolls with no stutter |
 | 20 | Mark a song on a memory card as a favourite. Take the card out, scan, put the card back and scan | The song leaves the lists and comes back, and it is still a favourite. It is in the lists once |
 
+## Playback: resume
+
+| No. | Steps | Expected |
+|---|---|---|
+| 21 | Play a queue of a few songs to the middle of the third song. Force stop the app in the settings of the phone. Open the app | The same queue, the third song and the position, at most 5 seconds back. Nothing plays and no media notification shows until play is pressed |
+| 22 | Play a song, pause it, and swipe the app away. Press play on a Bluetooth headset or in the car | The song goes on from where it was |
+| 23 | Put three songs in the queue and play the first. Delete the file of the second song with a file manager. Let the first song end | The third song plays |
+
 ## Results
 
 Write each run here: the date, the phone and Android version, the app version, the checks that failed, and who ran it.

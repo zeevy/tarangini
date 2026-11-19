@@ -15,5 +15,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.media3.session)
 
+    testImplementation(project(":core:testing"))
     testImplementation(libs.kotlinx.coroutines.test)
 }

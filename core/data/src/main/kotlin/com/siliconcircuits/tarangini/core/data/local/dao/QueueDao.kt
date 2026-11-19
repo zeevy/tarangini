@@ -13,6 +13,7 @@ import androidx.room3.Transaction
 import androidx.room3.Upsert
 import com.siliconcircuits.tarangini.core.data.local.entity.QueueItemEntity
 import com.siliconcircuits.tarangini.core.data.local.entity.ResumeStateEntity
+import com.siliconcircuits.tarangini.core.data.local.entity.SongSource
 
 /** Reads and writes the saved play queue and the place where playback stopped. */
 @Dao
@@ -47,6 +48,32 @@ internal abstract class QueueDao {
         """,
     )
     abstract suspend fun queue(): List<QueueSongRow>
+
+    /**
+     * The saved queue in order as file ids, without songs whose file is
+     * gone. It reads two columns only, so a very long queue stays cheap.
+     */
+    @Query(
+        """
+            SELECT q.position, s.source_id
+            FROM queue_items q
+            JOIN songs s ON s.id = q.song_id
+            WHERE s.missing_since IS NULL AND s.source = :source
+            ORDER BY q.position
+        """,
+    )
+    abstract suspend fun queueFiles(source: SongSource): List<QueueFileRow>
+
+    /** The row id and the file id of every song of one source, to find the song rows of a queue. */
+    @Query("SELECT id, source_id FROM songs WHERE source = :source")
+    abstract suspend fun localSongIds(source: SongSource): List<SongIdRow>
+
+    /** Saves the queue and the place in it together, so the place never names an item of another queue. */
+    @Transaction
+    open suspend fun saveQueue(songIds: List<Long>, state: ResumeStateEntity) {
+        replaceQueue(songIds)
+        saveResumeState(state)
+    }
 
     @Upsert
     abstract suspend fun saveResumeState(state: ResumeStateEntity)

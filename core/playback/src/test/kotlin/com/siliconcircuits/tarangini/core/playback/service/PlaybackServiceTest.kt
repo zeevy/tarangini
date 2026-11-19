@@ -17,6 +17,7 @@ import androidx.media3.common.MediaLibraryInfo
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
+import com.siliconcircuits.tarangini.core.playback.TestPlaybackApp
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -29,10 +30,12 @@ import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.annotation.Config
 
 // The test only way to make a caller, and the "is released" flag of the player, are API that Media3 may still change.
 @OptIn(UnstableApi::class)
 @RunWith(RobolectricTestRunner::class)
+@Config(application = TestPlaybackApp::class)
 class PlaybackServiceTest {
     private val app: Application = RuntimeEnvironment.getApplication().also(::addLauncherScreen)
     private val controller = Robolectric.buildService(PlaybackService::class.java)
