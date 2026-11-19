@@ -5,5 +5,5 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 -->
 <resources>
-    <style name="Theme.SwaraTarang" parent="android:Theme.Material.NoActionBar" />
+    <style name="Theme.Tarangini" parent="android:Theme.Material.NoActionBar" />
 </resources>

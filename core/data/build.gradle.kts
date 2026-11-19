@@ -5,9 +5,9 @@
  */
 
 plugins {
-    id("swaratarang.android.library")
-    id("swaratarang.android.hilt")
-    id("swaratarang.android.room")
+    id("tarangini.android.library")
+    id("tarangini.android.hilt")
+    id("tarangini.android.room")
 }
 
 dependencies {
