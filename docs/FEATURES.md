@@ -320,7 +320,7 @@ Checked against Google's pages on 19 Nov 2026 (check C3). Each row names its sou
 | `POST_NOTIFICATIONS` | Android 13+ | Media session notifications are exempt, so we only need it if we add other notifications |
 | `INTERNET` | Radio and the station directory | Normal permission |
 | `ACCESS_NETWORK_STATE` | Know Wi-Fi vs mobile data for data saver, and when to reconnect | Normal permission |
-| `WAKE_LOCK` | Keep the CPU awake during streaming | ExoPlayer wake mode `WAKE_MODE_NETWORK` |
+| `WAKE_LOCK` | Keep the CPU awake during playback | ExoPlayer wake mode: `WAKE_MODE_LOCAL` for local files today, `WAKE_MODE_NETWORK` when radio playback is built |
 | `SCHEDULE_EXACT_ALARM` or `USE_EXACT_ALARM` | Radio alarm (premium, Future) | Not sure which one Play allows for a player with an alarm. `USE_EXACT_ALARM` is only for alarm clock and calendar apps. Check the policy before building |
 
 We do not need `MANAGE_EXTERNAL_STORAGE`. Play rejects it for media players.
@@ -394,6 +394,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D22 | Android Auto limits checked at the source (check C3). No paging in the car, artwork only as local URIs, no auto play on connect, tab limit read from the root hints. Tree depth and "browsable or playable, never both" stay as our own choices | 19 Nov 2026 | Section 4 has the limits and their source pages; the Auto issues were updated |
 | D23 | Radio Browser checked at the source (check C1): it may be used in paid software and asks for no credit. We credit it anyway, send click reports only for directory stations, use HTTPS only and never ask for the whole list. Decided by dev in auto mode | 19 Nov 2026 | Section 2.3 has the rules; the privacy text must name Radio Browser and the click report |
 | D24 | Radio Browser stays out of the MVP (owner). Radio in the MVP plays only stations the user adds by name and URL. The station directory, its search and the India section move to v1.1 | 19 Nov 2026 | Issues #25 and #26 moved to v1.1. In the MVP the core app makes one kind of outside call: the stream the user picked |
+| D25 | The playback service: Media3 1.11.1, one player and one session. This app may do everything; callers the system trusts for media control may connect with the transport controls only; every other app is refused. A caller can play only MediaStore audio items. Decided by dev in auto mode; see [ADR 0004](adr/0004-playback-service-and-session-access.md) | 19 Nov 2026 | Android Auto and Assistant are let in by signing certificate with the Auto setup |
 
 ## 9. Checks before building
 
