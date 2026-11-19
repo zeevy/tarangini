@@ -3,7 +3,7 @@
 > [!WARNING]
 > This text is a draft. A lawyer has not reviewed it yet. It may change before the repo accepts outside contributions.
 
-This agreement is between you and Silicon Circuits ("the project owner"), the owner of the Swara Tarang project. It covers every contribution you send to the project: code, docs, images and any other work, sent as a pull request or in any other way.
+This agreement is between you and Silicon Circuits ("the project owner"), the owner of the Tarangini project. It covers every contribution you send to the project: code, docs, images and any other work, sent as a pull request or in any other way.
 
 ## 1. You keep your copyright
 
@@ -30,7 +30,7 @@ You give your contribution "as is", with no warranty of any kind, unless the law
 
 ## 6. How the project uses your contribution
 
-The project owner publishes the public code of Swara Tarang under the Mozilla Public License 2.0. The project owner is not required to use your contribution.
+The project owner publishes the public code of Tarangini under the Mozilla Public License 2.0. The project owner is not required to use your contribution.
 
 ## How to agree
 
