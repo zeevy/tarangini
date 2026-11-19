@@ -1,0 +1,728 @@
+<title>Swara Tarang Design</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one wide reading column (max 1180px) with full-width diagram figures and tables; indigo for the playback core, teal and gold for priority tags. */
+:root {
+  --bg: #f5f6fb;
+  --surface: #ffffff;
+  --fg: #1b1f33;
+  --muted: #5a6078;
+  --line: #dadded;
+  --line-strong: #9aa0bf;
+  --accent: #3b3fb6;
+  --accent-soft: #e7e8fc;
+  --teal: #0f766e;
+  --teal-soft: #dcf3f0;
+  --gold: #9a5b00;
+  --gold-soft: #fbefd9;
+  --grey-soft: #eceef5;
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11131d; --surface: #191c29; --fg: #e8e9f3; --muted: #a3a7c0; --line: #2d3146; --line-strong: #5c6283;
+    --accent: #a3a6ff; --accent-soft: #272b55; --teal: #5fd3c6; --teal-soft: #15332f; --gold: #f2b552; --gold-soft: #3a2c12; --grey-soft: #24273a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11131d; --surface: #191c29; --fg: #e8e9f3; --muted: #a3a7c0; --line: #2d3146; --line-strong: #5c6283;
+  --accent: #a3a6ff; --accent-soft: #272b55; --teal: #5fd3c6; --teal-soft: #15332f; --gold: #f2b552; --gold-soft: #3a2c12; --grey-soft: #24273a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 56px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.2; margin: 0; }
+h1 { font-size: clamp(34px, 6vw, 52px); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 26px; font-weight: 600; }
+h3 { font-size: 17px; font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+code { font-family: var(--font-mono); font-size: 0.88em; background: var(--grey-soft); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+a { color: var(--accent); }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Header */
+header { padding-top: 40px; display: grid; gap: 14px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.meaning { font-size: 17px; color: var(--muted); }
+.meaning b { color: var(--fg); font-weight: 600; }
+.wave { width: 100%; max-width: 520px; height: 36px; color: var(--accent); }
+.status { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 500; padding: 3px 10px; border-radius: 999px; background: var(--grey-soft); color: var(--fg); white-space: nowrap; }
+nav.toc { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding-block: 10px; }
+nav.toc a { text-decoration: none; color: var(--muted); }
+nav.toc a:hover { color: var(--accent); }
+
+section { display: grid; gap: 18px; }
+.lead { font-size: 16px; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.panel ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.muted { color: var(--muted); }
+
+/* Tables */
+.tbl { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; background: var(--grey-soft); }
+tr:last-child td { border-bottom: 0; }
+td.id { font-family: var(--font-mono); font-size: 13px; color: var(--muted); white-space: nowrap; }
+td.feat { font-weight: 600; min-width: 170px; }
+td.where { white-space: nowrap; color: var(--muted); font-size: 13px; }
+
+.tag { display: inline-block; font-family: var(--font-mono); font-size: 11.5px; font-weight: 500; padding: 1px 8px; border-radius: 5px; white-space: nowrap; }
+.tag.mvp { background: var(--accent-soft); color: var(--accent); }
+.tag.v11 { background: var(--teal-soft); color: var(--teal); }
+.tag.future { background: var(--grey-soft); color: var(--muted); }
+.tag.prem { background: var(--gold-soft); color: var(--gold); }
+
+/* Filter */
+.filter { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.filter button {
+  font: 500 13.5px var(--font-body); color: var(--fg); background: var(--surface);
+  border: 1px solid var(--line-strong); border-radius: 999px; padding: 5px 14px; cursor: pointer;
+}
+.filter button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.filter .count { font-family: var(--font-mono); font-size: 12px; opacity: 0.8; margin-left: 4px; }
+.modules { display: grid; gap: 22px; }
+.module { display: grid; gap: 8px; }
+.module h3 span { font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-weight: 400; margin-left: 8px; }
+
+/* Diagrams */
+figure { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 12px; }
+.svgbox { overflow-x: auto; }
+.svgbox svg { display: block; width: 100%; min-width: 720px; height: auto; color: var(--fg); }
+figcaption { font-size: 14px; color: var(--muted); max-width: 80ch; }
+figcaption b { color: var(--fg); }
+.d-box { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.2; }
+.d-core { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.6; }
+.d-play { fill: var(--teal-soft); stroke: var(--teal); stroke-width: 1.2; }
+.d-warn { fill: var(--gold-soft); stroke: var(--gold); stroke-width: 1.2; }
+.d-bound { fill: none; stroke: var(--accent); stroke-width: 1.2; stroke-dasharray: 6 5; }
+.d-edge { fill: none; stroke: var(--line-strong); stroke-width: 1.4; }
+.d-edge.hot { stroke: var(--accent); }
+.d-head { fill: var(--line-strong); }
+.d-head.hot { fill: var(--accent); }
+.d-t { fill: var(--fg); font-family: var(--font-body); font-size: 13px; }
+.d-t.b { font-weight: 600; }
+.d-s { fill: var(--muted); font-family: var(--font-body); font-size: 11.5px; }
+.d-m { fill: var(--muted); font-family: var(--font-mono); font-size: 11px; }
+.d-acc { fill: var(--accent); font-family: var(--font-body); font-size: 12px; font-weight: 600; }
+
+/* Roadmap */
+.road { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.road .panel h3 { display: flex; align-items: center; gap: 10px; }
+
+footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 14px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">High level design &middot; draft &middot; 19 Nov 2026</div>
+  <h1>Swara Tarang</h1>
+  <p class="meaning"><b>स्वर तरंग</b>, Sanskrit for "waves of musical notes". An Android player for local MP3 and AAC files and online radio, on the phone and in Android Auto.</p>
+  <svg class="wave" viewBox="0 0 520 36" aria-hidden="true">
+    <path d="M0 18 Q 16 2 32 18 T 64 18 T 96 18 T 128 18 T 160 18 T 192 18 T 224 18 T 256 18 T 288 18 T 320 18 T 352 18 T 384 18 T 416 18 T 448 18 T 480 18 T 512 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  </svg>
+  <div class="status">
+    <span class="pill">Planning stage, no code yet</span>
+    <span class="pill">minSdk 31</span>
+    <span class="pill">Kotlin, Compose, Media3</span>
+    <span class="pill">Open core, MPL-2.0</span>
+    <span class="pill">Play Store only</span>
+    <span class="pill">Free core, premium subscription later</span>
+  </div>
+  <nav class="toc" aria-label="Sections">
+    <a href="#overview">Overview</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#auto">Android Auto</a>
+    <a href="#radio">Radio streams</a>
+    <a href="#features">Features</a>
+    <a href="#permissions">Permissions</a>
+    <a href="#roadmap">Roadmap</a>
+    <a href="#decisions">Decisions</a>
+    <a href="#questions">Checks before building</a>
+  </nav>
+</header>
+
+<section id="overview">
+  <h2>Overview</h2>
+  <p class="lead">One simple, fast player for the music on your phone and the radio stations you love, at home and in the car. It plays local files with no ads and no sign-in. It finds stations from India and the world in a few taps. One playback service runs both the phone and Android Auto, so a song or station started on the phone carries on in the car with no break.</p>
+  <div class="cols">
+    <div class="panel">
+      <h3>Daily listeners</h3>
+      <p class="muted">A clean library for their own MP3 and AAC files, playlists, and resume where they stopped.</p>
+    </div>
+    <div class="panel">
+      <h3>Commuters and drivers</h3>
+      <p class="muted">Safe car controls, voice commands, and radio that reconnects on weak mobile data.</p>
+    </div>
+    <div class="panel">
+      <h3>Indian regional radio listeners</h3>
+      <p class="muted">Browse by language (Telugu, Tamil, Hindi, Kannada, Malayalam, Marathi, Bengali and more) and by state.</p>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>What sets it apart</h3>
+    <ul>
+      <li>Local files and online radio in one app, with one queue and one set of favourites.</li>
+      <li>An India section that groups the public Radio Browser directory by language and state.</li>
+      <li>Android Auto from the first release.</li>
+      <li>The core app is free, with no account, no ads and no usage tracking. Only crash reports are sent. A paid subscription adds extras later.</li>
+      <li>We publish no station list of our own. Users add stations themselves or pick them from Radio Browser.</li>
+      <li>The core player is open source under MPL-2.0, so anyone can read the code and check what the app does.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="architecture">
+  <h2>Architecture</h2>
+  <p>Kotlin with Jetpack Compose and Material 3, MVVM with clean architecture layers (UI, domain, data). The one rule that shapes everything: <b>a single Media3 <code>MediaLibraryService</code> owns the only player</b>. Every screen and device talks to its session.</p>
+
+  <figure>
+    <div class="svgbox">
+      <svg viewBox="0 0 970 350" role="img" aria-label="Six clients, including the phone UI and Android Auto, all send commands to one MediaLibrarySession inside the MediaLibraryService. The session drives one ExoPlayer and a browse tree. The browse tree and the phone ViewModels read the same repositories, which read Room, MediaStore, Radio Browser and, for subscribers, cloud storage.">
+        <defs>
+          <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="d-head"/></marker>
+          <marker id="a1h" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="d-head hot"/></marker>
+        </defs>
+
+        <!-- phone ViewModels read repositories -->
+        <path d="M110 50 V22 H705 V180" class="d-edge" marker-end="url(#a1)"/>
+        <text x="400" y="16" class="d-s" text-anchor="middle">ViewModels read lists from the same repositories</text>
+
+        <!-- clients -->
+        <g>
+          <rect x="20" y="50" width="180" height="36" rx="6" class="d-core"/><text x="110" y="73" class="d-t b" text-anchor="middle">Phone UI (MediaController)</text>
+          <rect x="20" y="96" width="180" height="36" rx="6" class="d-core"/><text x="110" y="119" class="d-t b" text-anchor="middle">Android Auto</text>
+          <rect x="20" y="142" width="180" height="36" rx="6" class="d-box"/><text x="110" y="165" class="d-t" text-anchor="middle">Google Assistant</text>
+          <rect x="20" y="188" width="180" height="36" rx="6" class="d-box"/><text x="110" y="211" class="d-t" text-anchor="middle">Notification, lock screen</text>
+          <rect x="20" y="234" width="180" height="36" rx="6" class="d-box"/><text x="110" y="257" class="d-t" text-anchor="middle">Bluetooth, headset</text>
+          <rect x="20" y="280" width="180" height="36" rx="6" class="d-box"/><text x="110" y="303" class="d-t" text-anchor="middle">Wear OS (Future)</text>
+        </g>
+        <g>
+          <line x1="200" y1="68" x2="288" y2="108" class="d-edge hot" marker-end="url(#a1h)"/>
+          <line x1="200" y1="114" x2="288" y2="113" class="d-edge hot" marker-end="url(#a1h)"/>
+          <line x1="200" y1="160" x2="288" y2="118" class="d-edge" marker-end="url(#a1)"/>
+          <line x1="200" y1="206" x2="288" y2="122" class="d-edge" marker-end="url(#a1)"/>
+          <line x1="200" y1="252" x2="288" y2="126" class="d-edge" marker-end="url(#a1)"/>
+          <line x1="200" y1="298" x2="288" y2="130" class="d-edge" marker-end="url(#a1)"/>
+        </g>
+
+        <!-- service boundary -->
+        <rect x="260" y="40" width="320" height="210" rx="10" class="d-bound"/>
+        <text x="276" y="62" class="d-acc">MediaLibraryService</text>
+        <text x="402" y="62" class="d-m">foreground: mediaPlayback</text>
+        <rect x="290" y="90" width="260" height="46" rx="8" class="d-core"/>
+        <text x="420" y="111" class="d-t b" text-anchor="middle">MediaLibrarySession</text>
+        <text x="420" y="127" class="d-s" text-anchor="middle">commands, browse, search, focus</text>
+        <rect x="290" y="180" width="120" height="46" rx="8" class="d-box"/>
+        <text x="350" y="201" class="d-t b" text-anchor="middle">ExoPlayer</text>
+        <text x="350" y="217" class="d-s" text-anchor="middle">the only player</text>
+        <rect x="430" y="180" width="120" height="46" rx="8" class="d-box"/>
+        <text x="490" y="201" class="d-t b" text-anchor="middle">Browse tree</text>
+        <text x="490" y="217" class="d-s" text-anchor="middle">and search</text>
+        <line x1="350" y1="136" x2="350" y2="178" class="d-edge" marker-end="url(#a1)"/>
+        <text x="342" y="162" class="d-m" text-anchor="end">plays</text>
+        <line x1="490" y1="136" x2="490" y2="178" class="d-edge" marker-end="url(#a1)"/>
+        <text x="498" y="162" class="d-m">asks for items</text>
+
+        <!-- sources -->
+        <rect x="250" y="290" width="150" height="40" rx="6" class="d-box"/><text x="325" y="315" class="d-t" text-anchor="middle">Local MP3, AAC files</text>
+        <rect x="420" y="290" width="150" height="40" rx="6" class="d-box"/><text x="495" y="315" class="d-t" text-anchor="middle">Radio streams</text>
+        <line x1="335" y1="226" x2="328" y2="288" class="d-edge" marker-end="url(#a1)"/>
+        <text x="322" y="262" class="d-m" text-anchor="end">decodes</text>
+        <line x1="380" y1="226" x2="470" y2="288" class="d-edge" marker-end="url(#a1)"/>
+        <text x="432" y="262" class="d-m">HTTP, Icecast, HLS</text>
+
+        <!-- repositories and stores -->
+        <line x1="550" y1="203" x2="638" y2="203" class="d-edge" marker-end="url(#a1)"/>
+        <text x="612" y="196" class="d-m" text-anchor="middle">reads</text>
+        <rect x="640" y="180" width="130" height="46" rx="8" class="d-box"/>
+        <text x="705" y="201" class="d-t b" text-anchor="middle">Repositories</text>
+        <text x="705" y="217" class="d-s" text-anchor="middle">data layer</text>
+        <line x1="770" y1="203" x2="808" y2="128" class="d-edge" marker-end="url(#a1)"/>
+        <line x1="770" y1="203" x2="808" y2="174" class="d-edge" marker-end="url(#a1)"/>
+        <line x1="770" y1="203" x2="808" y2="220" class="d-edge" marker-end="url(#a1)"/>
+        <line x1="770" y1="203" x2="808" y2="266" class="d-edge" marker-end="url(#a1)"/>
+        <rect x="810" y="110" width="150" height="36" rx="6" class="d-box"/><text x="885" y="133" class="d-t" text-anchor="middle">Room database</text>
+        <rect x="810" y="156" width="150" height="36" rx="6" class="d-box"/><text x="885" y="179" class="d-t" text-anchor="middle">MediaStore</text>
+        <rect x="810" y="202" width="150" height="36" rx="6" class="d-box"/><text x="885" y="225" class="d-t" text-anchor="middle">Radio Browser API</text>
+        <rect x="810" y="248" width="150" height="36" rx="6" class="d-warn"/><text x="885" y="271" class="d-t" text-anchor="middle">Cloud storage (paid)</text>
+
+      </svg>
+    </div>
+    <figcaption><b>One session, many clients.</b> The phone, Android Auto, Assistant, the notification, Bluetooth and Wear OS all send their commands to the same <code>MediaLibrarySession</code>, so they always agree on what is playing. The car's browse tree and the phone's screens read the same repositories, so both show the same library and favourites. The paid cloud storage source (Nextcloud, S3, OneDrive) plugs in at the same place as MediaStore, so the rest of the app does not care where a song lives.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="svgbox">
+      <svg viewBox="0 0 960 280" role="img" aria-label="Open core. The public repo under MPL-2.0 builds alone into the free core build. The Play build combines the public repo with the private premium module, which holds the ten premium features, Play Billing, Cast and Crashlytics.">
+        <defs>
+          <marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="d-head"/></marker>
+        </defs>
+        <rect x="40" y="24" width="380" height="96" rx="8" class="d-core"/>
+        <text x="60" y="50" class="d-t b">Public repo, MPL-2.0</text>
+        <text x="60" y="72" class="d-s">Library, playback, radio, Android Auto, phone UI</text>
+        <text x="60" y="90" class="d-s">5 band equalizer, settings</text>
+        <text x="60" y="108" class="d-m">defines StorageSource, PremiumGate</text>
+        <rect x="540" y="24" width="380" height="96" rx="8" class="d-warn"/>
+        <text x="560" y="50" class="d-t b">Private repo, all rights reserved</text>
+        <text x="560" y="72" class="d-s">The ten premium features</text>
+        <text x="560" y="90" class="d-s">Play Billing, Cast, Crashlytics</text>
+        <text x="560" y="108" class="d-m">binds the real implementations</text>
+
+        <line x1="170" y1="120" x2="170" y2="198" class="d-edge" marker-end="url(#a4)"/>
+        <text x="178" y="164" class="d-m">builds alone</text>
+        <line x1="340" y1="120" x2="640" y2="198" class="d-edge" marker-end="url(#a4)"/>
+        <text x="470" y="150" class="d-m">included</text>
+        <line x1="790" y1="120" x2="790" y2="198" class="d-edge" marker-end="url(#a4)"/>
+        <text x="798" y="164" class="d-m">adds premium</text>
+
+        <rect x="40" y="200" width="380" height="60" rx="8" class="d-box"/>
+        <text x="60" y="226" class="d-t b">core build</text>
+        <text x="60" y="246" class="d-s">Complete free app, no closed source libraries</text>
+        <rect x="540" y="200" width="380" height="60" rx="8" class="d-play"/>
+        <text x="560" y="226" class="d-t b">play build</text>
+        <text x="560" y="246" class="d-s">Free core plus subscription, goes to the Play Store</text>
+      </svg>
+    </div>
+    <figcaption><b>Open core.</b> The public code never imports premium code. It only defines the points where premium plugs in. Built alone, those points answer "not available" and the result is a complete free player. The Play build adds the private module, which fills them in.</figcaption>
+  </figure>
+
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Area</th><th>Choice</th></tr></thead>
+      <tbody>
+        <tr><td class="feat">UI</td><td>Jetpack Compose, Material 3, dynamic colour, Navigation Compose, Glance for the home screen widget</td></tr>
+        <tr><td class="feat">Playback</td><td>AndroidX Media3: ExoPlayer, <code>MediaLibraryService</code>, <code>MediaLibrarySession</code>, <code>media3-exoplayer-hls</code></td></tr>
+        <tr><td class="feat">Local scan</td><td>MediaStore (<code>MediaStore.Audio</code>), rescans with WorkManager and a content observer</td></tr>
+        <tr><td class="feat">Storage</td><td>Room for the library index (copied from MediaStore and kept in sync), favourites, playlists, history and saved stations. DataStore for settings</td></tr>
+        <tr><td class="feat">Network</td><td>Retrofit with OkHttp and kotlinx.serialization for Radio Browser. Coil for artwork</td></tr>
+        <tr><td class="feat">DI</td><td>Hilt</td></tr>
+        <tr><td class="feat">Equalizer</td><td>Our own ExoPlayer audio processor, the same on every phone. Needs a trial build first</td></tr>
+        <tr><td class="feat">Crash reports</td><td>Firebase Crashlytics, crash reports only, no usage analytics</td></tr>
+        <tr><td class="feat">Languages</td><td>English first, every text in string resources for later translation</td></tr>
+        <tr><td class="feat">Modules</td><td><code>app</code>, <code>feature-library</code>, <code>feature-radio</code>, <code>feature-player</code>, <code>feature-settings</code>, <code>playback</code>, <code>data</code>, <code>domain</code> in the public repo. <code>premium</code> in the private repo</td></tr>
+        <tr><td class="feat">Versions</td><td>Latest stable Kotlin, Compose BOM, Media3 and AGP when the build starts. Not pinned yet</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="auto">
+  <h2>Android Auto</h2>
+  <p>The car shows only what the session's browse tree gives it. The root has four tabs. Lists stay short and shallow, because the car limits how many items and levels a driver may see.</p>
+
+  <figure>
+    <div class="svgbox">
+      <svg viewBox="0 0 960 410" role="img" aria-label="Android Auto browse tree. The root has four tabs: Library, Radio, Favourites and Recent. Library and Radio hold browsable categories. Recent holds playable items directly.">
+        <rect x="400" y="16" width="160" height="36" rx="6" class="d-core"/>
+        <text x="480" y="39" class="d-t b" text-anchor="middle">Root</text>
+        <path d="M480 52 V72 M120 72 H840 M120 72 V88 M360 72 V88 M600 72 V88 M840 72 V88" class="d-edge"/>
+
+        <rect x="25" y="90" width="190" height="36" rx="6" class="d-core"/><text x="120" y="113" class="d-t b" text-anchor="middle">Library</text>
+        <rect x="265" y="90" width="190" height="36" rx="6" class="d-core"/><text x="360" y="113" class="d-t b" text-anchor="middle">Radio</text>
+        <rect x="505" y="90" width="190" height="36" rx="6" class="d-core"/><text x="600" y="113" class="d-t b" text-anchor="middle">Favourites</text>
+        <rect x="745" y="90" width="190" height="36" rx="6" class="d-core"/><text x="840" y="113" class="d-t b" text-anchor="middle">Recent</text>
+
+        <!-- Library -->
+        <path d="M35 126 V365 M35 165 H45 M35 205 H45 M35 245 H45 M35 285 H45 M35 325 H45 M35 365 H45" class="d-edge"/>
+        <rect x="45" y="150" width="170" height="30" rx="5" class="d-box"/><text x="58" y="170" class="d-t">Songs</text>
+        <rect x="45" y="190" width="170" height="30" rx="5" class="d-box"/><text x="58" y="210" class="d-t">Albums</text>
+        <rect x="45" y="230" width="170" height="30" rx="5" class="d-box"/><text x="58" y="250" class="d-t">Artists</text>
+        <rect x="45" y="270" width="170" height="30" rx="5" class="d-box"/><text x="58" y="290" class="d-t">Folders</text>
+        <rect x="45" y="310" width="170" height="30" rx="5" class="d-box"/><text x="58" y="330" class="d-t">Genres</text><text x="204" y="330" class="d-m" text-anchor="end">v1.1</text>
+        <rect x="45" y="350" width="170" height="30" rx="5" class="d-box"/><text x="58" y="370" class="d-t">Playlists</text>
+
+        <!-- Radio -->
+        <path d="M275 126 V325 M275 165 H285 M275 205 H285 M275 245 H285 M275 285 H285 M275 325 H285" class="d-edge"/>
+        <rect x="285" y="150" width="170" height="30" rx="5" class="d-box"/><text x="298" y="170" class="d-t">India by language</text>
+        <rect x="285" y="190" width="170" height="30" rx="5" class="d-box"/><text x="298" y="210" class="d-t">India by state</text>
+        <rect x="285" y="230" width="170" height="30" rx="5" class="d-box"/><text x="298" y="250" class="d-t">Countries</text>
+        <rect x="285" y="270" width="170" height="30" rx="5" class="d-box"/><text x="298" y="290" class="d-t">Genres</text>
+        <rect x="285" y="310" width="170" height="30" rx="5" class="d-box"/><text x="298" y="330" class="d-t">My stream URLs</text>
+
+        <!-- Favourites -->
+        <path d="M515 126 V205 M515 165 H525 M515 205 H525" class="d-edge"/>
+        <rect x="525" y="150" width="170" height="30" rx="5" class="d-box"/><text x="538" y="170" class="d-t">Songs</text>
+        <rect x="525" y="190" width="170" height="30" rx="5" class="d-box"/><text x="538" y="210" class="d-t">Stations</text>
+
+        <!-- Recent -->
+        <path d="M755 126 V245 M755 165 H765 M755 205 H765 M755 245 H765" class="d-edge"/>
+        <rect x="765" y="150" width="170" height="30" rx="5" class="d-play"/><text x="778" y="170" class="d-t">Last song</text>
+        <rect x="765" y="190" width="170" height="30" rx="5" class="d-play"/><text x="778" y="210" class="d-t">Last station</text>
+        <rect x="765" y="230" width="170" height="30" rx="5" class="d-play"/><text x="778" y="250" class="d-t">... up to 20 items</text>
+
+        <!-- legend -->
+        <rect x="525" y="290" width="22" height="16" rx="3" class="d-box"/><text x="556" y="303" class="d-s">Browsable: opens a list</text>
+        <rect x="525" y="318" width="22" height="16" rx="3" class="d-play"/><text x="556" y="331" class="d-s">Playable: starts playback</text>
+        <text x="525" y="368" class="d-m">Root &gt; tab &gt; category &gt; playable item</text>
+        <text x="525" y="386" class="d-m">Deepest path: 3 levels below the root</text>
+      </svg>
+    </div>
+    <figcaption><b>The browse tree the car sees.</b> Each category opens one list of playable songs or stations, so a driver reaches any item in three taps from a tab. Recent skips the category level and plays straight away. Album and artist lists may need one extra level. The exact depth and list limits must be checked against Google's current car media guidelines.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="svgbox">
+      <svg viewBox="0 0 960 230" role="img" aria-label="Voice play path. The driver speaks, Google Assistant turns it into a search query, the session receives it in onSetMediaItems, the search use case matches stations first and then songs, and ExoPlayer plays the result. With no match, the session shows an error state.">
+        <defs>
+          <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="d-head"/></marker>
+        </defs>
+        <rect x="10" y="60" width="150" height="56" rx="8" class="d-box"/>
+        <text x="85" y="84" class="d-t b" text-anchor="middle">Driver</text>
+        <text x="85" y="102" class="d-s" text-anchor="middle">"play Vividh Bharati"</text>
+        <rect x="200" y="60" width="150" height="56" rx="8" class="d-box"/>
+        <text x="275" y="84" class="d-t b" text-anchor="middle">Google Assistant</text>
+        <text x="275" y="102" class="d-s" text-anchor="middle">speech to text</text>
+        <rect x="390" y="60" width="150" height="56" rx="8" class="d-core"/>
+        <text x="465" y="84" class="d-t b" text-anchor="middle">MediaLibrarySession</text>
+        <text x="465" y="102" class="d-s" text-anchor="middle">onSetMediaItems</text>
+        <rect x="580" y="60" width="150" height="56" rx="8" class="d-box"/>
+        <text x="655" y="84" class="d-t b" text-anchor="middle">Search use case</text>
+        <text x="655" y="102" class="d-s" text-anchor="middle">stations, then songs</text>
+        <rect x="770" y="60" width="150" height="56" rx="8" class="d-play"/>
+        <text x="845" y="84" class="d-t b" text-anchor="middle">ExoPlayer</text>
+        <text x="845" y="102" class="d-s" text-anchor="middle">plays the result</text>
+
+        <line x1="160" y1="88" x2="198" y2="88" class="d-edge" marker-end="url(#a2)"/>
+        <text x="179" y="48" class="d-m" text-anchor="middle">voice</text>
+        <line x1="350" y1="88" x2="388" y2="88" class="d-edge" marker-end="url(#a2)"/>
+        <text x="369" y="48" class="d-m" text-anchor="middle">searchQuery</text>
+        <line x1="540" y1="88" x2="578" y2="88" class="d-edge" marker-end="url(#a2)"/>
+        <text x="559" y="48" class="d-m" text-anchor="middle">query</text>
+        <line x1="730" y1="88" x2="768" y2="88" class="d-edge" marker-end="url(#a2)"/>
+        <text x="749" y="48" class="d-m" text-anchor="middle">MediaItems</text>
+
+        <line x1="655" y1="116" x2="655" y2="162" class="d-edge" marker-end="url(#a2)"/>
+        <text x="663" y="144" class="d-m">no match</text>
+        <rect x="560" y="164" width="190" height="40" rx="8" class="d-warn"/>
+        <text x="655" y="189" class="d-t" text-anchor="middle">Error state: "Not found"</text>
+      </svg>
+    </div>
+    <figcaption><b>Voice play.</b> Assistant hands the spoken words to the app as a search query. Station names are matched first, because "play Vividh Bharati" is the common case in the car. Songs, artists and albums come next. With no match, the session reports an error that Auto reads out, and playback does not start.</figcaption>
+  </figure>
+
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Topic</th><th>What we need</th></tr></thead>
+      <tbody>
+        <tr><td class="feat">Manifest</td><td>Service with intent filters for <code>androidx.media3.session.MediaLibraryService</code> and <code>android.media.browse.MediaBrowserService</code></td></tr>
+        <tr><td class="feat">Car app descriptor</td><td><code>res/xml/automotive_app_desc.xml</code> with <code>&lt;uses name="media"/&gt;</code>, linked by <code>com.google.android.gms.car.application</code> meta-data</td></tr>
+        <tr><td class="feat">Voice search</td><td>Intent filter for <code>android.media.action.MEDIA_PLAY_FROM_SEARCH</code>, query handled in the session callback</td></tr>
+        <tr><td class="feat">Driver safety</td><td>No video, no ads, no long text, no sign-in or settings in the car. Clear error states such as "No internet"</td></tr>
+        <tr><td class="feat">Play review</td><td>Extra review against the Car app quality guidelines. Common rejections: driver distraction, missing voice support, playback that breaks after a long run</td></tr>
+        <tr><td class="feat">Testing</td><td>Desktop Head Unit (DHU) from the SDK Manager: Auto developer mode, start head unit server, <code>adb forward tcp:5277 tcp:5277</code>, run <code>desktop-head-unit</code>. Then a real car</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="radio">
+  <h2>Radio streams</h2>
+  <p>Mobile data in a moving car drops often. A station should come back on its own without the driver touching the screen.</p>
+  <figure>
+    <div class="svgbox">
+      <svg viewBox="0 0 820 270" role="img" aria-label="Radio stream states. Idle goes to Connecting, then Buffering, then Playing. When the network is lost, Playing goes to Reconnecting, which retries and goes back to Buffering. After three failed retries it tries the station's next stream URL. When no URLs are left, it shows an error.">
+        <defs>
+          <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="d-head"/></marker>
+        </defs>
+        <rect x="10" y="30" width="150" height="44" rx="22" class="d-box"/><text x="85" y="57" class="d-t b" text-anchor="middle">Idle</text>
+        <rect x="220" y="30" width="150" height="44" rx="22" class="d-box"/><text x="295" y="57" class="d-t b" text-anchor="middle">Connecting</text>
+        <rect x="430" y="30" width="150" height="44" rx="22" class="d-box"/><text x="505" y="57" class="d-t b" text-anchor="middle">Buffering</text>
+        <rect x="640" y="30" width="150" height="44" rx="22" class="d-play"/><text x="715" y="57" class="d-t b" text-anchor="middle">Playing</text>
+
+        <rect x="10" y="170" width="150" height="44" rx="22" class="d-warn"/><text x="85" y="197" class="d-t b" text-anchor="middle">Show error</text>
+        <rect x="220" y="170" width="150" height="44" rx="22" class="d-box"/><text x="295" y="197" class="d-t b" text-anchor="middle">Try next URL</text>
+        <rect x="640" y="170" width="150" height="44" rx="22" class="d-core"/><text x="715" y="197" class="d-t b" text-anchor="middle">Reconnecting</text>
+
+        <line x1="160" y1="52" x2="218" y2="52" class="d-edge" marker-end="url(#a3)"/>
+        <text x="189" y="22" class="d-m" text-anchor="middle">tap play</text>
+        <line x1="370" y1="52" x2="428" y2="52" class="d-edge" marker-end="url(#a3)"/>
+        <text x="399" y="22" class="d-m" text-anchor="middle">connected</text>
+        <line x1="580" y1="52" x2="638" y2="52" class="d-edge" marker-end="url(#a3)"/>
+        <text x="609" y="22" class="d-m" text-anchor="middle">enough data</text>
+
+        <line x1="735" y1="74" x2="735" y2="168" class="d-edge" marker-end="url(#a3)"/>
+        <text x="743" y="126" class="d-m">network lost</text>
+        <line x1="670" y1="170" x2="530" y2="76" class="d-edge" marker-end="url(#a3)"/>
+        <text x="572" y="130" class="d-m" text-anchor="end">retry works</text>
+        <line x1="640" y1="192" x2="372" y2="192" class="d-edge" marker-end="url(#a3)"/>
+        <text x="506" y="184" class="d-m" text-anchor="middle">3 retries fail</text>
+        <line x1="295" y1="170" x2="295" y2="76" class="d-edge" marker-end="url(#a3)"/>
+        <text x="303" y="126" class="d-m">next URL</text>
+        <line x1="220" y1="192" x2="162" y2="192" class="d-edge" marker-end="url(#a3)"/>
+        <text x="191" y="184" class="d-m" text-anchor="middle">none left</text>
+
+        <text x="715" y="240" class="d-s" text-anchor="middle">retry after 2 s, 4 s, 8 s</text>
+        <text x="85" y="240" class="d-s" text-anchor="middle">"Station not reachable"</text>
+      </svg>
+    </div>
+    <figcaption><b>Reconnect, then fall back.</b> A dropped stream retries three times with growing gaps. Many stations list more than one stream URL, so the next one is tried before the app gives up. The retry timings are a first proposal, to be tuned on real drives.</figcaption>
+  </figure>
+  <div class="cols">
+    <div class="panel">
+      <h3>Stream types</h3>
+      <p class="muted">HTTP and HTTPS, Icecast, Shoutcast, HLS (<code>.m3u8</code>), and playlist files (<code>.pls</code>, <code>.m3u</code>). Now playing titles come from ICY metadata when the station sends it.</p>
+    </div>
+    <div class="panel">
+      <h3>Station sources</h3>
+      <p class="muted">Radio Browser API for search by country, language and genre. Pick a server through <code>all.api.radio-browser.info</code>, send a clear User-Agent, and skip stations marked broken.</p>
+    </div>
+    <div class="panel">
+      <h3>Your own stations</h3>
+      <p class="muted">Users add a station with a name and a stream URL, or save one from the directory. We ship no station list of our own. Stations show a letter tile, not a logo.</p>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <h2>Features</h2>
+  <p>Every feature has a priority. Pick one to filter the list. "Where" shows if it is on the phone, in the car, or both.</p>
+  <div class="filter" role="group" aria-label="Filter by priority" id="filter"></div>
+  <div class="modules" id="modules"></div>
+</section>
+
+<section id="permissions">
+  <h2>Permissions and Play policy</h2>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Permission</th><th>Why</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>READ_MEDIA_AUDIO</code></td><td>Read audio files on Android 13+</td><td>Runtime permission</td></tr>
+        <tr><td><code>READ_EXTERNAL_STORAGE</code></td><td>Read audio files on Android 12 and 12L (API 31, 32)</td><td><code>maxSdkVersion="32"</code></td></tr>
+        <tr><td><code>FOREGROUND_SERVICE</code>, <code>FOREGROUND_SERVICE_MEDIA_PLAYBACK</code></td><td>Keep playing in the background</td><td>Service declares <code>foregroundServiceType="mediaPlayback"</code></td></tr>
+        <tr><td><code>POST_NOTIFICATIONS</code></td><td>Android 13+</td><td>Media session notifications are exempt. Only needed for other notifications</td></tr>
+        <tr><td><code>INTERNET</code>, <code>ACCESS_NETWORK_STATE</code></td><td>Radio, directory, Wi-Fi or mobile data check</td><td>Normal permissions</td></tr>
+        <tr><td><code>WAKE_LOCK</code></td><td>Keep the CPU awake while streaming</td><td>ExoPlayer <code>WAKE_MODE_NETWORK</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cols">
+    <div class="panel"><h3>Not needed</h3><p class="muted"><code>MANAGE_EXTERNAL_STORAGE</code>. Play rejects it for media players.</p></div>
+    <div class="panel"><h3>Play Console</h3><p class="muted">Foreground service declaration with a short video, data safety form (crash logs only), current target API level at release time.</p></div>
+    <div class="panel"><h3>Content</h3><p class="muted">We play public streams, host nothing and publish no station list. No station logo is shown without permission. Recording needs a legal check first.</p></div>
+  </div>
+</section>
+
+<section id="roadmap">
+  <h2>Roadmap</h2>
+  <div class="road">
+    <div class="panel">
+      <h3><span class="tag mvp">MVP</span> Player that passes the Auto review</h3>
+      <p class="muted">Library scan and browse, core playback, queue, resume, radio directory with the India section, favourites, custom stream URLs, ICY titles, reconnect, Auto browse tree, voice play and search, notification, Material 3 UI with mini player.</p>
+    </div>
+    <div class="panel">
+      <h3><span class="tag v11">v1.1</span> Daily comfort and data care</h3>
+      <p class="muted">Genres, sleep timer, speed, equalizer and bass boost, widget, most played, playlist import and export, station import, stream quality, data saver, cache size, Auto custom actions, playback resumption.</p>
+    </div>
+    <div class="panel">
+      <h3><span class="tag future">Future</span> Reach and the premium subscription</h3>
+      <p class="muted">Android Automotive OS build, Wear OS app, tablet layout, crossfade, normalization, lyrics. Premium subscription with Play Billing: stream recording, advanced equalizer, cloud sync, themes, pause and rewind live radio, radio alarm, sound profiles, smart playlists, cast, play from your own cloud storage.</p>
+    </div>
+  </div>
+</section>
+
+<section id="decisions">
+  <h2>Decisions made</h2>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>#</th><th>Decision</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td class="id">D1</td><td class="feat">minSdk 31 (Android 12)</td><td>Dynamic colour on every phone, less old code</td></tr>
+        <tr><td class="id">D2</td><td class="feat">Android Auto only for MVP</td><td>One APK for phone and car. Android Automotive OS later</td></tr>
+        <tr><td class="id">D3</td><td class="feat">Users add stations or pick from Radio Browser</td><td>We ship no station list of our own. Replaces the earlier "our own India list" choice. Lower legal risk</td></tr>
+        <tr><td class="id">D4</td><td class="feat">Free core app with no ads</td><td>No Play Billing in MVP or v1.1</td></tr>
+        <tr><td class="id">D5</td><td class="feat">Open core</td><td>Public core under MPL-2.0, premium module private. Replaces the earlier GPL-3.0 and closed source choices. No GPL or AGPL libraries</td></tr>
+        <tr><td class="id">D6</td><td class="feat">Play Store only for now</td><td>The Play build may use Google libraries. The core build could go to GitHub Releases or F-Droid later</td></tr>
+        <tr><td class="id">D7</td><td class="feat">Premium subscription after v1.1</td><td>Ten paid features through Play Billing. Core features never move behind the paywall</td></tr>
+        <tr><td class="id">D8</td><td class="feat">Library copied into Room</td><td>Kept in sync with MediaStore. Fast search and Auto lists</td></tr>
+        <tr><td class="id">D9</td><td class="feat">Retrofit with OkHttp</td><td>One HTTP client shared with Media3 streams</td></tr>
+        <tr><td class="id">D10</td><td class="feat">Crash reports only</td><td>Firebase Crashlytics, no usage analytics</td></tr>
+        <tr><td class="id">D11</td><td class="feat">English first</td><td>Strings ready for translation, other languages from v1.1</td></tr>
+        <tr><td class="id">D12</td><td class="feat">Our own equalizer processor</td><td>Same sound on every phone. Needs a trial build first</td></tr>
+        <tr><td class="id">D13</td><td class="feat">No station logos without permission</td><td>Letter tiles in lists, now playing and Android Auto</td></tr>
+        <tr><td class="id">D14</td><td class="feat">Monthly and yearly plans</td><td>Prices set closer to launch</td></tr>
+        <tr><td class="id">D15</td><td class="feat">Backup and sync in the user's own cloud storage</td><td>No server of ours, no user data held by us</td></tr>
+        <tr><td class="id">D16</td><td class="feat">Subscription checked on the phone</td><td>Play Billing with the purchase signature verified. No server</td></tr>
+        <tr><td class="id">D17</td><td class="feat">Google Drive left out at first</td><td>Cloud storage starts with WebDAV, S3 and OneDrive</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="muted">All 17 were decided on 19 Nov 2026.</p>
+</section>
+
+<section id="questions">
+  <h2>Checks before building</h2>
+  <p>All open questions are answered. These points still need a check at the source or a short trial build.</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>#</th><th>Check</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td class="id">C1</td><td class="feat">Radio Browser terms</td><td>Confirm they allow an app with a paid tier, and what credit is asked for</td></tr>
+        <tr><td class="id">C2</td><td class="feat">A lawyer's view before the paid tier</td><td>Linking to public streams, showing station names, and stream recording</td></tr>
+        <tr><td class="id">C3</td><td class="feat">Android Auto limits</td><td>Tabs, tree depth and list caps change over time</td></tr>
+        <tr><td class="id">C4</td><td class="feat">Exact alarm permission</td><td>Needed for the radio alarm. Play allows it only for some app types</td></tr>
+        <tr><td class="id">C5</td><td class="feat">Trial builds</td><td>Our own equalizer, the pause and rewind buffer for live radio, crossfade with gapless</td></tr>
+        <tr><td class="id">C6</td><td class="feat">Play target API level</td><td>And the foreground service declaration, as required at release time</td></tr>
+        <tr><td class="id">C7</td><td class="feat">Subscription prices</td><td>Monthly and yearly amounts</td></tr>
+        <tr><td class="id">C8</td><td class="feat">Google Drive rules</td><td>Only if it is added later: verification and yearly assessment cost</td></tr>
+        <tr><td class="id">C9</td><td class="feat">Open core licence review</td><td>A lawyer confirms MPL-2.0 for the core, the contributor agreement and the trademark note</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer>Source: <code>docs/FEATURES.md</code> in the SwaraTarang project. The last section lists the checks to do before the build starts.</footer>
+</div>
+
+<script>
+const F = [
+  ["Local library", [
+    ["Storage scan", "Read audio from MediaStore: .mp3, .aac, .m4a", "mvp", "Phone, Auto"],
+    ["Auto rescan", "Content observer and a rescan on app start", "mvp", "Phone"],
+    ["Songs, albums, artists", "Lists with artwork, track count and duration", "mvp", "Phone, Auto"],
+    ["Folders", "Folder tree built from the file path", "mvp", "Phone, Auto"],
+    ["Genres", "From the genre tag", "v11", "Phone, Auto"],
+    ["Search", "Title, artist and album as you type", "mvp", "Phone, Auto"],
+    ["Sorting", "Name, artist, album, date added, duration", "mvp", "Phone"],
+    ["Tag fallback", "Use the file name when tags are missing", "mvp", "Phone, Auto"],
+    ["Embedded lyrics", "Show lyrics stored in the file tags", "future", "Phone"]
+  ]],
+  ["Playback", [
+    ["Core controls", "Play, pause, seek, next, previous", "mvp", "Phone, Auto"],
+    ["Queue", "View, reorder, remove, play next, add to queue", "mvp", "Phone, Auto"],
+    ["Shuffle and repeat", "Repeat off, one, all", "mvp", "Phone, Auto"],
+    ["Gapless playback", "MP3 with encoder delay headers and AAC in MP4", "mvp", "Phone, Auto"],
+    ["Resume where you left off", "Save queue, track and position", "mvp", "Phone, Auto"],
+    ["Audio focus", "Pause on calls, duck for navigation prompts", "mvp", "Phone, Auto"],
+    ["Headset and Bluetooth", "Media buttons, pause when unplugged", "mvp", "Phone"],
+    ["Sleep timer", "Stop after N minutes or at the end of the track", "v11", "Phone"],
+    ["Playback speed", "0.5x to 2x", "v11", "Phone"]
+  ]],
+  ["Online radio", [
+    ["Station directory", "Radio Browser API", "mvp", "Phone, Auto"],
+    ["Search filters", "Country, language and genre", "mvp", "Phone, Auto"],
+    ["India section", "Radio Browser filtered to India, by language and state", "mvp", "Phone, Auto"],
+    ["Favourite stations", "Save and reorder", "mvp", "Phone, Auto"],
+    ["Add your own station", "Name and stream URL: Icecast, Shoutcast, HLS, .pls and .m3u", "mvp", "Phone, Auto"],
+    ["Station icons", "Letter tiles. A logo only if the station gives permission", "mvp", "Phone, Auto"],
+    ["Import stations", "Many at once from an .m3u, .pls or OPML file", "v11", "Phone"],
+    ["Now playing titles", "ICY metadata", "mvp", "Phone, Auto"],
+    ["Reconnect", "Retry with backoff, then the next stream URL", "mvp", "Phone, Auto"],
+    ["Station health", "Hide stations marked broken", "mvp", "Phone, Auto"],
+    ["Recent stations", "Last 20 stations", "mvp", "Phone, Auto"],
+    ["Record a stream", "Save a stream to a file", "future", "Phone"]
+  ]],
+  ["Android Auto", [
+    ["Browse tree", "Library, Radio, Favourites, Recent", "mvp", "Auto"],
+    ["Artwork", "Album art. Stations show a letter tile", "mvp", "Auto"],
+    ["Voice play", "\"Play Vividh Bharati on Swara Tarang\"", "mvp", "Phone, Auto"],
+    ["In-car search", "Session search callback", "mvp", "Auto"],
+    ["Driver safe limits", "Short lists, no long text, no settings", "mvp", "Auto"],
+    ["Custom actions", "Favourite, shuffle, repeat buttons", "v11", "Auto"],
+    ["Content style hints", "Grid for albums and stations", "v11", "Auto"],
+    ["Android Automotive OS", "Separate build for cars with built-in Android", "future", "Car"]
+  ]],
+  ["Phone UI", [
+    ["Compose and Material 3", "All screens in Compose", "mvp", "Phone"],
+    ["Dynamic colour", "Wallpaper colours, brand theme as an option", "mvp", "Phone"],
+    ["Light and dark themes", "Follow the system or pick one", "mvp", "Phone"],
+    ["Mini player", "Above the bottom navigation on every screen", "mvp", "Phone"],
+    ["Now playing screen", "Large art, seek bar, queue, timer, speed", "mvp", "Phone"],
+    ["Home screen widget", "Built with Jetpack Glance", "v11", "Phone"],
+    ["Tablet and foldable", "Two pane layout", "future", "Phone"]
+  ]],
+  ["System integration", [
+    ["Media notification", "Built by Media3 from the session", "mvp", "Phone"],
+    ["Lock screen controls", "From the media session", "mvp", "Phone"],
+    ["One media session", "Shared by phone, Auto, Assistant, Bluetooth", "mvp", "Phone, Auto"],
+    ["Playback resumption", "Show in system media controls after reboot", "v11", "Phone"],
+    ["Wear OS controls", "Basic controls from the session, full app later", "future", "Watch"]
+  ]],
+  ["Audio", [
+    ["Equalizer and presets", "5 bands, our own audio processor. Flat, Bass, Vocal, Classical, Carnatic, Bollywood", "v11", "Phone, Auto"],
+    ["Bass boost", "Part of the same audio processor", "v11", "Phone, Auto"],
+    ["Volume normalization", "ReplayGain tags. Needs a spike", "future", "Phone, Auto"],
+    ["Crossfade", "Needs a spike, may break gapless", "future", "Phone, Auto"]
+  ]],
+  ["Personalization", [
+    ["Favourites", "Songs and stations", "mvp", "Phone, Auto"],
+    ["Recently played", "Songs and stations", "mvp", "Phone, Auto"],
+    ["Playlists", "Create, rename, reorder, delete", "mvp", "Phone, Auto"],
+    ["Most played", "From play counts", "v11", "Phone, Auto"],
+    ["Import and export", ".m3u playlist files", "v11", "Phone"],
+    ["Backup and restore", "Favourites, playlists, settings to a file", "future", "Phone"]
+  ]],
+  ["Settings", [
+    ["Folders to include or skip", "Skip voice notes and call recordings", "mvp", "Phone"],
+    ["Minimum track length", "Hide files shorter than N seconds", "mvp", "Phone"],
+    ["Stream quality", "Low, normal or high bitrate", "v11", "Phone"],
+    ["Data saver", "Lowest bitrate, smaller buffer on mobile data", "v11", "Phone, Auto"],
+    ["Cache size", "Limit for the artwork cache", "v11", "Phone"]
+  ]],
+  ["Premium subscription", [
+    ["Stream recording", "Record radio to a file", "future", "Phone"],
+    ["Advanced equalizer", "10 band EQ, custom presets", "future", "Phone"],
+    ["Cloud backup and sync", "Favourites, playlists and settings saved in your own cloud storage", "future", "Phone"],
+    ["Extra themes", "Colour themes and now playing styles", "future", "Phone"],
+    ["Pause and rewind live radio", "Keeps the last 30 minutes of a station on the phone", "future", "Phone, Auto"],
+    ["Radio alarm and schedule", "Wake up to a station or start one at a set time", "future", "Phone"],
+    ["Sound profile per device", "Equalizer and volume per output: car Bluetooth, headphones, speaker", "future", "Phone, Auto"],
+    ["Smart playlists", "Fill by rules: most played, not played in 30 days, by genre", "future", "Phone, Auto"],
+    ["Cast to speakers and TV", "Chromecast and Google Cast", "future", "Phone"],
+    ["Play from your own cloud storage", "Nextcloud and WebDAV, S3, OneDrive. Direct from the phone, no server of ours", "future", "Phone, Auto"]
+  ]]
+];
+const LABEL = { mvp: "MVP", v11: "v1.1", future: "Future" };
+const filterEl = document.getElementById("filter");
+const modulesEl = document.getElementById("modules");
+let current = "all";
+try { current = localStorage.getItem("st-filter") || "all"; } catch (e) {}
+
+function esc(s) { return s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+function count(p) { return F.reduce((n, [, rows]) => n + rows.filter(r => p === "all" || r[2] === p).length, 0); }
+
+function renderFilter() {
+  filterEl.innerHTML = ["all", "mvp", "v11", "future"].map(p =>
+    `<button type="button" id="f-${p}" data-p="${p}" aria-pressed="${p === current}">${p === "all" ? "All" : LABEL[p]}<span class="count">${count(p)}</span></button>`
+  ).join("");
+}
+
+function renderModules() {
+  modulesEl.innerHTML = F.map(([name, rows]) => {
+    const shown = rows.filter(r => current === "all" || r[2] === current);
+    if (!shown.length) return "";
+    const prem = name.startsWith("Premium");
+    return `<div class="module"><h3>${esc(name)}<span>${shown.length}</span></h3>
+      <div class="tbl"><table><thead><tr><th>Feature</th><th>Description</th><th>Priority</th><th>Where</th></tr></thead><tbody>
+      ${shown.map(r => `<tr><td class="feat">${esc(r[0])}</td><td>${esc(r[1])}</td><td><span class="tag ${prem ? "prem" : r[2]}">${prem ? "Future, paid" : LABEL[r[2]]}</span></td><td class="where">${esc(r[3])}</td></tr>`).join("")}
+      </tbody></table></div></div>`;
+  }).join("");
+}
+
+filterEl.addEventListener("click", e => {
+  const b = e.target.closest("button[data-p]");
+  if (!b) return;
+  current = b.dataset.p;
+  try { localStorage.setItem("st-filter", current); } catch (err) {}
+  renderFilter(); renderModules();
+});
+renderFilter(); renderModules();
+</script>

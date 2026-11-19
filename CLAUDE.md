@@ -1,0 +1,44 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project state
+
+Swara Tarang is an Android media player for local MP3 and AAC files (`.mp3`, `.aac`, `.m4a`) and online radio, on the phone and in Android Auto. It is in the **planning stage**. There is no app code and no Gradle build yet. The git repo is `silicon-circuits/swara-tarang` on GitHub (private for now, default branch `main`) and holds only the planning docs. The only source of truth is [docs/FEATURES.md](docs/FEATURES.md).
+
+- Do not write app code, create a Gradle project or open issues until the owner says to start building.
+- When a decision is made, record it in the "Decisions made" table of `docs/FEATURES.md` and remove it from "Open questions".
+- When the build starts, replace this section with the real build, lint and test commands (including how to run a single test).
+
+## Decisions already made
+
+| Decision | Effect on the code |
+|---|---|
+| minSdk 31 (Android 12) | Dynamic colour is always there. `READ_EXTERNAL_STORAGE` is only needed with `maxSdkVersion="32"`; API 33+ uses `READ_MEDIA_AUDIO` |
+| Android Auto only for MVP | One APK for phone and car. No Android Automotive OS module yet |
+| Stations come from the user (name and URL) or from Radio Browser search. We ship no station list of our own | Never bundle or host a station list. The India section is only a Radio Browser filter. No station logos unless a station gave permission; show letter tiles |
+| Free core app with no ads, plus a premium subscription after v1.1 (ten features, listed in section 2.10 of `docs/FEATURES.md`) | No Play Billing in MVP or v1.1. Never gate a core feature |
+| Open core: this public core is MPL-2.0, the premium features live in a separate private repo | Never add GPL or AGPL code or libraries. Apache-2.0, MIT, BSD and MPL-2.0 are fine. Public code must never import premium code; it only defines interfaces (such as `StorageSource`, `PremiumGate`) that the premium module binds through Hilt. Keep an open source licences screen in Settings up to date |
+| Library index in Room, synced from MediaStore | Search, sorting and the Auto tree read Room, not MediaStore |
+| Retrofit with OkHttp | One OkHttp client shared with the Media3 OkHttp data source |
+| Crash reports only (Firebase Crashlytics) | No usage analytics SDKs |
+| English first | Every user facing text in string resources |
+| Equalizer as our own ExoPlayer audio processor | Do not use the platform `Equalizer` or `BassBoost` effects |
+| Subscription checked on the phone through Play Billing; backup and sync stored in the user's own cloud storage | No backend of ours. Google Drive is left out of cloud storage at first |
+| Two builds: `core` (public repo alone) and `play` (core plus premium, the Play Store build) | Play Billing, Cast and Crashlytics belong only in the premium module. The `core` build must compile and run with no closed source library and no `google-services.json` |
+
+## Planned architecture
+
+- Kotlin, Jetpack Compose, Material 3, MVVM with clean architecture layers (UI, domain, data). Hilt for DI, Room for the library index, favourites, playlists and history. DataStore for settings, MediaStore for scanning, Retrofit with OkHttp for Radio Browser, WorkManager for rescans.
+- **One playback service for everything.** A single Media3 `MediaLibraryService` owns one ExoPlayer and one `MediaLibrarySession`. The phone UI talks to it through a `MediaController`. Android Auto, Google Assistant, Bluetooth, the notification, the lock screen and Wear OS all use the same session. Never add a second player or a separate path for the car.
+- The Auto browse tree is built from the same repositories as the phone UI. The root has at most 4 tabs: Library, Radio, Favourites, Recent. Keep the tree shallow, and make each item either browsable or playable.
+- Voice play ("play X on Swara Tarang") arrives as a search query in the session callback (`onSetMediaItems` / `onAddMediaItems` with `requestMetadata.searchQuery`) plus the `MEDIA_PLAY_FROM_SEARCH` intent filter.
+- Radio streams cover Icecast, Shoutcast, HLS (`media3-exoplayer-hls`) and `.pls` / `.m3u` playlists. Now playing titles come from ICY metadata.
+- Premium cloud storage playback (WebDAV, S3, OneDrive) plugs in behind one `StorageSource` interface in the data layer, next to MediaStore. The phone talks directly to the user's storage; there is no server of ours. Credentials are encrypted with the Android Keystore.
+- Planned modules: `app`, `feature-*` (library, radio, player, settings), `playback`, `data`, `domain`.
+
+## Open points to check before building
+
+- Android Auto limits (tabs, depth, list caps) change over time. Check them against Google's current "Build media apps for cars" and "Car app quality" pages.
+- Media3 has no built-in crossfade or ReplayGain. The equalizer processor, the pause and rewind buffer for live radio and crossfade each need a short trial build before they are committed to.
+- Section 9 of `docs/FEATURES.md` lists every check still open (Radio Browser terms, legal view, exact alarm permission and more).
