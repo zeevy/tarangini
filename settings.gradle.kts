@@ -32,7 +32,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "SwaraTarang"
+rootProject.name = "Tarangini"
 
 include(":app")
 include(":feature:home")

@@ -5,7 +5,7 @@
  */
 
 plugins {
-    id("swaratarang.android.feature")
+    id("tarangini.android.feature")
 }
 
 dependencies {

@@ -1,4 +1,4 @@
-# Swara Tarang: database design
+# Tarangini: database design
 
 This page says what the app stores on the phone, in which tables, and why. The code is in `core/data/src/main/kotlin/.../core/data/local`. The exported schema of every version is in `core/data/schemas/`.
 

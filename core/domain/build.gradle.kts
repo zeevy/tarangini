@@ -5,7 +5,7 @@
  */
 
 plugins {
-    id("swaratarang.kotlin.library")
+    id("tarangini.kotlin.library")
 }
 
 dependencies {

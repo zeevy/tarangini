@@ -9,7 +9,7 @@
  * premium module. The premium module plugs in through interfaces instead.
  */
 object PremiumBoundary {
-    const val PREMIUM_PACKAGE = "${SwaraTarangBuild.BASE_PACKAGE}.premium"
+    const val PREMIUM_PACKAGE = "${TaranginiBuild.BASE_PACKAGE}.premium"
 
     private val premiumName = Regex("""(?<![\w.])""" + Regex.escape(PREMIUM_PACKAGE) + """(?![\w])""")
 

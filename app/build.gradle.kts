@@ -5,9 +5,9 @@
  */
 
 plugins {
-    id("swaratarang.android.application")
-    id("swaratarang.android.compose")
-    id("swaratarang.android.hilt")
+    id("tarangini.android.application")
+    id("tarangini.android.compose")
+    id("tarangini.android.hilt")
 }
 
 // core: this repo alone, a complete free app with no closed source library.
