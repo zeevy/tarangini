@@ -10,6 +10,13 @@ hilt = "2.60.1"
 androidxActivity = "1.13.0"
 androidxComposeBom = "2026.09.00"
 junit = "4.13.2"
+ktlintGradle = "14.2.0"
+# The ktlint engine. Dependabot does not see a bare version, so this one is updated by hand.
+ktlint = "1.8.0"
+detekt = "1.23.8"
+# 0.4.28 is the last release built for detekt 1.23. Later ones need detekt 2.
+composeRules = "0.4.28"
+licensee = "1.14.1"
 
 [libraries]
 # Build logic
@@ -19,6 +26,12 @@ compose-compiler-gradle-plugin = { group = "org.jetbrains.kotlin", name = "compo
 
 ksp-gradle-plugin = { group = "com.google.devtools.ksp", name = "symbol-processing-gradle-plugin", version.ref = "ksp" }
 hilt-gradle-plugin = { group = "com.google.dagger", name = "hilt-android-gradle-plugin", version.ref = "hilt" }
+ktlint-gradle-plugin = { group = "org.jlleitschuh.gradle", name = "ktlint-gradle", version.ref = "ktlintGradle" }
+detekt-gradle-plugin = { group = "io.gitlab.arturbosch.detekt", name = "detekt-gradle-plugin", version.ref = "detekt" }
+licensee-gradle-plugin = { group = "app.cash.licensee", name = "licensee-gradle-plugin", version.ref = "licensee" }
+
+# Code checks
+compose-rules-detekt = { group = "io.nlopez.compose.rules", name = "detekt", version.ref = "composeRules" }
 
 # Dependency injection
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
@@ -34,3 +47,8 @@ androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "u
 
 # Test
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+
+[plugins]
+# Only for the build logic's own build file. Modules get these through the convention plugins.
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintGradle" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }

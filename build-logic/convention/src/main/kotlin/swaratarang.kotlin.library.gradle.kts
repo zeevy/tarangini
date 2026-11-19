@@ -6,6 +6,7 @@
 
 plugins {
     id("org.jetbrains.kotlin.jvm")
+    id("swaratarang.quality")
 }
 
 kotlin {

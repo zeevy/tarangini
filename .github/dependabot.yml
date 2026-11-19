@@ -1,0 +1,52 @@
+# Weekly update PRs for Gradle libraries and for the workflow actions.
+# Actions are pinned by commit hash; Dependabot moves the hash and the version comment together.
+version: 2
+updates:
+  - package-ecosystem: gradle
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: Asia/Kolkata
+    open-pull-requests-limit: 10
+    # A library joins the first group that matches, so the narrow groups come first.
+    groups:
+      compose:
+        patterns:
+          - "androidx.compose*"
+      hilt:
+        patterns:
+          - "com.google.dagger:hilt-*"
+          - "androidx.hilt:*"
+      androidx:
+        patterns:
+          - "androidx.*"
+      kotlin:
+        patterns:
+          - "org.jetbrains.kotlin*"
+          - "com.google.devtools.ksp*"
+      code-checks:
+        patterns:
+          - "org.jlleitschuh.gradle*"
+          - "io.gitlab.arturbosch.detekt*"
+          - "io.nlopez.compose.rules*"
+          - "app.cash.licensee*"
+    ignore:
+      # Releases from 0.5 on are built for detekt 2, which is still alpha.
+      - dependency-name: "io.nlopez.compose.rules:detekt"
+        versions: [">= 0.5.0"]
+    labels:
+      - dependencies
+      - "area:build"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: Asia/Kolkata
+    labels:
+      - dependencies
+      - "area:build"

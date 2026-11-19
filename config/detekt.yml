@@ -1,0 +1,103 @@
+# detekt settings for Swara Tarang. Rules not named here keep detekt's defaults.
+# Each block names the rule in RULES.md that it checks.
+
+build:
+  maxIssues: 0
+
+config:
+  validation: true
+  warningsAsErrors: true
+
+complexity:
+  # K11: a function fits on one screen. Composables are laid out inline and get review instead.
+  LongMethod:
+    threshold: 60
+    ignoreAnnotated: ['Composable']
+  # K11: a class over about 400 lines is split. A long file with many small classes is left to review.
+  LargeClass:
+    threshold: 400
+  LongParameterList:
+    ignoreAnnotated: ['Composable']
+    ignoreDefaultParameters: true
+
+coroutines:
+  # K2: no GlobalScope.
+  GlobalCoroutineUsage:
+    active: true
+
+exceptions:
+  # K5: never an empty catch, never a swallowed exception.
+  SwallowedException:
+    active: true
+  TooGenericExceptionCaught:
+    active: true
+
+naming:
+  # K10: Composable functions are named like classes.
+  FunctionNaming:
+    ignoreAnnotated: ['Composable']
+    # Test names are sentences in backticks.
+    excludes: ['**/src/test*/**', '**/src/androidTest*/**']
+  # K10: one top level class per file, file named after it.
+  MatchingDeclarationName:
+    active: true
+    mustBeFirst: true
+
+potential-bugs:
+  # K7: no lateinit outside Android framework classes.
+  LateinitUsage:
+    active: true
+    excludes: ['**/src/test*/**', '**/src/androidTest*/**']
+    ignoreOnClassesPattern: '.*(Activity|Service|Application|Receiver|ContentProvider)'
+
+style:
+  # K2, K3, K13: these are replaced by an injected scope, an injected dispatcher and the app logger.
+  ForbiddenImport:
+    active: true
+    excludes: ['**/src/test*/**', '**/src/androidTest*/**']
+    imports:
+      - value: 'kotlinx.coroutines.GlobalScope'
+        reason: 'Use viewModelScope, the service scope or an injected scope (K2).'
+      - value: 'kotlinx.coroutines.runBlocking'
+        reason: 'runBlocking is for tests only (K2).'
+      - value: 'kotlin.concurrent.thread'
+        reason: 'Use a coroutine (K2).'
+      - value: 'android.os.Handler'
+        reason: 'Use a coroutine (K2).'
+      - value: 'android.os.AsyncTask'
+        reason: 'Use a coroutine (K2).'
+      - value: 'kotlinx.coroutines.Dispatchers'
+        reason: 'Inject the dispatcher (K3). Only the module that provides the dispatchers may suppress this, with a reason.'
+      - value: 'android.util.Log'
+        reason: 'Use the app logger (K13).'
+  # A wildcard import would hide a forbidden import from the rule above.
+  WildcardImport:
+    active: true
+  MaxLineLength:
+    maxLineLength: 120
+  MagicNumber:
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreAnnotated: ['Preview']
+  UnusedPrivateMember:
+    ignoreAnnotated: ['Preview']
+
+# Compose rules from io.nlopez.compose.rules.
+Compose:
+  # U12: a composable takes a Modifier and passes it to its root.
+  ModifierMissing:
+    active: true
+  ModifierNotUsedAtRoot:
+    active: true
+  ModifierWithoutDefault:
+    active: true
+  # U2: the ViewModel is taken only in the entry composable and never passed down.
+  ViewModelForwarding:
+    active: true
+  ViewModelInjection:
+    active: true
+  # U1: state passed to a composable is immutable.
+  MutableParams:
+    active: true
+  MutableStateParam:
+    active: true
