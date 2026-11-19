@@ -34,7 +34,8 @@ class SessionPlaybackControllerTest {
 
     private val link = PlayerLink(connector)
 
-    private fun TestScope.controller() = SessionPlaybackController(link, backgroundScope)
+    private fun TestScope.controller() =
+        SessionPlaybackController(link, QueueLoader(link, backgroundScope), backgroundScope)
 
     private fun TestScope.connectedController(): SessionPlaybackController = controller().also { controller ->
         link.onScreenOpened()
@@ -148,10 +149,9 @@ class SessionPlaybackControllerTest {
             ),
             player.commands,
         )
-        assertEquals(
-            "content://media/external/audio/media/2",
-            player.currentMediaItem?.localConfiguration?.uri.toString(),
-        )
+        player.report()
+        assertEquals(1, controller.state.value.currentIndex)
+        assertEquals("content://media/external/audio/media/2", controller.state.value.currentItem?.id)
     }
 
     @Test
