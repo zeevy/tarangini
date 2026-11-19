@@ -20,6 +20,11 @@ android {
         sourceCompatibility = SwaraTarangBuild.javaVersion
         targetCompatibility = SwaraTarangBuild.javaVersion
     }
+
+    // Compose preview tasks need the compiled resources in unit tests.
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
 }
 
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")

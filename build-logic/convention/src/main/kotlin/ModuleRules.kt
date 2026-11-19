@@ -14,6 +14,7 @@ object ModuleRules {
     private const val DOMAIN = ":core:domain"
     private const val UI = ":core:ui"
     private const val TESTING = ":core:testing"
+    private const val PREMIUM = ":premium"
     private const val FEATURE_PREFIX = ":feature:"
 
     private val featureMayUse = setOf(DOMAIN, UI)
@@ -24,20 +25,33 @@ object ModuleRules {
         ":core:playback" to setOf(DOMAIN),
         UI to setOf(DOMAIN),
         TESTING to setOf(DOMAIN),
-        ":premium" to setOf(DOMAIN, UI),
+        PREMIUM to setOf(DOMAIN, UI),
     )
 
     /** True for the configurations of unit tests and device tests, such as `testImplementation`. */
     fun isTestConfiguration(name: String): Boolean = name.startsWith("test") || name.startsWith("androidTest")
 
+    /** True for the configurations of the play flavour, such as `playImplementation`. */
+    fun isPlayConfiguration(name: String): Boolean =
+        name.startsWith("play") || name.startsWith("testPlay") || name.startsWith("androidTestPlay")
+
     /**
-     * Returns null when [from] may depend on [to], or one line that says what
-     * is wrong. Test configurations may also use the shared fakes.
+     * Returns null when [from] may depend on [to] in the configuration named
+     * [configuration], or one line that says what is wrong. Test configurations
+     * may also use the shared fakes. Only the play flavour of the app may use
+     * the premium module, so closed code cannot reach the core build.
      */
-    fun violation(from: String, to: String, isTestConfiguration: Boolean): String? {
+    fun violation(from: String, to: String, configuration: String): String? {
         if (from == to) return null
         if (to == TESTING) {
-            return if (isTestConfiguration) null else "$from uses $TESTING outside its tests"
+            return if (isTestConfiguration(configuration)) null else "$from uses $TESTING outside its tests"
+        }
+        if (to == PREMIUM) {
+            return if (from == APP && isPlayConfiguration(configuration)) {
+                null
+            } else {
+                "$from uses $PREMIUM outside the play build of $APP"
+            }
         }
         val allowed = when {
             from == APP -> return null

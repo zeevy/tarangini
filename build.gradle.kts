@@ -11,4 +11,5 @@ plugins {
 // The build logic is an included build, so its tests need a hook to run with `./gradlew test`.
 tasks.register("test") {
     dependsOn(gradle.includedBuild("build-logic").task(":convention:test"))
+    dependsOn("checkPremiumBoundary")
 }
