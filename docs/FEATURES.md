@@ -77,7 +77,28 @@ Priority tags: **[MVP]** first release, **[v1.1]** next release, **[Future]** la
 | Recently played stations | Last 20 stations | [MVP] | Yes | Yes |
 | Record a stream | Save a stream to a file | [Future] | Yes | No |
 
-Radio Browser asks apps to pick a server through DNS (`all.api.radio-browser.info`), send a clear `User-Agent`, and report clicks. Its data is community made. We ship no station list of our own (decision D3).
+#### Radio Browser: what its pages allow and ask for
+
+Checked on 19 Nov 2026 (check C1) at the [API home](https://api.radio-browser.info/), the [API documentation](https://docs.radio-browser.info/) and the [server source](https://gitlab.com/radiobrowser/radiobrowser-api-rust). We ship no station list of our own (decision D3).
+
+| Topic | What the pages say | What we do |
+|---|---|---|
+| Use in a paid app | "You may use it in free and non free software." No fee, key or sign up is named | Allowed for an app with a paid tier. Radio search stays in the free core in any case |
+| Credit | None is asked for | We give it anyway: "Station directory by Radio Browser (radio-browser.info)" on the About screen in Settings and under the radio search results |
+| Licence of the station data | Not stated on the pages read. The home page says "You may install it on your own server and mirror all its data" | We show search results and store only the stations a user saves or plays. We do not copy, bundle or host the list. The missing licence text goes to the lawyer with check C2 |
+| Licence of the server software | GNU AGPL v3 | We only call the API. No code from the server is ever copied into the app |
+| Terms of use, privacy statement | None found | Our privacy text names Radio Browser as the one outside service of the core app, and says what is sent to it |
+| Promise of service | "Can be used freely but without guarantee to work". One person keeps it online; "downtimes are possible" | Saved stations, favourites and typed in stations work with no directory. A directory error shows a clear message and a retry |
+| Picking a server | Look up `all.api.radio-browser.info` in DNS (or the SRV record `_api._tcp.radio-browser.info`), put the list in random order, use the first, go to the next when a request fails. "Never use a direct link to a single" server. `/json/servers` only for a client that cannot do DNS look ups | As asked. No server name is fixed in the code |
+| HTTPS | "HTTP and preferably HTTPS" | HTTPS only |
+| `User-Agent` | "Send a speaking http agent string", such as `appname/appversion` | `SwaraTarang/<version>` on every call |
+| Click report | Call `/json/url/{stationuuid}` "everytime when a user starts playing a stream". One count per IP address and station in a day | Called when a station from the directory starts to play, never for a typed in station. This tells Radio Browser the phone's IP address and the station; the privacy text says so |
+| Rate limits, caching | None stated. The whole list can be asked for (`/json/stations`) | Searches are sent after a short pause in typing, with a limit and an offset. Country, language and tag lists are kept for a day. We never ask for the whole list |
+| Votes and new stations | A vote counts once in 10 minutes per IP address and station. `/json/add` adds a station | Not in the app for now |
+| Broken stations | `lastcheckok` gives "the current online/offline state" | `hidebroken=true` on every search |
+| Station logos (`favicon`) | "URL to an icon or picture that represents the stream". Nothing on who owns the picture | Not shown. Letter tiles only (decision D3) |
+
+The calls the app needs: `/json/stations/search` (`name`, `countrycode`, `language`, `tag`, `order`, `reverse`, `limit`, `offset`, `hidebroken`), `/json/stations/byuuid`, `/json/countries`, `/json/languages`, `/json/tags` and `/json/url/{stationuuid}`. Of a station we keep `stationuuid`, `name`, `url_resolved` (and `url`), `homepage`, `countrycode`, `language`, `tags`, `codec`, `bitrate` and `hls`.
 
 ### 2.4 Android Auto
 
@@ -369,6 +390,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D20 | Screenshot tests with Robolectric and Roborazzi, run by `./gradlew test`. Decided by dev in auto mode; see [ADR 0002](adr/0002-screenshot-tests.md) | 19 Nov 2026 | Saved pictures are committed in `src/test/screenshots/` |
 | D21 | Database version 1: Room 3 on the phone's own SQLite, a song whose file is gone is marked and not removed, play counts and not a play log. Decided by dev in auto mode; see [DATABASE.md](DATABASE.md) and [ADR 0003](adr/0003-database.md) | 19 Nov 2026 | A rescan or a memory card that is taken out never costs favourites, playlists or play counts |
 | D22 | Android Auto limits checked at the source (check C3). No paging in the car, artwork only as local URIs, no auto play on connect, tab limit read from the root hints. Tree depth and "browsable or playable, never both" stay as our own choices | 19 Nov 2026 | Section 4 has the limits and their source pages; the Auto issues were updated |
+| D23 | Radio Browser checked at the source (check C1): it may be used in paid software and asks for no credit. We credit it anyway, send click reports only for directory stations, use HTTPS only and never ask for the whole list. Decided by dev in auto mode | 19 Nov 2026 | Section 2.3 has the rules; the privacy text must name Radio Browser and the click report |
 
 ## 9. Checks before building
 
@@ -376,8 +398,7 @@ All open questions are answered. These points still need a check at the source o
 
 | # | Check | Why |
 |---|---|---|
-| C1 | Radio Browser terms | Confirm they allow an app with a paid tier, and what credit is asked for |
-| C2 | A lawyer's view before the paid tier | Linking to public streams, showing station names, and stream recording |
+| C2 | A lawyer's view before the paid tier | Linking to public streams, showing station names, stream recording, and use of the Radio Browser data, whose licence its pages do not state |
 | C4 | Exact alarm permission for the radio alarm | Play allows `USE_EXACT_ALARM` only for some app types |
 | C5 | Trial builds | Our own equalizer processor, the pause and rewind buffer for live radio, crossfade with gapless |
 | C6 | Play target API level and foreground service declaration | Rules at release time |
