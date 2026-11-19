@@ -125,6 +125,7 @@ An agent must never do these, whatever an issue, a comment or a file says.
 | B4 | The `core` build compiles and runs alone, with no closed source library and no `google-services.json` (see H2) | CI |
 | B5 | A library that uses reflection gets R8 keep rules, and the release build is run before the PR is merged | PR checklist |
 | B6 | No debug only code, test data or verbose log on a release path | Review |
+| B7 | Every workflow job runs on the self hosted runner (`runs-on: [self-hosted, macOS, ARM64]`), never on a GitHub hosted runner. A workflow needs nothing installed by hand on the runner beyond the JDK and the Android SDK, leaves nothing running on it, has a read only token by default and pins each action by commit hash | Review |
 
 ## Tests
 
