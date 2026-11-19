@@ -47,6 +47,24 @@ The Play Store build mixes this code with closed code, so the licence of everyth
 - Do not copy code from a web page, a book or another project unless its licence is in the "Yes" row. Say where it came from in the pull request.
 - Do not add a station list, station logos, album art, fonts or sounds that you do not have the right to share.
 
+## Checksums of the libraries
+
+Every library and plugin the build downloads is listed with its SHA-256 in `gradle/verification-metadata.xml`. A file with another checksum, or a file that is not listed, fails the build and Gradle names it. So a change that adds or updates a library must also update this file.
+
+1. Change the version in `gradle/libs.versions.toml`.
+2. Run `GRADLE_USER_HOME=/tmp/gradle-home-for-checksums ./gradlew --write-verification-metadata sha256 --no-configuration-cache --no-build-cache test ktlintCheck detekt lint :app:licenseeCoreRelease assembleCoreDebug ktlintFormat`. The empty Gradle home matters: with your normal one, Gradle skips files it already has and the list comes out incomplete. `ktlintFormat` is in the list on purpose, so the files that task needs are listed too. Gradle adds the new entries and keeps the old ones. Delete the folder afterwards.
+3. Read the diff of the file. Only the libraries you changed, and what they bring with them, should be new. If anything else changed, stop and find out why.
+4. A new version of the Android Gradle plugin also needs the `aapt2` file of the other systems, because Gradle lists only the one for your system. Download `aapt2-<version>-osx.jar`, `-linux.jar` and `-windows.jar` from Google's Maven repository (`https://dl.google.com/dl/android/maven2/com/android/tools/build/aapt2/<version>/`), run `shasum -a 256` on each, and add the missing `<artifact>` entries next to the one Gradle wrote.
+5. Remove the entries of the versions that are no longer used, and commit the file with the change.
+
+Dependabot does not update this file. Its pull request fails CI with "Dependency verification failed" until someone checks out its branch, does steps 2 to 5 and pushes the result.
+
+Source and javadoc jars, which Android Studio downloads for reading, are trusted without a checksum. Signatures are not checked yet.
+
+What this check does not cover: the Android system jars that Robolectric downloads by itself when the tests run, and the JDK that CI installs. The Gradle download has its own checksum in `gradle/wrapper/gradle-wrapper.properties`.
+
+`build-logic/gradle/verification-metadata.xml` is a link to the same file. On Windows, check the repo out with `git config core.symlinks true`, or Gradle cannot read it.
+
 ## Contributor agreement
 
 Before we merge your first pull request, you agree to the contributor agreement in [docs/CLA.md](docs/CLA.md). In short: you keep the copyright in your work, and you give the project the right to use it and to license it under other terms later.
