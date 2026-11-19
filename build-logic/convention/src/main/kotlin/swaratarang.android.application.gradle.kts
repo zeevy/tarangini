@@ -22,6 +22,16 @@ android {
         sourceCompatibility = SwaraTarangBuild.javaVersion
         targetCompatibility = SwaraTarangBuild.javaVersion
     }
+
+    // Compose preview tasks need the compiled resources in unit tests.
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
+}
+
+// Public code must not name the premium package, whichever build is made.
+tasks.named("preBuild") {
+    dependsOn(":checkPremiumBoundary")
 }
 
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
