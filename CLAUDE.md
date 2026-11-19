@@ -60,7 +60,7 @@ Use JDK 21 (`JAVA_HOME`) and the Android SDK (`sdk.dir` in `local.properties`, o
 |---|---|
 | minSdk 31 (Android 12) | Dynamic colour is always there. `READ_EXTERNAL_STORAGE` is only needed with `maxSdkVersion="32"`; API 33+ uses `READ_MEDIA_AUDIO` |
 | Android Auto only for MVP | One APK for phone and car. No Android Automotive OS module yet |
-| Stations come from the user (name and URL) or from Radio Browser search. We ship no station list of our own | Never bundle or host a station list. The India section is only a Radio Browser filter. No station logos unless a station gave permission; show letter tiles |
+| Stations come from the user (name and URL). Radio Browser search is out of the MVP and planned for v1.1 (decision D24). We ship no station list of our own | Never bundle or host a station list. Do not build the Radio Browser client, the directory or the India section in an MVP issue. Later the India section is only a Radio Browser filter. No station logos unless a station gave permission; show letter tiles |
 | Free core app with no ads, plus a premium subscription after v1.1 (ten features, listed in section 2.10 of `docs/FEATURES.md`) | No Play Billing in MVP or v1.1. Never gate a core feature |
 | Open core: this public core is MPL-2.0, the premium features live in a separate private repo | Never add GPL or AGPL code or libraries. Apache-2.0, MIT, BSD and MPL-2.0 are fine. Public code must never import premium code; it only defines interfaces (such as `StorageSource`, `PremiumGate`) that the premium module binds through Hilt. Keep an open source licences screen in Settings up to date |
 | Library index in Room, synced from MediaStore | Search, sorting and the Auto tree read Room, not MediaStore |
@@ -84,6 +84,6 @@ Use JDK 21 (`JAVA_HOME`) and the Android SDK (`sdk.dir` in `local.properties`, o
 ## Open points to check before building
 
 - The Android Auto limits were checked on 19 Nov 2026 and are in section 4 of `docs/FEATURES.md`, with a link to each source page. The car gives the tab limit in the root hints, there is no paging in the car, and artwork must be a `content://` or `android.resource://` URI. Check the table again before the Play release.
-- The Radio Browser rules were checked on 19 Nov 2026 and are in section 2.3 of `docs/FEATURES.md`: server through DNS with no fixed host, HTTPS only, `SwaraTarang/<version>` as `User-Agent`, a click report only for directory stations, never the whole list, no code from its AGPL server.
+- Radio Browser is for v1.1, not the MVP. Its rules were checked on 19 Nov 2026 and are in section 2.3 of `docs/FEATURES.md`: server through DNS with no fixed host, HTTPS only, `SwaraTarang/<version>` as `User-Agent`, a click report only for directory stations, never the whole list, no code from its AGPL server.
 - Media3 has no built-in crossfade or ReplayGain. The equalizer processor, the pause and rewind buffer for live radio and crossfade each need a short trial build before they are committed to.
 - Section 9 of `docs/FEATURES.md` lists every check still open (legal view, exact alarm permission and more).
