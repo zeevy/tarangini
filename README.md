@@ -1,4 +1,4 @@
-# Swara Tarang
+# Tarangini
 
 An Android media player for local MP3 and AAC files and for online radio, on the phone and in Android Auto. The free app has no ads, no account and no tracking.
 
@@ -68,4 +68,4 @@ Bug reports, ideas and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIB
 
 The code in this repo is under the [Mozilla Public License 2.0](LICENSE). Every source file starts with the MPL-2.0 header.
 
-The licence covers the code only. The name "Swara Tarang" and the app logo are not licensed with it. If you publish a changed version of the app, give it another name and another logo, so that users can tell it apart from this one.
+The licence covers the code only. The name "Tarangini" and the app logo are not licensed with it. If you publish a changed version of the app, give it another name and another logo, so that users can tell it apart from this one.

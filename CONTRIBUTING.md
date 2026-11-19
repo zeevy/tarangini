@@ -1,4 +1,4 @@
-# Contributing to Swara Tarang
+# Contributing to Tarangini
 
 Thank you for helping. This page says how to build the app, what a change must follow and what we need from you before we can merge it.
 

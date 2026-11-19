@@ -1,4 +1,4 @@
-# detekt settings for Swara Tarang. Rules not named here keep detekt's defaults.
+# detekt settings for Tarangini. Rules not named here keep detekt's defaults.
 # Each block names the rule in RULES.md that it checks.
 
 build:

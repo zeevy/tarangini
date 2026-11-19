@@ -5,8 +5,8 @@
  */
 
 plugins {
-    id("swaratarang.module-rules")
-    id("swaratarang.quality")
+    id("tarangini.module-rules")
+    id("tarangini.quality")
 }
 
 // The build logic is an included build, so its tests need a hook to run with `./gradlew test`.

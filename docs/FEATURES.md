@@ -1,6 +1,6 @@
-# Swara Tarang: product and feature plan
+# Tarangini: product and feature plan
 
-Swara Tarang (Sanskrit: "waves of musical notes") is an Android media player for local MP3 and AAC files and for online radio. It works on the phone and in Android Auto. This document says what the app does. [ARCHITECTURE.md](ARCHITECTURE.md) says how the code is laid out, and [RULES.md](../RULES.md) holds the rules for the code.
+Tarangini (Sanskrit: "river", word for word "the one that has waves") is an Android media player for local MP3 and AAC files and for online radio. It works on the phone and in Android Auto. This document says what the app does. [ARCHITECTURE.md](ARCHITECTURE.md) says how the code is laid out, and [RULES.md](../RULES.md) holds the rules for the code.
 
 Status: build started, 19 Nov 2026. 18 decisions made (section 8). The work is tracked in GitHub issues under milestones M1 to M10. Section 9 lists the checks still open; each has an issue or is noted there.
 
@@ -8,7 +8,7 @@ Status: build started, 19 Nov 2026. 18 decisions made (section 8). The work is t
 
 ### Product vision
 
-Swara Tarang is one simple, fast player for the music on your phone and the radio stations you love, at home and in the car. It plays local files without ads or sign-in, finds stations from India and the world in a few taps, and gives the same library, favourites and queue on the phone screen and in Android Auto. One playback service runs both, so a song or station started on the phone carries on in the car with no break.
+Tarangini is one simple, fast player for the music on your phone and the radio stations you love, at home and in the car. It plays local files without ads or sign-in, finds stations from India and the world in a few taps, and gives the same library, favourites and queue on the phone screen and in Android Auto. One playback service runs both, so a song or station started on the phone carries on in the car with no break.
 
 ### Target users
 
@@ -93,7 +93,7 @@ Checked on 19 Nov 2026 (check C1) at the [API home](https://api.radio-browser.in
 | Promise of service | "Can be used freely but without guarantee to work". One person keeps it online; "downtimes are possible" | Saved stations, favourites and typed in stations work with no directory. A directory error shows a clear message and a retry |
 | Picking a server | Look up `all.api.radio-browser.info` in DNS (or the SRV record `_api._tcp.radio-browser.info`), put the list in random order, use the first, go to the next when a request fails. "Never use a direct link to a single" server. `/json/servers` only for a client that cannot do DNS look ups | As asked. No server name is fixed in the code |
 | HTTPS | "HTTP and preferably HTTPS" | HTTPS only |
-| `User-Agent` | "Send a speaking http agent string", such as `appname/appversion` | `SwaraTarang/<version>` on every call |
+| `User-Agent` | "Send a speaking http agent string", such as `appname/appversion` | `Tarangini/<version>` on every call |
 | Click report | Call `/json/url/{stationuuid}` "everytime when a user starts playing a stream". One count per IP address and station in a day | Called when a station from the directory starts to play, never for a typed in station. This tells Radio Browser the phone's IP address and the station; the privacy text says so |
 | Rate limits, caching | None stated. The whole list can be asked for (`/json/stations`) | Searches are sent after a short pause in typing, with a limit and an offset. Country, language and tag lists are kept for a day. We never ask for the whole list |
 | Votes and new stations | A vote counts once in 10 minutes per IP address and station. `/json/add` adds a station | Not in the app for now |
@@ -108,7 +108,7 @@ The calls the app needs: `/json/stations/search` (`name`, `countrycode`, `langua
 |---|---|---|---|---|
 | Browsable media tree | Root tabs: Library, Radio, Favourites, Recent | [MVP] | - | Yes |
 | Artwork | Album art in lists and now playing. Stations show a letter tile, not a logo | [MVP] | - | Yes |
-| Voice play | "Hey Google, play Vividh Bharati on Swara Tarang", "play songs by Ilaiyaraaja on Swara Tarang" | [MVP] | Yes | Yes |
+| Voice play | "Hey Google, play Vividh Bharati on Tarangini", "play songs by Ilaiyaraaja on Tarangini" | [MVP] | Yes | Yes |
 | In-car search | Search results through the media library search callback | [MVP] | - | Yes |
 | Driver safe limits | Short lists, no long text, no settings or forms in the car | [MVP] | - | Yes |
 | Custom actions | Favourite toggle, shuffle, repeat buttons on the now playing screen | [v1.1] | - | Yes |
@@ -134,7 +134,7 @@ The calls the app needs: `/json/stations/search` (`name`, `countrycode`, `langua
 | Media notification | Media3 builds it from the session | [MVP] | Yes | - |
 | Lock screen controls | From the media session | [MVP] | Yes | - |
 | Media session | One `MediaLibrarySession` for the phone, Auto, Assistant, Bluetooth and the system media controls | [MVP] | Yes | Yes |
-| Playback resumption | Show Swara Tarang in the system media controls after reboot (Android 13+) | [v1.1] | Yes | - |
+| Playback resumption | Show Tarangini in the system media controls after reboot (Android 13+) | [v1.1] | Yes | - |
 | Wear OS controls | Basic controls show on the watch from the media session. A full watch app is extra work | [Future] | Watch | - |
 
 ### 2.7 Audio
@@ -350,7 +350,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | Why MPL-2.0 | Anyone who changes our files must share those changes. It still lets us ship the core together with closed code (the premium module, Play Billing). GPL-3.0 does not allow that without an exception |
 | Third party code | Apache-2.0, MIT, BSD and MPL-2.0 libraries only. No GPL or AGPL code, because the Play build mixes in closed code |
 | Contributions | Public issues and pull requests on the core. Contributors sign a contributor agreement (CLA), so we keep the right to relicense later |
-| Name and logo | The licence covers the code, not the name. Add a short trademark note in the README, and consider registering "Swara Tarang" and the logo |
+| Name and logo | The licence covers the code, not the name. Add a short trademark note in the README, and consider registering "Tarangini" and the logo |
 | Licence notices | An "Open source licences" screen in Settings that lists every library and its licence text |
 | Secrets | No keys in either repo. `google-services.json`, the signing key and the Play upload key live only in GitHub Actions secrets of the private repo |
 | CI | Public repo: build, unit tests and lint of the `core` build on every PR. Private repo: the `play` build and the signed release AAB on every version tag |

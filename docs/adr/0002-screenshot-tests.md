@@ -17,7 +17,7 @@ Every screen needs screenshot tests in light and dark (T4). CI has no emulator y
 
 ## Decision
 
-- Robolectric with Roborazzi. The libraries are test only and are added by the `swaratarang.android.compose` convention plugin.
+- Robolectric with Roborazzi. The libraries are test only and are added by the `tarangini.android.compose` convention plugin.
 - The saved pictures live in `src/test/screenshots/` of the module and are committed.
 - `./gradlew test` compares with the saved pictures and fails on a difference or a missing picture. `./gradlew test -PrecordScreenshots` saves new pictures. A change to a saved picture is looked at in the PR.
 - `config/robolectric/robolectric.properties` sets the Android version for every module.
