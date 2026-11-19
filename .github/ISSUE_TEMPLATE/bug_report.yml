@@ -1,0 +1,61 @@
+name: Bug report
+description: Something is broken or does not work as it should
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for the report. A security problem does not belong here: follow SECURITY.md and report it in private.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected to see.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to see it
+      placeholder: |
+        1. Open Radio
+        2. Add a station with the URL ...
+        3. Tap play
+    validations:
+      required: true
+
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where
+      options:
+        - Phone
+        - Android Auto
+        - Both
+    validations:
+      required: true
+
+  - type: input
+    id: app-version
+    attributes:
+      label: App version
+      description: Settings, then About.
+      placeholder: 0.1.0
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Phone and Android version
+      placeholder: Pixel 6a, Android 16
+    validations:
+      required: true
+
+  - type: textarea
+    id: more
+    attributes:
+      label: Anything else
+      description: A screenshot, the file type, or the stream URL if it is a public one. Do not paste a URL that has a password or a token in it.
