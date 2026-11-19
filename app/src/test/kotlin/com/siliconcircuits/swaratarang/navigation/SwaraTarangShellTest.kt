@@ -16,6 +16,7 @@ import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
 import com.siliconcircuits.swaratarang.core.ui.theme.SwaraTarangTheme
+import com.siliconcircuits.swaratarang.testing.NoPlaybackServiceRule
 import com.siliconcircuits.swaratarang.testing.RegisterComponentActivityRule
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -29,6 +30,9 @@ import org.robolectric.RobolectricTestRunner
 class SwaraTarangShellTest {
     @get:Rule(order = 0)
     val registerActivity = RegisterComponentActivityRule()
+
+    @get:Rule(order = 0)
+    val noPlaybackService = NoPlaybackServiceRule()
 
     @get:Rule(order = 1)
     val composeRule = createAndroidComposeRule<ComponentActivity>()

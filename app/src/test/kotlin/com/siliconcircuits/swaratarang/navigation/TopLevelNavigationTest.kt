@@ -24,6 +24,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.siliconcircuits.swaratarang.feature.home.navigation.HomeRoute
 import com.siliconcircuits.swaratarang.feature.library.navigation.LibraryRoute
+import com.siliconcircuits.swaratarang.testing.NoPlaybackServiceRule
 import com.siliconcircuits.swaratarang.testing.RegisterComponentActivityRule
 import org.junit.Rule
 import org.junit.Test
@@ -34,6 +35,9 @@ import org.robolectric.RobolectricTestRunner
 class TopLevelNavigationTest {
     @get:Rule(order = 0)
     val registerActivity = RegisterComponentActivityRule()
+
+    @get:Rule(order = 0)
+    val noPlaybackService = NoPlaybackServiceRule()
 
     @get:Rule(order = 1)
     val composeRule = createAndroidComposeRule<ComponentActivity>()
