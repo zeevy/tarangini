@@ -14,14 +14,15 @@ import androidx.room3.PrimaryKey
 
 /**
  * One album of one artist. Two artists can each have an album with the same
- * title. Songs with no album tag share the row with the empty [title].
+ * title. Two spellings of a title with the same [titleKey] are one album.
+ * Songs with no album tag share the row with the empty [title].
  */
 @Entity(
     tableName = "albums",
     foreignKeys = [
         ForeignKey(entity = ArtistEntity::class, parentColumns = ["id"], childColumns = ["artist_id"]),
     ],
-    indices = [Index("artist_id", "title", unique = true), Index("title_key")],
+    indices = [Index("artist_id", "title_key", unique = true), Index("title_key")],
 )
 internal data class AlbumEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,

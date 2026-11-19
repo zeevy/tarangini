@@ -24,25 +24,30 @@ import com.siliconcircuits.swaratarang.core.data.local.entity.SongSource
  * count rows that point to it.
  *
  * Lists leave out songs whose file is gone. Lists that can be long take a
- * limit and an offset. A list of ids is at most [MAX_IDS] long.
+ * limit and an offset. A list of ids of any length is written in parts of
+ * [MAX_IDS], inside one transaction.
  */
 @Dao
 @Suppress("TooManyFunctions") // One function per library query; splitting the DAO would split its transactions.
 internal abstract class LibraryDao {
     // Artists, albums and folders
 
-    /** Saves the artist with this [name] and returns its id. */
+    /** Saves the artist with this [nameKey] and returns its id. The first [name] saved for a key is kept. */
     @Transaction
     open suspend fun saveArtist(name: String, nameKey: String): Long {
-        insertOrUpdateArtist(name, nameKey)
-        return artistId(name)
+        insertArtist(name, nameKey)
+        return artistId(nameKey)
     }
 
-    /** Saves the album with this [title] by this artist and returns its id. */
+    /**
+     * Saves the album with this [titleKey] by this artist and returns its id.
+     * The first [title] saved for a key is kept. A [year] replaces the stored
+     * one; no year leaves it as it is.
+     */
     @Transaction
     open suspend fun saveAlbum(title: String, titleKey: String, artistId: Long, year: Int?): Long {
         insertOrUpdateAlbum(title, titleKey, artistId, year)
-        return albumId(artistId, title)
+        return albumId(artistId, titleKey)
     }
 
     /** Saves the folder with this [path] and returns its id. */
@@ -55,24 +60,24 @@ internal abstract class LibraryDao {
     @Query(
         """
             INSERT INTO artists(name, name_key) VALUES(:name, :nameKey)
-            ON CONFLICT(name) DO UPDATE SET name_key = excluded.name_key
+            ON CONFLICT(name_key) DO NOTHING
         """,
     )
-    protected abstract suspend fun insertOrUpdateArtist(name: String, nameKey: String)
+    protected abstract suspend fun insertArtist(name: String, nameKey: String)
 
-    @Query("SELECT id FROM artists WHERE name = :name")
-    protected abstract suspend fun artistId(name: String): Long
+    @Query("SELECT id FROM artists WHERE name_key = :nameKey")
+    protected abstract suspend fun artistId(nameKey: String): Long
 
     @Query(
         """
             INSERT INTO albums(title, title_key, artist_id, year) VALUES(:title, :titleKey, :artistId, :year)
-            ON CONFLICT(artist_id, title) DO UPDATE SET title_key = excluded.title_key, year = excluded.year
+            ON CONFLICT(artist_id, title_key) DO UPDATE SET year = COALESCE(excluded.year, year)
         """,
     )
     protected abstract suspend fun insertOrUpdateAlbum(title: String, titleKey: String, artistId: Long, year: Int?)
 
-    @Query("SELECT id FROM albums WHERE artist_id = :artistId AND title = :title")
-    protected abstract suspend fun albumId(artistId: Long, title: String): Long
+    @Query("SELECT id FROM albums WHERE artist_id = :artistId AND title_key = :titleKey")
+    protected abstract suspend fun albumId(artistId: Long, titleKey: String): Long
 
     @Query(
         """
@@ -127,7 +132,11 @@ internal abstract class LibraryDao {
     @Query("SELECT * FROM folders WHERE parent_id IS :parentId ORDER BY name, id")
     abstract suspend fun childFolders(parentId: Long?): List<FolderEntity>
 
-    /** Removes albums with no song. Returns how many were removed. */
+    /**
+     * Removes albums with no song. Returns how many were removed. A scan runs
+     * the three clean up functions only after it has saved all its songs: an
+     * album or artist saved for a song that is not saved yet counts as unused.
+     */
     @Query("DELETE FROM albums WHERE id NOT IN (SELECT album_id FROM songs)")
     abstract suspend fun deleteUnusedAlbums(): Int
 
@@ -236,8 +245,13 @@ internal abstract class LibraryDao {
     abstract suspend fun songKeys(source: SongSource): List<SongKey>
 
     /** Marks songs whose file is gone. A song that is already marked keeps its first time. */
+    @Transaction
+    open suspend fun markMissing(songIds: List<Long>, at: Long) {
+        songIds.chunked(MAX_IDS).forEach { markMissingRows(it, at) }
+    }
+
     @Query("UPDATE songs SET missing_since = :at WHERE id IN (:songIds) AND missing_since IS NULL")
-    abstract suspend fun markMissing(songIds: List<Long>, at: Long)
+    protected abstract suspend fun markMissingRows(songIds: List<Long>, at: Long)
 
     /**
      * Removes songs for good, with their search rows. Their favourite,
@@ -245,8 +259,10 @@ internal abstract class LibraryDao {
      */
     @Transaction
     open suspend fun deleteSongs(songIds: List<Long>) {
-        deleteSearchRows(songIds)
-        deleteSongRows(songIds)
+        songIds.chunked(MAX_IDS).forEach { ids ->
+            deleteSearchRows(ids)
+            deleteSongRows(ids)
+        }
     }
 
     @Query("DELETE FROM songs WHERE id IN (:songIds)")
@@ -284,7 +300,7 @@ internal abstract class LibraryDao {
             JOIN artists ar ON ar.id = s.artist_id
             JOIN albums al ON al.id = s.album_id
             WHERE s.missing_since IS NULL
-            ORDER BY ar.name_key, s.title_key, s.id
+            ORDER BY ar.name_key, ar.id, s.title_key, s.id
             LIMIT :limit OFFSET :offset
         """,
     )
@@ -297,7 +313,7 @@ internal abstract class LibraryDao {
             JOIN artists ar ON ar.id = s.artist_id
             JOIN albums al ON al.id = s.album_id
             WHERE s.missing_since IS NULL
-            ORDER BY al.title_key, s.disc_number, s.track_number, s.id
+            ORDER BY al.title_key, al.id, s.disc_number, s.track_number, s.id
             LIMIT :limit OFFSET :offset
         """,
     )
@@ -385,7 +401,7 @@ internal abstract class LibraryDao {
     abstract suspend fun searchSongs(query: String, limit: Int): List<SongRow>
 
     companion object {
-        /** The longest list of ids one call may take. SQLite limits the number of values in one statement. */
+        /** The most ids in one statement. SQLite limits the number of values a statement can take. */
         const val MAX_IDS = 500
     }
 }

@@ -12,12 +12,14 @@ import androidx.room3.Index
 import androidx.room3.PrimaryKey
 
 /**
- * One artist. Songs with no artist tag share the row with the empty [name];
- * the screens show their own text for it.
+ * One artist. Two spellings with the same [nameKey], such as "ABBA" and
+ * "Abba", are one artist; the first spelling saved is kept. Songs with no
+ * artist tag share the row with the empty [name]; the screens show their own
+ * text for it.
  */
 @Entity(
     tableName = "artists",
-    indices = [Index("name", unique = true), Index("name_key")],
+    indices = [Index("name_key", unique = true)],
 )
 internal data class ArtistEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,

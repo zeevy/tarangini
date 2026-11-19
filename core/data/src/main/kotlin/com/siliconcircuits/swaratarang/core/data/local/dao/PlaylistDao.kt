@@ -74,7 +74,7 @@ internal abstract class PlaylistDao {
     )
     abstract suspend fun items(playlistId: Long, limit: Int, offset: Int): List<PlaylistSongRow>
 
-    /** Puts the places of a playlist in the order of [itemIds]. */
+    /** Puts the places of a playlist in the order of [itemIds], which must name every place of the playlist. */
     @Transaction
     open suspend fun setItemOrder(playlistId: Long, itemIds: List<Long>) {
         itemIds.forEachIndexed { index, itemId -> setItemPosition(playlistId, itemId, index) }

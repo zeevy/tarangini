@@ -30,13 +30,25 @@ class QueueDaoTest {
         val a = database.addSong("a")
         val b = database.addSong("b")
         queue.replaceQueue(listOf(b, a, b))
-        assertEquals(listOf(b, a, b), queue.queue().map { it.song.id })
+        assertEquals(listOf(b, a, b), queue.queue().map { it.row.song.id })
 
         queue.replaceQueue(listOf(a))
-        assertEquals(listOf(a), queue.queue().map { it.song.id })
+        assertEquals(listOf(a), queue.queue().map { it.row.song.id })
 
         queue.clearQueue()
         assertTrue(queue.queue().isEmpty())
+    }
+
+    @Test
+    fun `a queued song whose file is gone is left out and the others keep their saved positions`() = runTest {
+        val a = database.addSong("a")
+        val b = database.addSong("b")
+        val c = database.addSong("c")
+        queue.replaceQueue(listOf(a, b, c))
+
+        database.libraryDao().markMissing(listOf(b), at = 1)
+
+        assertEquals(listOf(0 to a, 2 to c), queue.queue().map { it.position to it.row.song.id })
     }
 
     @Test

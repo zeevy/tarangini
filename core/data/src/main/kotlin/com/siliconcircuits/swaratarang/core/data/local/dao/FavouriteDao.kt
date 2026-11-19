@@ -71,7 +71,7 @@ internal abstract class FavouriteDao {
     )
     abstract suspend fun favouriteStations(): List<StationEntity>
 
-    /** Puts the favourite stations in the order of [stationIds]. */
+    /** Puts the favourite stations in the order of [stationIds], which must name every favourite station. */
     @Transaction
     open suspend fun setStationOrder(stationIds: List<Long>) {
         stationIds.forEachIndexed { index, stationId -> setStationPosition(stationId, index) }
