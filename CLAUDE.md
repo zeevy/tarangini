@@ -83,5 +83,6 @@ Use JDK 21 (`JAVA_HOME`) and the Android SDK (`sdk.dir` in `local.properties`, o
 ## Open points to check before building
 
 - The Android Auto limits were checked on 19 Nov 2026 and are in section 4 of `docs/FEATURES.md`, with a link to each source page. The car gives the tab limit in the root hints, there is no paging in the car, and artwork must be a `content://` or `android.resource://` URI. Check the table again before the Play release.
+- The Radio Browser rules were checked on 19 Nov 2026 and are in section 2.3 of `docs/FEATURES.md`: server through DNS with no fixed host, HTTPS only, `SwaraTarang/<version>` as `User-Agent`, a click report only for directory stations, never the whole list, no code from its AGPL server.
 - Media3 has no built-in crossfade or ReplayGain. The equalizer processor, the pause and rewind buffer for live radio and crossfade each need a short trial build before they are committed to.
-- Section 9 of `docs/FEATURES.md` lists every check still open (Radio Browser terms, legal view, exact alarm permission and more).
+- Section 9 of `docs/FEATURES.md` lists every check still open (legal view, exact alarm permission and more).
