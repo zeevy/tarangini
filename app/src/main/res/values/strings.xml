@@ -6,4 +6,8 @@
 -->
 <resources>
     <string name="app_name">Swara Tarang</string>
+    <string name="tab_home">Home</string>
+    <string name="tab_library">Library</string>
+    <string name="tab_radio">Radio</string>
+    <string name="tab_favourites">Favourites</string>
 </resources>

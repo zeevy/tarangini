@@ -45,6 +45,7 @@ dependencies {
     implementation(project(":core:ui"))
 
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.navigation.compose)
 
     if (hasPremium) {
         "playImplementation"(project(":premium"))

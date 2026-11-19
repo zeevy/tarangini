@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project state
 
-Swara Tarang is an Android media player for local MP3 and AAC files (`.mp3`, `.aac`, `.m4a`) and online radio, on the phone and in Android Auto. The build started on 19 Nov 2026. The Gradle project and its modules exist; the app shows an empty screen until the feature issues land. The git repo is `silicon-circuits/swara-tarang` on GitHub (private for now, default branch `main`).
+Swara Tarang is an Android media player for local MP3 and AAC files (`.mp3`, `.aac`, `.m4a`) and online radio, on the phone and in Android Auto. The build started on 19 Nov 2026. The Gradle project and its modules exist. The app has its shell: the theme, the navigation graph and a bottom bar with four tabs (Home, Library, Radio, Favourites) plus Settings. Each screen is a placeholder until its feature issue lands. The git repo is `silicon-circuits/swara-tarang` on GitHub (private for now, default branch `main`).
 
 - Read [RULES.md](RULES.md) and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) before any change. `RULES.md` has the hard stops and the coding standards. `docs/ARCHITECTURE.md` has the layers, the modules and the folder structure. [docs/FEATURES.md](docs/FEATURES.md) says what the app does.
 - The work is in GitHub issues under milestones M1 to M10. Work them in milestone order and respect each issue's "Depends on" list. One issue, one branch, one PR.
@@ -21,6 +21,7 @@ Use JDK 21 (`JAVA_HOME`) and the Android SDK (`sdk.dir` in `local.properties`, o
 | Unit tests of one module | `./gradlew :core:domain:test` (plain Kotlin module) or `./gradlew :feature:library:testDebugUnitTest` (Android module) or `./gradlew :app:testCoreDebugUnitTest` (the app) |
 | One test class or one test | `./gradlew :core:domain:test --tests "*.SomeTest"` or `--tests "*.SomeTest.some test name"` |
 | Only the build logic tests (module rules) | `./gradlew :build-logic:convention:test` |
+| Save new pictures for the screenshot tests | `./gradlew test -PrecordScreenshots`, or one module: `./gradlew :app:testCoreDebugUnitTest -PrecordScreenshots` |
 | Android lint | `./gradlew lint` |
 | Style (ktlint); fix what can be fixed by itself | `./gradlew ktlintCheck`; `./gradlew ktlintFormat` (build logic: `./gradlew -p build-logic ktlintFormat`) |
 | Code rules (detekt) | `./gradlew detekt` |
@@ -37,6 +38,10 @@ Use JDK 21 (`JAVA_HOME`) and the Android SDK (`sdk.dir` in `local.properties`, o
 - The app has the flavours `core` and `play`. `play` exists only when the private module is checked out in `premium/` (ignored by git). Flavour code lives in `app/src/core` (and `app/src/play` when it is needed); the `core` bindings of the premium interfaces are in `app/src/core/kotlin/.../di`.
 - `checkPremiumBoundary` runs before every app build and with `./gradlew test`. It fails when a Kotlin, Java, XML or ProGuard file under `app`, `core` or `feature` names the package `com.siliconcircuits.swaratarang.premium`. The module rules also refuse a dependency on `:premium` from anything but the `play` configurations of `app`.
 - Hilt is added to a module with the `swaratarang.android.hilt` plugin.
+- The theme is `SwaraTarangTheme` in `core:ui/theme`: wallpaper colours by default, the indigo brand colours when `dynamicColor` is false. Spacing comes from `Spacing` there. Icons are vector drawables in `core/ui/src/main/res/drawable`; there is no icon library.
+- Navigation: each feature has a `navigation/` package with its route classes (`@Serializable`) and one `NavGraphBuilder` function per screen. `app/navigation` joins them in `SwaraTarangNavHost`. The tabs are the entries of `TopLevelDestination`. `SwaraTarangShell` holds the screens, the mini player slot and the bottom bar. See `docs/adr/0001-navigation-and-tabs.md`.
+- A screen that is not built yet uses `PlaceholderScreen` from `core:ui`. Replace it when the real screen is built, and remove it with the last one.
+- Compose tests and screenshot tests run on the JVM with Robolectric and Roborazzi, as part of `./gradlew test`. Saved pictures are in `src/test/screenshots/` of the module. A test that taps or presses Back needs `RegisterComponentActivityRule` (see `app/src/test`). Robolectric runs API 36, set in `config/robolectric/robolectric.properties`. See `docs/adr/0002-screenshot-tests.md`.
 - `checkLicenceHeaders` runs with `./gradlew test`. It fails when a Kotlin, Java, Gradle (`.kts`) or XML source file under `app`, `core`, `feature`, `build-logic` or the root does not start with the MPL-2.0 header. Copy the header from any other file.
 - `LICENSE` is the MPL-2.0 text. `CONTRIBUTING.md`, `SECURITY.md` and the draft contributor agreement in `docs/CLA.md` are for outside contributors; the lawyer's review of them is check C9.
 - ktlint and detekt come with the `swaratarang.quality` plugin, which every module convention plugin applies. Their settings are `.editorconfig` and `config/detekt.yml`; Android lint settings are `config/lint.xml`. The blocks in `config/detekt.yml` and `config/lint.xml` name the rule in `RULES.md` that they check.

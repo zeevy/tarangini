@@ -341,6 +341,8 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D16 | Subscription checked on the phone through Play Billing | 19 Nov 2026 | No server. Purchase signature verified, R8 obfuscation |
 | D17 | Google Drive left out of cloud storage at first | 19 Nov 2026 | Launch with WebDAV, S3 and OneDrive. Revisit after reading Google's rules |
 | D18 | Module structure: `app`, `feature:*` and `core:*` modules, with features depending only on `core:domain` and `core:ui`. Decided by dev in auto mode; options and reasons are in section 10 of [ARCHITECTURE.md](ARCHITECTURE.md) | 19 Nov 2026 | The compiler enforces the layers. `RULES.md` holds the rules for people and agents |
+| D19 | Navigation Compose with typed routes. Four tabs as in the approved design (Home, Library, Radio, Favourites). Back from the first screen of a tab leaves the app. Decided by dev in auto mode; see [ADR 0001](adr/0001-navigation-and-tabs.md) | 19 Nov 2026 | Each feature offers its routes in its `navigation/` package. Settings opens from the Home top bar |
+| D20 | Screenshot tests with Robolectric and Roborazzi, run by `./gradlew test`. Decided by dev in auto mode; see [ADR 0002](adr/0002-screenshot-tests.md) | 19 Nov 2026 | Saved pictures are committed in `src/test/screenshots/` |
 
 ## 9. Checks before building
 
