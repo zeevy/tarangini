@@ -398,6 +398,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D26 | Screens reach the player only through `PlaybackController` in the domain. One connection for the whole app, open while a screen is open. Decided by dev in auto mode; see [ADR 0005](adr/0005-playback-connection.md) | 19 Nov 2026 | Commands for shuffle and repeat come with the screen that needs them |
 | D27 | Audio focus, the pause when headphones are unplugged and the media buttons are left to ExoPlayer and the Media3 session; no audio focus code of ours. Decided by dev in auto mode; see ADR 0004 | 19 Nov 2026 | The checks a person must do on a real phone are in [MANUAL-TESTS.md](MANUAL-TESTS.md) |
 | D28 | The queue lives only in the player. Screens change it through `PlaybackQueue` in the domain; there are no use cases that only pass a call on. A long list starts with 20 items and gets the rest in parts of 5,000 once sound is out. Decided by dev in auto mode; see [ADR 0006](adr/0006-queue.md) | 19 Nov 2026 | Open: a very long queue makes the system (Bluetooth) work on every item; see the ADR |
+| D29 | Gapless playback is proven with test albums. The audio renderer corrects the start and end silence of MP3 files for the MP3 decoder of Android, because Media3 and that decoder both cut the decoder delay. Decided by dev in auto mode; see [ADR 0007](adr/0007-gapless-playback.md) | 19 Nov 2026 | Files with no delay header keep a gap of about 40 ms: a known limit |
 
 ## 9. Checks before building
 
