@@ -10,9 +10,11 @@
 package com.siliconcircuits.swaratarang.core.playback.di
 
 import com.siliconcircuits.swaratarang.core.domain.playback.PlaybackController
+import com.siliconcircuits.swaratarang.core.domain.playback.PlaybackQueue
 import com.siliconcircuits.swaratarang.core.playback.controller.MediaControllerConnector
 import com.siliconcircuits.swaratarang.core.playback.controller.SessionConnector
 import com.siliconcircuits.swaratarang.core.playback.controller.SessionPlaybackController
+import com.siliconcircuits.swaratarang.core.playback.controller.SessionPlaybackQueue
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -28,6 +30,9 @@ import kotlinx.coroutines.SupervisorJob
 internal abstract class PlaybackModule {
     @Binds
     abstract fun playbackController(controller: SessionPlaybackController): PlaybackController
+
+    @Binds
+    abstract fun playbackQueue(queue: SessionPlaybackQueue): PlaybackQueue
 
     @Binds
     abstract fun sessionConnector(connector: MediaControllerConnector): SessionConnector

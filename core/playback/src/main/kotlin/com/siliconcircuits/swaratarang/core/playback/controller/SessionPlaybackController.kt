@@ -6,7 +6,6 @@
 
 package com.siliconcircuits.swaratarang.core.playback.controller
 
-import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.siliconcircuits.swaratarang.core.domain.model.PlaybackState
 import com.siliconcircuits.swaratarang.core.domain.playback.PlaybackController
@@ -35,6 +34,7 @@ private val POSITION_STEP = 500.milliseconds
 @Singleton
 internal class SessionPlaybackController @Inject constructor(
     private val link: PlayerLink,
+    private val loader: QueueLoader,
     @param:PlaybackCoroutineScope private val scope: CoroutineScope,
 ) : PlaybackController {
     private val current = MutableStateFlow(PlaybackState())
@@ -60,15 +60,7 @@ internal class SessionPlaybackController @Inject constructor(
         scope.launch { followPositionWhileWatched() }
     }
 
-    override fun play(mediaUris: List<String>, startIndex: Int) {
-        if (mediaUris.isEmpty()) return
-        val items = mediaUris.map { uri -> MediaItem.Builder().setMediaId(uri).setUri(uri).build() }
-        send { player ->
-            player.setMediaItems(items, startIndex.coerceIn(items.indices), 0)
-            player.prepare()
-            player.play()
-        }
-    }
+    override fun play(mediaUris: List<String>, startIndex: Int) = loader.replace(mediaUris, startIndex)
 
     override fun resume() = send { player ->
         // After an error or a stop the player is idle and must be prepared again before it can play.
