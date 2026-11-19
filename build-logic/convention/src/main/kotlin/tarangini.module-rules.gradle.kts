@@ -1,7 +1,7 @@
 /*
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * Copyright (C) Silicon Circuits and the Tarangini contributors. This file
+ * is part of Tarangini, free software under the GNU General Public License,
+ * version 3 only. See the LICENSE file. SPDX-License-Identifier: GPL-3.0-only
  */
 
 import org.gradle.api.artifacts.ProjectDependency
@@ -38,7 +38,7 @@ tasks.register<PremiumBoundaryTask>("checkPremiumBoundary") {
 
 tasks.register<LicenceHeaderTask>("checkLicenceHeaders") {
     group = "verification"
-    description = "Fails when a Kotlin, Java, Gradle or XML source file does not start with the MPL-2.0 header."
+    description = "Fails when a Kotlin, Java, Gradle or XML source file does not start with the GPL-3.0 header."
     baseDir.set(layout.projectDirectory)
     sources.from(fileTree(layout.projectDirectory) { include("*.kts") })
     sources.from(
