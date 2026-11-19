@@ -48,6 +48,14 @@ class PlayerFactoryTest {
     }
 
     @Test
+    fun `the audio of the player goes through the renderer that sets the silence for the decoder`() {
+        val renderers = List(player.rendererCount) { player.getRenderer(it) }
+
+        assertEquals(1, renderers.count { it is GaplessAudioRenderer })
+        assertEquals(1, renderers.count { it.trackType == C.TRACK_TYPE_AUDIO })
+    }
+
+    @Test
     fun `the player says it plays music as media`() {
         assertEquals(C.USAGE_MEDIA, player.audioAttributes.usage)
         assertEquals(C.AUDIO_CONTENT_TYPE_MUSIC, player.audioAttributes.contentType)
