@@ -1,6 +1,6 @@
 # ADR 0008: Asking for the audio permission
 
-- Status: accepted. Decided by dev in auto mode, 19 Nov 2026.
+- Status: accepted, 19 Nov 2026.
 - Rules: H9, U2, U8, U9.
 
 ## Context

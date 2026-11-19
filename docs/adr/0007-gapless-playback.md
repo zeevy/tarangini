@@ -1,6 +1,6 @@
 # ADR 0007: Gapless playback of MP3 and AAC
 
-- Status: accepted. Decided by dev in auto mode, 19 Nov 2026.
+- Status: accepted, 19 Nov 2026.
 - Rules: H1, K14, T6.
 
 ## Context

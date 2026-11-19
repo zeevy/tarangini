@@ -1,15 +1,15 @@
 /*
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * Copyright (C) Silicon Circuits and the Tarangini contributors. This file
+ * is part of Tarangini, free software under the GNU General Public License,
+ * version 3 only. See the LICENSE file. SPDX-License-Identifier: GPL-3.0-only
  */
 
-/** The MPL-2.0 notice that every source file of the public repo starts with. */
+/** The GPL-3.0 notice that every source file of the public repo starts with. */
 object LicenceHeader {
     const val NOTICE =
-        "This Source Code Form is subject to the terms of the Mozilla Public " +
-            "License, v. 2.0. If a copy of the MPL was not distributed with this " +
-            "file, You can obtain one at https://mozilla.org/MPL/2.0/."
+        "Copyright (C) Silicon Circuits and the Tarangini contributors. This file " +
+            "is part of Tarangini, free software under the GNU General Public License, " +
+            "version 3 only. See the LICENSE file. SPDX-License-Identifier: GPL-3.0-only"
 
     /** The notice must end within this many lines, so it stays at the top of the file. */
     private const val TOP_LINES = 12

@@ -1,7 +1,7 @@
 /*
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * Copyright (C) Silicon Circuits and the Tarangini contributors. This file
+ * is part of Tarangini, free software under the GNU General Public License,
+ * version 3 only. See the LICENSE file. SPDX-License-Identifier: GPL-3.0-only
  */
 
 import org.junit.Assert.assertFalse
@@ -10,9 +10,9 @@ import org.junit.Test
 
 class LicenceHeaderTest {
     private val notice = listOf(
-        "This Source Code Form is subject to the terms of the Mozilla Public",
-        "License, v. 2.0. If a copy of the MPL was not distributed with this",
-        "file, You can obtain one at https://mozilla.org/MPL/2.0/.",
+        "Copyright (C) Silicon Circuits and the Tarangini contributors. This file",
+        "is part of Tarangini, free software under the GNU General Public License,",
+        "version 3 only. See the LICENSE file. SPDX-License-Identifier: GPL-3.0-only",
     )
 
     @Test
@@ -49,7 +49,8 @@ class LicenceHeaderTest {
 
     @Test
     fun `a header with a changed licence version fails`() {
-        val source = "/*\n" + notice.joinToString("\n") { " * $it" }.replace("v. 2.0", "v. 1.1") + "\n */\n"
+        val source =
+            "/*\n" + notice.joinToString("\n") { " * $it" }.replace("version 3 only", "version 2 only") + "\n */\n"
 
         assertFalse(LicenceHeader.isPresent(source))
     }

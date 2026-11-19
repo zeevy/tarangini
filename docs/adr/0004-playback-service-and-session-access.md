@@ -1,6 +1,6 @@
 # ADR 0004: The playback service and who may use its session
 
-- Status: accepted. Decided by dev in auto mode, 19 Nov 2026.
+- Status: accepted, 19 Nov 2026.
 - Rules: H1, P1, P2, S2, S7.
 
 ## Context

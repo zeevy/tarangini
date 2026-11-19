@@ -1,7 +1,7 @@
 /*
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * Copyright (C) Silicon Circuits and the Tarangini contributors. This file
+ * is part of Tarangini, free software under the GNU General Public License,
+ * version 3 only. See the LICENSE file. SPDX-License-Identifier: GPL-3.0-only
  */
 
 plugins {
@@ -39,6 +39,7 @@ android {
 }
 
 // Fails the build when a library that ships in the app has a licence outside this list.
+// The app is GPL-3.0, but the Play build adds closed code, so no GPL library of others is allowed.
 licensee {
     allow("Apache-2.0")
     allow("MIT")
