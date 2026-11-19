@@ -22,6 +22,17 @@ Run on a real phone with a SIM. The emulator can do checks 1, 8 and 9 only, with
 | 10 | Play a song, switch the screen off and leave the phone for 10 minutes | The song and the songs after it keep playing with no gap or stop |
 | 11 | Pause a song. Plug headphones in, or connect a Bluetooth device | Nothing starts to play by itself |
 
+## Playback: queue
+
+Run on a real phone with a large library. Until the library is built, the list is made by a trial build that repeats the same files.
+
+| No. | Steps | Expected |
+|---|---|---|
+| 12 | Play all songs of a library of 20,000 songs, starting in the middle. Measure the time from the tap to the first sound | Under 1 second |
+| 13 | While a song plays, move items in the queue, also the current one, and remove items that are not the current one | The song goes on with no gap |
+| 14 | With 20,000 songs in the queue, use the app for a minute: scroll, open the queue, press next | No freeze of more than a moment. The phone does not get warm |
+| 15 | With 20,000 songs in the queue, connect a Bluetooth headset or a car stereo | Play, pause, next and previous work. The title shows |
+
 ## Results
 
 Write each run here: the date, the phone and Android version, the app version, the checks that failed, and who ran it.
@@ -29,3 +40,4 @@ Write each run here: the date, the phone and Android version, the app version, t
 | Date | Phone | App version | Failed checks | Run by |
 |---|---|---|---|---|
 | 19 Nov 2026 | Emulator, Android 17 (API 37) | Build of the audio focus change | None of the ones tried. Tried: 1 with a simulated call (kept playing while it rang, paused on answer, went on after the call). Not tried in this build: 8 and 9 (play, pause, next and previous worked as media keys sent by the system in the builds before it, with the screen on). Not possible on the emulator: 2 to 7, 10, 11 | dev |
+| 19 Nov 2026 | Emulator, Android 17 (API 37) | Trial build of the queue change, 20,000 items made from 2 files | None of the ones tried. Tried: 12 (first sound after 670 ms, whole list loaded after 4.6 s; on a slow emulator, not a phone), 13 (a move, a remove, shuffle and repeat while playing: the song went on). Not tried: 14, 15 | dev |
