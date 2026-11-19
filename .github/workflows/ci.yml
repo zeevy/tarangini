@@ -5,7 +5,7 @@ on:
   push:
     branches: [main]
 
-# The job runs on the owner's Mac, so the token can only read the repo.
+# The job only builds and tests, so the token can only read the repo.
 permissions:
   contents: read
 
@@ -17,12 +17,9 @@ concurrency:
 jobs:
   checks:
     name: Build, tests and checks
-    # Every job uses the self hosted runner. No GitHub hosted runner (RULES.md B7).
-    runs-on: [self-hosted, macOS, ARM64]
-    timeout-minutes: 30
-    # The runner is a personal machine: no Gradle daemon is left running on it.
-    env:
-      GRADLE_OPTS: -Dorg.gradle.daemon=false
+    # The repo is public, so the job runs on a GitHub hosted Linux runner.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -36,16 +33,13 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
+          # A hosted runner starts empty. This keeps the downloaded libraries between runs.
+          cache: gradle
 
       - name: Find the Android SDK
-        # A self hosted runner sets no ANDROID_HOME, unlike GitHub's own machines.
+        # GitHub's runners come with the SDK and set ANDROID_HOME. The build downloads a missing platform.
         run: |
-          SDK="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
-          test -d "$SDK" || { echo "::error::No Android SDK at $SDK on this runner"; exit 1; }
-          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
-
-      # No setup-gradle action: the runner keeps its own Gradle home, so there is nothing to cache.
-      # On main that action packs the whole Gradle home of the machine into a GitHub cache.
+          test -d "${ANDROID_HOME:-}" || { echo "::error::No Android SDK on this runner (ANDROID_HOME is not set)"; exit 1; }
 
       # Unit tests, build logic tests, the premium boundary and the licence headers.
       # The module dependency rules run in every Gradle call.
