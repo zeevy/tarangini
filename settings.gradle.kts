@@ -15,7 +15,12 @@ pluginManagement {
             }
         }
         mavenCentral()
-        gradlePluginPortal()
+        // The ktlint plugin is published only on the plugin portal.
+        gradlePluginPortal {
+            content {
+                includeGroupByRegex("org\\.jlleitschuh\\.gradle.*")
+            }
+        }
     }
 }
 
