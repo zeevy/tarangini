@@ -6,6 +6,8 @@
 
 plugins {
     id("com.android.application")
+    id("swaratarang.quality")
+    id("app.cash.licensee")
 }
 
 android {
@@ -23,10 +25,25 @@ android {
         targetCompatibility = SwaraTarangBuild.javaVersion
     }
 
+    lint {
+        lintConfig = rootProject.file("config/lint.xml")
+    }
+
     // Compose preview tasks need the compiled resources in unit tests.
     testOptions {
         unitTests.isIncludeAndroidResources = true
     }
+}
+
+// Fails the build when a library that ships in the app has a licence outside this list.
+licensee {
+    allow("Apache-2.0")
+    allow("MIT")
+    allow("BSD-2-Clause")
+    allow("BSD-3-Clause")
+    allow("MPL-2.0")
+    // The list is the policy, so a licence that no library uses yet is not a problem.
+    unusedAction(app.cash.licensee.UnusedAction.IGNORE)
 }
 
 // Public code must not name the premium package, whichever build is made.

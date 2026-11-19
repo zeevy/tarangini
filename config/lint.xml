@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+-->
+<!-- Android lint checks that RULES.md relies on are errors, so they fail the build. -->
+<lint>
+    <!-- U6: user facing text is a string resource. This sees XML only; text in Compose code is left to review -->
+    <issue id="HardcodedText" severity="error" />
+    <!-- U10: accessibility -->
+    <issue id="ContentDescription" severity="error" />
+    <!-- S2: nothing is exported unless it must be -->
+    <issue id="ExportedService" severity="error" />
+    <issue id="ExportedReceiver" severity="error" />
+    <issue id="ExportedContentProvider" severity="error" />
+    <!-- S3: immutable PendingIntent, no implicit intent for internal work -->
+    <issue id="UnspecifiedImmutableFlag" severity="error" />
+    <issue id="UnsafeImplicitIntentLaunch" severity="error" />
+    <!-- S5: no all files access -->
+    <issue id="ScopedStorage" severity="error" />
+</lint>

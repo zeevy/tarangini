@@ -6,6 +6,7 @@
 
 plugins {
     id("com.android.library")
+    id("swaratarang.quality")
 }
 
 android {
@@ -19,6 +20,10 @@ android {
     compileOptions {
         sourceCompatibility = SwaraTarangBuild.javaVersion
         targetCompatibility = SwaraTarangBuild.javaVersion
+    }
+
+    lint {
+        lintConfig = rootProject.file("config/lint.xml")
     }
 
     // Compose preview tasks need the compiled resources in unit tests.

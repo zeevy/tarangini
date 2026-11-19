@@ -41,23 +41,25 @@ object ModuleRules {
      * may also use the shared fakes. Only the play flavour of the app may use
      * the premium module, so closed code cannot reach the core build.
      */
-    fun violation(from: String, to: String, configuration: String): String? {
-        if (from == to) return null
-        if (to == TESTING) {
-            return if (isTestConfiguration(configuration)) null else "$from uses $TESTING outside its tests"
+    fun violation(from: String, to: String, configuration: String): String? = when {
+        from == to -> null
+
+        to == TESTING -> "$from uses $TESTING outside its tests".unless(isTestConfiguration(configuration))
+
+        to == PREMIUM ->
+            "$from uses $PREMIUM outside the play build of $APP"
+                .unless(from == APP && isPlayConfiguration(configuration))
+
+        from == APP -> null
+
+        from.startsWith(FEATURE_PREFIX) -> "$from must not depend on $to".unless(to in featureMayUse)
+
+        else -> when (val allowed = coreMayUse[from]) {
+            null -> "$from is not a module in docs/ARCHITECTURE.md"
+            else -> "$from must not depend on $to".unless(to in allowed)
         }
-        if (to == PREMIUM) {
-            return if (from == APP && isPlayConfiguration(configuration)) {
-                null
-            } else {
-                "$from uses $PREMIUM outside the play build of $APP"
-            }
-        }
-        val allowed = when {
-            from == APP -> return null
-            from.startsWith(FEATURE_PREFIX) -> featureMayUse
-            else -> coreMayUse[from] ?: return "$from is not a module in docs/ARCHITECTURE.md"
-        }
-        return if (to in allowed) null else "$from must not depend on $to"
     }
+
+    /** This problem line, or null when the dependency is [allowed]. */
+    private fun String.unless(allowed: Boolean): String? = if (allowed) null else this
 }

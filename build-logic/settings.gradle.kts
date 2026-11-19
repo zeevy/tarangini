@@ -8,6 +8,12 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // The ktlint plugin is published only on the plugin portal.
+        gradlePluginPortal {
+            content {
+                includeGroup("org.jlleitschuh.gradle")
+            }
+        }
     }
     versionCatalogs {
         create("libs") {
