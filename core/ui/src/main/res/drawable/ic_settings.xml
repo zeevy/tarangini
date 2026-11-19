@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M9,12a3,3 0,1 0,6 0a3,3 0,1 0,-6 0"
+        android:strokeColor="#FF000000"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:strokeWidth="2" />
+    <path
+        android:pathData="M19.05,10.11 L21.90,10.61 L21.90,13.39 L19.05,13.89 L18.32,15.65 L19.99,18.02 L18.02,19.99 L15.65,18.32 L13.89,19.05 L13.39,21.90 L10.61,21.90 L10.11,19.05 L8.35,18.32 L5.98,19.99 L4.01,18.02 L5.68,15.65 L4.95,13.89 L2.10,13.39 L2.10,10.61 L4.95,10.11 L5.68,8.35 L4.01,5.98 L5.98,4.01 L8.35,5.68 L10.11,4.95 L10.61,2.10 L13.39,2.10 L13.89,4.95 L15.65,5.68 L18.02,4.01 L19.99,5.98 L18.32,8.35z"
+        android:strokeColor="#FF000000"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:strokeWidth="2" />
+</vector>

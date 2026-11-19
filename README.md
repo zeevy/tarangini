@@ -3,7 +3,7 @@
 An Android media player for local MP3 and AAC files and for online radio, on the phone and in Android Auto. The free app has no ads, no account and no tracking.
 
 > [!NOTE]
-> The app is being built. Today it shows an empty screen. The list below is the plan, and [docs/FEATURES.md](docs/FEATURES.md) says what is done.
+> The app is being built. Today it has the four tabs and the Settings screen, each with a placeholder. The list below is the plan, and [docs/FEATURES.md](docs/FEATURES.md) says what is done.
 
 ## Features
 
@@ -32,7 +32,8 @@ The APK is written to `app/build/outputs/apk/core/debug/`. No key, secret or `go
 
 | Task | Command |
 |---|---|
-| All unit tests and the build checks | `./gradlew test` |
+| All unit tests, the screenshot tests and the build checks | `./gradlew test` |
+| Save new pictures for the screenshot tests | `./gradlew test -PrecordScreenshots` |
 | Android lint | `./gradlew lint` |
 | Style and code rules | `./gradlew ktlintCheck detekt` |
 | Licences of the shipped libraries | `./gradlew :app:licenseeCoreRelease` |
