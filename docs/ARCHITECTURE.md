@@ -1,4 +1,4 @@
-# Swara Tarang: architecture and folder structure
+# Tarangini: architecture and folder structure
 
 This page says how the code is laid out and why. [CONTRIBUTING.md](../CONTRIBUTING.md#rules-with-ids) turns it into rules with ids. [FEATURES.md](FEATURES.md) says what the app does.
 
@@ -65,14 +65,14 @@ Rules that follow from the table:
 
 ## 4. Folder structure
 
-`<base>` is the base package. It is set in issue #1 (proposed: `com.siliconcircuits.swaratarang`).
+`<base>` is the base package: `com.siliconcircuits.tarangini`.
 
 ```text
-swara-tarang/
+tarangini/
 ├── app/
 │   └── src/
 │       ├── main/kotlin/<base>/
-│       │   ├── SwaraTarangApp.kt          Application, Hilt entry
+│       │   ├── TaranginiApp.kt          Application, Hilt entry
 │       │   ├── MainActivity.kt
 │       │   ├── navigation/                nav graph, bottom bar, routes
 │       │   └── di/                        app wide Hilt modules
@@ -135,7 +135,7 @@ swara-tarang/
 │   │       ├── component/                 SongRow, StationTile, EmptyState, ErrorState
 │   │       └── util/
 │   └── testing/
-├── build-logic/convention/                swaratarang.android.feature, .android.library, .kotlin.library ...
+├── build-logic/convention/                tarangini.android.feature, .android.library, .kotlin.library ...
 ├── gradle/libs.versions.toml              the only place with version numbers
 ├── config/                                detekt, lint and licence check settings
 ├── docs/
