@@ -6,6 +6,17 @@
 
 plugins {
     `kotlin-dsl`
+    alias(libs.plugins.ktlint)
+    alias(libs.plugins.detekt)
+}
+
+ktlint {
+    version.set(libs.versions.ktlint)
+}
+
+detekt {
+    config.setFrom(file("../../config/detekt.yml"))
+    buildUponDefaultConfig = true
 }
 
 dependencies {
@@ -14,5 +25,10 @@ dependencies {
     implementation(libs.compose.compiler.gradle.plugin)
     implementation(libs.ksp.gradle.plugin)
     implementation(libs.hilt.gradle.plugin)
+    implementation(libs.ktlint.gradle.plugin)
+    implementation(libs.detekt.gradle.plugin)
+    implementation(libs.licensee.gradle.plugin)
     testImplementation(libs.junit)
+    // config/detekt.yml names these rules, so detekt needs them here too.
+    detektPlugins(libs.compose.rules.detekt)
 }

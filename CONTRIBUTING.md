@@ -17,8 +17,10 @@ You need JDK 21 and the Android SDK with platform 37. The steps are in the [READ
 | Build the debug app | `./gradlew assembleCoreDebug` |
 | All unit tests and the build checks | `./gradlew test` |
 | Android lint | `./gradlew lint` |
+| Style and code rules | `./gradlew ktlintCheck detekt` |
+| Licences of the shipped libraries | `./gradlew :app:licenseeCoreRelease` |
 
-Run all three before you open a pull request. They must pass.
+Run all of them before you open a pull request. CI runs the same commands and they must pass. `./gradlew ktlintFormat` fixes most style problems by itself.
 
 ## Rules for a change
 
@@ -41,7 +43,7 @@ The Play Store build mixes this code with closed code, so the licence of everyth
 | GPL, AGPL (any version) | No |
 | Anything else, or no licence | Ask in the issue first |
 
-- A new library needs a clear reason in the pull request, and an exact version in `gradle/libs.versions.toml`.
+- A new library needs a clear reason in the pull request, and an exact version in `gradle/libs.versions.toml`. The build fails when a library that ships in the app has a licence outside the "Yes" row.
 - Do not copy code from a web page, a book or another project unless its licence is in the "Yes" row. Say where it came from in the pull request.
 - Do not add a station list, station logos, album art, fonts or sounds that you do not have the right to share.
 

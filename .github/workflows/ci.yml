@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# The job runs on the owner's Mac, so the token can only read the repo.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Build, tests and checks
+    # Every job uses the self hosted runner. No GitHub hosted runner (RULES.md B7).
+    runs-on: [self-hosted, macOS, ARM64]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # A changed gradle-wrapper.jar must not run before it is checked.
+      - name: Check the Gradle wrapper
+        uses: gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Find the Android SDK
+        # A self hosted runner sets no ANDROID_HOME, unlike GitHub's own machines.
+        run: |
+          SDK="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
+          test -d "$SDK" || { echo "::error::No Android SDK at $SDK on this runner"; exit 1; }
+          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+
+      # Unit tests, build logic tests, the premium boundary and the licence headers.
+      # The module dependency rules run in every Gradle call.
+      - name: Unit tests and build checks
+        run: ./gradlew test --stacktrace
+
+      - name: Style (ktlint)
+        run: ./gradlew ktlintCheck
+
+      - name: Code rules (detekt)
+        run: ./gradlew detekt
+
+      - name: Android lint
+        run: ./gradlew lint
+
+      - name: Licences of shipped libraries
+        run: ./gradlew :app:licenseeCoreRelease
+
+      - name: Build the core debug app
+        run: ./gradlew assembleCoreDebug --stacktrace
+
+      - name: Upload the reports of a failed run
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: reports
+          path: |
+            **/build/reports/
+            !**/build/reports/problems/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      # The runner is a personal machine: leave no Gradle daemon running on it.
+      - name: Stop Gradle
+        if: always()
+        run: ./gradlew --stop
