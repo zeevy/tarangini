@@ -29,13 +29,13 @@ Run all of them before you open a pull request. CI runs the same commands and th
 - One issue, one branch, one pull request. Do only what the issue asks.
 - Put the code in the right module. A feature module depends only on `core:domain` and `core:ui`. The build fails when a module breaks this.
 - Every change comes with tests in the style of the tests next to it. A bug fix starts with a test that fails.
-- Every new Kotlin, Java, Gradle and XML source file starts with the MPL-2.0 header. Copy it from any other file. `./gradlew checkLicenceHeaders` fails without it.
+- Every new Kotlin, Java, Gradle and XML source file starts with the GPL-3.0 header. Copy it from any other file. `./gradlew checkLicenceHeaders` fails without it.
 - Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:` and so on).
 - No ads, no analytics, no account and no secrets in the code.
 
 ## Third party code and libraries
 
-The Play Store build mixes this code with closed code, so the licence of everything we add matters.
+This repo is under GPL-3.0. The Play Store build mixes this code with closed code, which the project owner may do only with code the owner can relicense. So the licence of everything we add matters, and GPL code from other projects cannot come in.
 
 | Licence | Allowed |
 |---|---|
@@ -67,7 +67,7 @@ What this check does not cover: the Android system jars that Robolectric downloa
 
 ## Contributor agreement
 
-Before we merge your first pull request, you agree to the contributor agreement in [docs/CLA.md](docs/CLA.md). In short: you keep the copyright in your work, and you give the project the right to use it and to license it under other terms later.
+Before we merge your first pull request, you agree to the contributor agreement in [docs/CLA.md](docs/CLA.md). In short: you keep the copyright in your work, and you give the project owner the right to use it and to license it under other terms, closed ones included. The owner needs this to ship the Play Store build, which adds the closed premium module to this code.
 
 To agree, tick the agreement line in the pull request form. One time is enough for all your later pull requests.
 

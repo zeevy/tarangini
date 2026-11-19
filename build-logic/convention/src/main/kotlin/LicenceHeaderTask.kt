@@ -1,7 +1,7 @@
 /*
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * Copyright (C) Silicon Circuits and the Tarangini contributors. This file
+ * is part of Tarangini, free software under the GNU General Public License,
+ * version 3 only. See the LICENSE file. SPDX-License-Identifier: GPL-3.0-only
  */
 
 import org.gradle.api.DefaultTask
@@ -14,7 +14,7 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 
-/** Fails when a source file of the public repo does not start with the MPL-2.0 notice. */
+/** Fails when a source file of the public repo does not start with the GPL-3.0 notice. */
 abstract class LicenceHeaderTask : DefaultTask() {
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
@@ -31,7 +31,7 @@ abstract class LicenceHeaderTask : DefaultTask() {
             .map { file -> file.relativeTo(base).path }
         if (problems.isNotEmpty()) {
             throw GradleException(
-                "These files do not start with the MPL-2.0 header (RULES.md K14). " +
+                "These files do not start with the GPL-3.0 header (RULES.md K14). " +
                     "Copy it from any other source file:\n" + problems.joinToString("\n") { "  - $it" },
             )
         }

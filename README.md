@@ -66,6 +66,6 @@ Bug reports, ideas and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIB
 
 ## Licence
 
-The code in this repo is under the [Mozilla Public License 2.0](LICENSE). Every source file starts with the MPL-2.0 header.
+The code in this repo is under the [GNU General Public License, version 3 only](LICENSE). Every source file starts with the GPL-3.0 header. Contributors agree to the [contributor agreement](docs/CLA.md), which lets the project owner also publish the code under other terms.
 
 The licence covers the code only. The name "Tarangini" and the app logo are not licensed with it. If you publish a changed version of the app, give it another name and another logo, so that users can tell it apart from this one.
