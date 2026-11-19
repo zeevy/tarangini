@@ -8,8 +8,10 @@ package com.siliconcircuits.swaratarang.navigation
 
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.siliconcircuits.swaratarang.core.ui.theme.SwaraTarangTheme
+import com.siliconcircuits.swaratarang.testing.NoPlaybackServiceRule
 import java.io.File
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -21,6 +23,9 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(qualifiers = PHONE)
 class SwaraTarangShellScreenshotTest {
+    @get:Rule
+    val noPlaybackService = NoPlaybackServiceRule()
+
     @Test
     fun `brand theme, light`() = capture("shell_brand_light", darkTheme = false, dynamicColor = false)
 
