@@ -23,6 +23,7 @@ Use JDK 21 (`JAVA_HOME`) and the Android SDK (`sdk.dir` in `local.properties`, o
 | Only the build logic tests (module rules) | `./gradlew :build-logic:convention:test` |
 | Android lint | `./gradlew lint` |
 | Premium boundary check alone | `./gradlew checkPremiumBoundary` |
+| Licence header check alone | `./gradlew checkLicenceHeaders` |
 | Install on a connected device | `./gradlew :app:installCoreDebug` |
 
 - Application id and base package: `com.siliconcircuits.swaratarang`. A module's namespace follows its path (`:feature:library` is `com.siliconcircuits.swaratarang.feature.library`).
@@ -32,6 +33,8 @@ Use JDK 21 (`JAVA_HOME`) and the Android SDK (`sdk.dir` in `local.properties`, o
 - The app has the flavours `core` and `play`. `play` exists only when the private module is checked out in `premium/` (ignored by git). Flavour code lives in `app/src/core` (and `app/src/play` when it is needed); the `core` bindings of the premium interfaces are in `app/src/core/kotlin/.../di`.
 - `checkPremiumBoundary` runs before every app build and with `./gradlew test`. It fails when a Kotlin, Java, XML or ProGuard file under `app`, `core` or `feature` names the package `com.siliconcircuits.swaratarang.premium`. The module rules also refuse a dependency on `:premium` from anything but the `play` configurations of `app`.
 - Hilt is added to a module with the `swaratarang.android.hilt` plugin.
+- `checkLicenceHeaders` runs with `./gradlew test`. It fails when a Kotlin, Java, Gradle (`.kts`) or XML source file under `app`, `core`, `feature`, `build-logic` or the root does not start with the MPL-2.0 header. Copy the header from any other file.
+- `LICENSE` is the MPL-2.0 text. `CONTRIBUTING.md`, `SECURITY.md` and the draft contributor agreement in `docs/CLA.md` are for outside contributors; the lawyer's review of them is check C9.
 - ktlint, detekt, the licence check and CI come with issue #4.
 
 ## Decisions already made

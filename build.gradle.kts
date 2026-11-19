@@ -12,4 +12,5 @@ plugins {
 tasks.register("test") {
     dependsOn(gradle.includedBuild("build-logic").task(":convention:test"))
     dependsOn("checkPremiumBoundary")
+    dependsOn("checkLicenceHeaders")
 }

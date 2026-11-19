@@ -35,3 +35,18 @@ tasks.register<PremiumBoundaryTask>("checkPremiumBoundary") {
         },
     )
 }
+
+tasks.register<LicenceHeaderTask>("checkLicenceHeaders") {
+    group = "verification"
+    description = "Fails when a Kotlin, Java, Gradle or XML source file does not start with the MPL-2.0 header."
+    baseDir.set(layout.projectDirectory)
+    sources.from(fileTree(layout.projectDirectory) { include("*.kts") })
+    sources.from(
+        listOf("app", "core", "feature", "build-logic").map { folder ->
+            fileTree(folder) {
+                include("**/*.kts", "**/src/**/*.kt", "**/src/**/*.java", "**/src/**/*.xml")
+                exclude("build/**", "*/build/**", ".gradle/**", "*/.gradle/**")
+            }
+        },
+    )
+}
