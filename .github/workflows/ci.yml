@@ -9,9 +9,10 @@ on:
 permissions:
   contents: read
 
+# A new push to a pull request replaces its older run. Every commit on main keeps its result.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   checks:
@@ -19,6 +20,9 @@ jobs:
     # Every job uses the self hosted runner. No GitHub hosted runner (RULES.md B7).
     runs-on: [self-hosted, macOS, ARM64]
     timeout-minutes: 30
+    # The runner is a personal machine: no Gradle daemon is left running on it.
+    env:
+      GRADLE_OPTS: -Dorg.gradle.daemon=false
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -72,8 +76,3 @@ jobs:
             !**/build/reports/problems/
           retention-days: 7
           if-no-files-found: ignore
-
-      # The runner is a personal machine: leave no Gradle daemon running on it.
-      - name: Stop Gradle
-        if: always()
-        run: ./gradlew --stop

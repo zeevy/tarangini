@@ -13,7 +13,7 @@ complexity:
   LongMethod:
     threshold: 60
     ignoreAnnotated: ['Composable']
-  # K11: a file over about 400 lines is split.
+  # K11: a class over about 400 lines is split. A long file with many small classes is left to review.
   LargeClass:
     threshold: 400
   LongParameterList:
@@ -48,7 +48,7 @@ potential-bugs:
   LateinitUsage:
     active: true
     excludes: ['**/src/test*/**', '**/src/androidTest*/**']
-    ignoreOnClassesPattern: '.*(Activity|Service|Application|Receiver|Provider)'
+    ignoreOnClassesPattern: '.*(Activity|Service|Application|Receiver|ContentProvider)'
 
 style:
   # K2, K3, K13: these are replaced by an injected scope, an injected dispatcher and the app logger.
@@ -70,7 +70,7 @@ style:
         reason: 'Inject the dispatcher (K3). Only the module that provides the dispatchers may suppress this, with a reason.'
       - value: 'android.util.Log'
         reason: 'Use the app logger (K13).'
-  # K1: a suppress needs a reason, so a wildcard import cannot hide what a file uses.
+  # A wildcard import would hide a forbidden import from the rule above.
   WildcardImport:
     active: true
   MaxLineLength:

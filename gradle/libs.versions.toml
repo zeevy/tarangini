@@ -11,9 +11,11 @@ androidxActivity = "1.13.0"
 androidxComposeBom = "2026.09.00"
 junit = "4.13.2"
 ktlintGradle = "14.2.0"
+# The ktlint engine. Dependabot does not see a bare version, so this one is updated by hand.
 ktlint = "1.8.0"
 detekt = "1.23.8"
-composeRules = "0.6.8"
+# 0.4.28 is the last release built for detekt 1.23. Later ones need detekt 2.
+composeRules = "0.4.28"
 licensee = "1.14.1"
 
 [libraries]

@@ -29,10 +29,13 @@ updates:
       code-checks:
         patterns:
           - "org.jlleitschuh.gradle*"
-          - "com.pinterest.ktlint*"
           - "io.gitlab.arturbosch.detekt*"
           - "io.nlopez.compose.rules*"
           - "app.cash.licensee*"
+    ignore:
+      # Releases from 0.5 on are built for detekt 2, which is still alpha.
+      - dependency-name: "io.nlopez.compose.rules:detekt"
+        versions: [">= 0.5.0"]
     labels:
       - dependencies
       - "area:build"

@@ -6,7 +6,7 @@
 -->
 <!-- Android lint checks that RULES.md relies on are errors, so they fail the build. -->
 <lint>
-    <!-- U6: user facing text is a string resource -->
+    <!-- U6: user facing text is a string resource. This sees XML only; text in Compose code is left to review -->
     <issue id="HardcodedText" severity="error" />
     <!-- U10: accessibility -->
     <issue id="ContentDescription" severity="error" />

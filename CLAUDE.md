@@ -39,7 +39,7 @@ Use JDK 21 (`JAVA_HOME`) and the Android SDK (`sdk.dir` in `local.properties`, o
 - Hilt is added to a module with the `swaratarang.android.hilt` plugin.
 - `checkLicenceHeaders` runs with `./gradlew test`. It fails when a Kotlin, Java, Gradle (`.kts`) or XML source file under `app`, `core`, `feature`, `build-logic` or the root does not start with the MPL-2.0 header. Copy the header from any other file.
 - `LICENSE` is the MPL-2.0 text. `CONTRIBUTING.md`, `SECURITY.md` and the draft contributor agreement in `docs/CLA.md` are for outside contributors; the lawyer's review of them is check C9.
-- ktlint and detekt come with the `swaratarang.quality` plugin, which every module convention plugin applies. Their settings are `.editorconfig` and `config/detekt.yml`; Android lint settings are `config/lint.xml`. Each block in those files names the rule in `RULES.md` that it checks.
+- ktlint and detekt come with the `swaratarang.quality` plugin, which every module convention plugin applies. Their settings are `.editorconfig` and `config/detekt.yml`; Android lint settings are `config/lint.xml`. The blocks in `config/detekt.yml` and `config/lint.xml` name the rule in `RULES.md` that they check.
 - The licence check (licensee) allows Apache-2.0, MIT, BSD and MPL-2.0 for the libraries that ship in the app. Test only libraries are not checked. The list is in `swaratarang.android.application.gradle.kts`.
 - CI is `.github/workflows/ci.yml`. It runs on the self hosted Mac runner (`runs-on: [self-hosted, macOS, ARM64]`), never on a GitHub hosted runner. Actions are pinned by commit hash and Dependabot keeps them and the Gradle libraries current.
 
