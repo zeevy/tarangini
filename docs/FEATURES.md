@@ -21,10 +21,10 @@ Swara Tarang is one simple, fast player for the music on your phone and the radi
 ### What sets it apart
 
 - Local files and online radio in one app, with one shared queue and one set of favourites.
-- Indian regional radio is a first-class part of the app: search and browse by Indian language, not just by country.
+- Indian regional radio is a first-class part of the app: search and browse by Indian language, not just by country. This comes with the station directory in v1.1.
 - Android Auto from day one, not added later.
 - No account, no ads and no usage tracking in the free app. Only crash reports are sent. Works offline for local files.
-- We publish no station list of our own. Users add stations themselves or pick them from the public Radio Browser directory.
+- We publish no station list of our own. Users add stations themselves. From v1.1 they can also pick them from the public Radio Browser directory.
 - The core player is open source under MPL-2.0, so anyone can read the code and check what the app does.
 - Data saver that is careful with mobile data during long drives.
 
@@ -64,20 +64,22 @@ Priority tags: **[MVP]** first release, **[v1.1]** next release, **[Future]** la
 
 | Feature | Description | Priority | Phone | Auto |
 |---|---|---|---|---|
-| Station directory | Radio Browser API (community run, free) | [MVP] | Yes | Yes |
-| Search by country, language, genre (tag) | Filters on top of the directory | [MVP] | Yes | Browse lists and voice |
-| Indian regional stations | A ready "India" section: Radio Browser filtered to India and grouped by language and state. We curate nothing ourselves | [MVP] | Yes | Yes |
+| Station directory | Radio Browser API (community run, free) | [v1.1] | Yes | Yes |
+| Search by country, language, genre (tag) | Filters on top of the directory | [v1.1] | Yes | Browse lists and voice |
+| Indian regional stations | A ready "India" section: Radio Browser filtered to India and grouped by language and state. We curate nothing ourselves | [v1.1] | Yes | Yes |
 | Station icons | No station logos. Each station shows a letter tile in a colour made from its name. A logo appears only if that station gives permission | [MVP] | Yes | Yes |
 | Favourite stations | Save, reorder | [MVP] | Yes | Yes |
 | Add your own station | Enter a name and a stream URL: HTTP or HTTPS, Icecast, Shoutcast, HLS (`.m3u8`), playlist files (`.pls`, `.m3u`) | [MVP] | Yes | Plays saved ones |
 | Import stations | Load many stations at once from an `.m3u`, `.pls` or OPML file | [v1.1] | Yes | - |
 | Now playing metadata | Show song title from ICY metadata when the station sends it | [MVP] | Yes | Yes |
 | Buffering and reconnect | Clear "buffering" state, retry with backoff on network loss, switch to another stream URL of the same station if one fails | [MVP] | Yes | Yes |
-| Station health | Hide stations that Radio Browser marks as broken (`lastcheckok = 0`) | [MVP] | Yes | Yes |
+| Station health | Hide stations that Radio Browser marks as broken (`lastcheckok = 0`) | [v1.1] | Yes | Yes |
 | Recently played stations | Last 20 stations | [MVP] | Yes | Yes |
 | Record a stream | Save a stream to a file | [Future] | Yes | No |
 
 #### Radio Browser: what its pages allow and ask for
+
+Radio Browser is not part of the MVP (decision D24). In the MVP, radio plays only the stations a user adds by name and URL. This table is kept for v1.1.
 
 Checked on 19 Nov 2026 (check C1) at the [API home](https://api.radio-browser.info/), the [API documentation](https://docs.radio-browser.info/) and the [server source](https://gitlab.com/radiobrowser/radiobrowser-api-rust). We ship no station list of our own (decision D3).
 
@@ -360,8 +362,8 @@ The app is open core (decision D5). The core player is open source. The premium 
 
 | Milestone | Goal | Main items |
 |---|---|---|
-| MVP | A stable player for local files and radio that passes the Android Auto review | Library scan and browse, core playback, queue, resume, radio directory with India section, favourites, custom URLs, ICY metadata, reconnect, Auto browse tree, voice play, search, notification, Material 3 UI with mini player |
-| v1.1 | Daily use comfort and data care | Genres, sleep timer, speed, equalizer and bass boost, widget, most played, playlist import and export, station import, stream quality, data saver, cache size, Auto custom actions, playback resumption |
+| MVP | A stable player for local files and radio that passes the Android Auto review | Library scan and browse, core playback, queue, resume, radio stations the user adds by name and URL, favourites, ICY metadata, reconnect, Auto browse tree, voice play, search, notification, Material 3 UI with mini player |
+| v1.1 | Daily use comfort and data care | The radio directory (Radio Browser) with the India section, genres, sleep timer, speed, equalizer and bass boost, widget, most played, playlist import and export, station import, stream quality, data saver, cache size, Auto custom actions, playback resumption |
 | Future | Grow reach and test a paid tier | Android Automotive OS build, Wear OS app, tablet layout, crossfade, normalization, lyrics, stream recording, backup and sync, premium subscription with Play Billing |
 
 ## 8. Decisions made
@@ -391,6 +393,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D21 | Database version 1: Room 3 on the phone's own SQLite, a song whose file is gone is marked and not removed, play counts and not a play log. Decided by dev in auto mode; see [DATABASE.md](DATABASE.md) and [ADR 0003](adr/0003-database.md) | 19 Nov 2026 | A rescan or a memory card that is taken out never costs favourites, playlists or play counts |
 | D22 | Android Auto limits checked at the source (check C3). No paging in the car, artwork only as local URIs, no auto play on connect, tab limit read from the root hints. Tree depth and "browsable or playable, never both" stay as our own choices | 19 Nov 2026 | Section 4 has the limits and their source pages; the Auto issues were updated |
 | D23 | Radio Browser checked at the source (check C1): it may be used in paid software and asks for no credit. We credit it anyway, send click reports only for directory stations, use HTTPS only and never ask for the whole list. Decided by dev in auto mode | 19 Nov 2026 | Section 2.3 has the rules; the privacy text must name Radio Browser and the click report |
+| D24 | Radio Browser stays out of the MVP (owner). Radio in the MVP plays only stations the user adds by name and URL. The station directory, its search and the India section move to v1.1 | 19 Nov 2026 | Issues #25 and #26 moved to v1.1. In the MVP the core app makes one kind of outside call: the stream the user picked |
 
 ## 9. Checks before building
 
