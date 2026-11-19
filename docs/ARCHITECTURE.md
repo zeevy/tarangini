@@ -1,6 +1,6 @@
 # Swara Tarang: architecture and folder structure
 
-This page says how the code is laid out and why. [RULES.md](../RULES.md) turns it into rules with ids. [FEATURES.md](FEATURES.md) says what the app does.
+This page says how the code is laid out and why. [CONTRIBUTING.md](../CONTRIBUTING.md#rules-with-ids) turns it into rules with ids. [FEATURES.md](FEATURES.md) says what the app does.
 
 Status: agreed for the start of the build, 19 Nov 2026. Version numbers are not on this page. They live only in `gradle/libs.versions.toml`.
 
@@ -61,7 +61,7 @@ Rules that follow from the table:
 - A feature module never depends on another feature module. Features meet only in the navigation graph in `app`.
 - A feature module never depends on `core:data` or `core:playback`. It gets its data through use cases and controls playback through `PlaybackController`, both from `core:domain`.
 - `core:data` and `core:playback` never depend on each other. The playback service reads the library through the same domain repository interfaces as the UI.
-- A build check fails when a module breaks this table (rule A2 in `RULES.md`).
+- A build check fails when a module breaks this table (rule A2 in `CONTRIBUTING.md`).
 
 ## 4. Folder structure
 
@@ -143,8 +143,7 @@ swara-tarang/
 │   ├── ARCHITECTURE.md
 │   └── adr/                               one file per design decision made during the build
 ├── .github/workflows/
-├── RULES.md
-├── CLAUDE.md
+├── CONTRIBUTING.md
 ├── README.md
 └── LICENSE
 ```

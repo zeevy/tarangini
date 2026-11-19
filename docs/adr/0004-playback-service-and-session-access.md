@@ -27,4 +27,4 @@ One service plays everything. Its media session must be reachable by the system 
 - A tap on the notification or the lock screen card opens the app through an immutable pending intent.
 - A headset or Bluetooth button works while the service is alive. A button pressed after the service has stopped does nothing: starting playback again from a button needs the saved queue, which is not built yet.
 - The wake mode follows the current item (`WakeModeSwitch`): local for a file, network for an `http` or `https` stream.
-- `RULES.md` P8 asks for a run on the Desktop Head Unit before a change to the player or session is merged. The app cannot show there before the Auto setup is built, so this change was checked on the phone emulator, and the head unit run of the service is part of the Auto setup.
+- Rule P8 asks for a run on the Desktop Head Unit before a change to the player or session is merged. The app cannot show there before the Auto setup is built, so this change was checked on the phone emulator, and the head unit run of the service is part of the Auto setup.

@@ -2,7 +2,7 @@
 
 This page says what the app stores on the phone, in which tables, and why. The code is in `core/data/src/main/kotlin/.../core/data/local`. The exported schema of every version is in `core/data/schemas/`.
 
-Status: version 1, 19 Nov 2026. Rule ids such as D1 are from [RULES.md](../RULES.md).
+Status: version 1, 19 Nov 2026. Rule ids such as D1 are from [CONTRIBUTING.md](../CONTRIBUTING.md#rules-with-ids).
 
 ## 1. Context
 

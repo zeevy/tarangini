@@ -17,7 +17,7 @@ gradle.projectsEvaluated {
     }.distinct()
     if (problems.isNotEmpty()) {
         throw GradleException(
-            "Module dependency rules are broken (RULES.md A2):\n" + problems.joinToString("\n") { "  - $it" },
+            "Module dependency rules are broken (CONTRIBUTING.md, A2):\n" + problems.joinToString("\n") { "  - $it" },
         )
     }
 }

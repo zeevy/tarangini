@@ -1,6 +1,6 @@
 # Tarangini: product and feature plan
 
-Tarangini (Sanskrit: "river", word for word "the one that has waves") is an Android media player for local MP3 and AAC files and for online radio. It works on the phone and in Android Auto. This document says what the app does. [ARCHITECTURE.md](ARCHITECTURE.md) says how the code is laid out, and [RULES.md](../RULES.md) holds the rules for the code.
+Tarangini (Sanskrit: "river", word for word "the one that has waves") is an Android media player for local MP3 and AAC files and for online radio. It works on the phone and in Android Auto. This document says what the app does. [ARCHITECTURE.md](ARCHITECTURE.md) says how the code is laid out, and [CONTRIBUTING.md](../CONTRIBUTING.md#rules-with-ids) holds the rules for the code.
 
 Status: build started, 19 Nov 2026. 18 decisions made (section 8). The work is tracked in GitHub issues under milestones M1 to M10. Section 9 lists the checks still open; each has an issue or is noted there.
 
@@ -387,7 +387,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D15 | Backup and sync stored in the user's own cloud storage | 19 Nov 2026 | No server of ours and no user data held by us |
 | D16 | Subscription checked on the phone through Play Billing | 19 Nov 2026 | No server. Purchase signature verified, R8 obfuscation |
 | D17 | Google Drive left out of cloud storage at first | 19 Nov 2026 | Launch with WebDAV, S3 and OneDrive. Revisit after reading Google's rules |
-| D18 | Module structure: `app`, `feature:*` and `core:*` modules, with features depending only on `core:domain` and `core:ui`. Options and reasons are in section 10 of [ARCHITECTURE.md](ARCHITECTURE.md) | 19 Nov 2026 | The compiler enforces the layers. `RULES.md` holds the rules for people and agents |
+| D18 | Module structure: `app`, `feature:*` and `core:*` modules, with features depending only on `core:domain` and `core:ui`. Options and reasons are in section 10 of [ARCHITECTURE.md](ARCHITECTURE.md) | 19 Nov 2026 | The compiler enforces the layers. `CONTRIBUTING.md` holds the rules with ids |
 | D19 | Navigation Compose with typed routes. Four tabs as in the approved design (Home, Library, Radio, Favourites). Back from the first screen of a tab leaves the app. See [ADR 0001](adr/0001-navigation-and-tabs.md) | 19 Nov 2026 | Each feature offers its routes in its `navigation/` package. Settings opens from the Home top bar |
 | D20 | Screenshot tests with Robolectric and Roborazzi, run by `./gradlew test`. See [ADR 0002](adr/0002-screenshot-tests.md) | 19 Nov 2026 | Saved pictures are committed in `src/test/screenshots/` |
 | D21 | Database version 1: Room 3 on the phone's own SQLite, a song whose file is gone is marked and not removed, play counts and not a play log. See [DATABASE.md](DATABASE.md) and [ADR 0003](adr/0003-database.md) | 19 Nov 2026 | A rescan or a memory card that is taken out never costs favourites, playlists or play counts |

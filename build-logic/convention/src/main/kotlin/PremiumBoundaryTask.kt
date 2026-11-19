@@ -31,7 +31,7 @@ abstract class PremiumBoundaryTask : DefaultTask() {
         }
         if (problems.isNotEmpty()) {
             throw GradleException(
-                "Public code names the premium package ${PremiumBoundary.PREMIUM_PACKAGE} (RULES.md H2):\n" +
+                "Public code names the premium package ${PremiumBoundary.PREMIUM_PACKAGE} (CONTRIBUTING.md, H2):\n" +
                     problems.joinToString("\n") { "  - $it" },
             )
         }

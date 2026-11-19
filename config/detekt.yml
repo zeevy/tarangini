@@ -1,5 +1,5 @@
 # detekt settings for Tarangini. Rules not named here keep detekt's defaults.
-# Each block names the rule in RULES.md that it checks.
+# Each block names the rule in CONTRIBUTING.md that it checks.
 
 build:
   maxIssues: 0

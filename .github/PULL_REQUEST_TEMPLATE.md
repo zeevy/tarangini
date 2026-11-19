@@ -16,7 +16,7 @@ Closes #
 
 - [ ] `./gradlew test ktlintCheck detekt lint :app:licenseeCoreRelease assembleCoreDebug` passes
 - [ ] New and changed behaviour has tests
-- [ ] The change follows [RULES.md](../blob/main/RULES.md) and the code is in the right module
+- [ ] The change follows the rules in [CONTRIBUTING.md](../blob/main/CONTRIBUTING.md#rules-with-ids) and the code is in the right module
 - [ ] New source files start with the GPL-3.0 header
 - [ ] No new library, permission or module without its issue
 - [ ] Docs match the code

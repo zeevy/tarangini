@@ -58,7 +58,7 @@ The app is open core. This repo holds the whole free app. The paid features live
 - [docs/FEATURES.md](docs/FEATURES.md): what the app does and the decisions made.
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): layers, modules and the folder structure.
 - [docs/DATABASE.md](docs/DATABASE.md): the tables on the phone, with the ER diagram.
-- [RULES.md](RULES.md): the rules for every change, for people and for coding agents.
+- [CONTRIBUTING.md](CONTRIBUTING.md#rules-with-ids): the rules for every change, each with an id.
 
 ## Contributing
 

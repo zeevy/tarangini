@@ -31,7 +31,7 @@ abstract class LicenceHeaderTask : DefaultTask() {
             .map { file -> file.relativeTo(base).path }
         if (problems.isNotEmpty()) {
             throw GradleException(
-                "These files do not start with the GPL-3.0 header (RULES.md K14). " +
+                "These files do not start with the GPL-3.0 header (CONTRIBUTING.md, K14). " +
                     "Copy it from any other source file:\n" + problems.joinToString("\n") { "  - $it" },
             )
         }
