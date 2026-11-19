@@ -168,12 +168,16 @@ internal abstract class LibraryDao {
      * Saves a song and its search row, and returns the song id. The song is
      * found by its source and source id; the id in [song] is not used. A song
      * that was marked as gone is back in the lists after this.
+     *
+     * Pass [isNew] only for a song that is known not to be stored: it has no
+     * search row to remove, and a first scan saves a quarter of its
+     * statements this way.
      */
     @Transaction
-    open suspend fun saveSong(song: SongEntity): Long {
+    open suspend fun saveSong(song: SongEntity, isNew: Boolean = false): Long {
         insertOrUpdateSong(song)
         val id = songId(song.source, song.sourceId)
-        deleteSearchRows(listOf(id))
+        if (!isNew) deleteSearchRows(listOf(id))
         insertSearchRow(id)
         return id
     }
@@ -241,8 +245,36 @@ internal abstract class LibraryDao {
     protected abstract suspend fun deleteSearchRows(songIds: List<Long>)
 
     /** Every stored song of [source], for a scan to compare with the files it finds. */
-    @Query("SELECT id, source_id, date_modified, missing_since FROM songs WHERE source = :source")
+    @Query(
+        """
+        SELECT s.id, s.source_id, s.date_modified, s.missing_since, s.file_name, s.size_bytes, f.path AS folder_path
+        FROM songs s
+        LEFT JOIN folders f ON f.id = s.folder_id
+        WHERE s.source = :source
+        """,
+    )
     abstract suspend fun songKeys(source: SongSource): List<SongKey>
+
+    /**
+     * Gives a stored song the new id of its file. The phone can give a file
+     * a new id; the song keeps its row, so its favourite and playlist places
+     * stay.
+     */
+    @Query("UPDATE songs SET source_id = :sourceId WHERE id = :songId")
+    abstract suspend fun setSourceId(songId: Long, sourceId: String)
+
+    /**
+     * Runs [block] in one transaction. A scan saves a batch of songs with
+     * their artists, albums and folders this way: one transaction for the
+     * batch is many times faster than one for each row, and a batch is saved
+     * as a whole or not at all.
+     *
+     * The block holds the one write connection of the database until it
+     * ends. Call only functions of this DAO in it: no file, network or
+     * settings read, and no wait.
+     */
+    @Transaction
+    open suspend fun <T> inOneTransaction(block: suspend () -> T): T = block()
 
     /** Marks songs whose file is gone. A song that is already marked keeps its first time. */
     @Transaction
@@ -252,6 +284,19 @@ internal abstract class LibraryDao {
 
     @Query("UPDATE songs SET missing_since = :at WHERE id IN (:songIds) AND missing_since IS NULL")
     protected abstract suspend fun markMissingRows(songIds: List<Long>, at: Long)
+
+    /**
+     * Sets the time since when these songs are gone, also for songs that are
+     * marked already. A scan uses it for a song that was only hidden by the
+     * settings and whose file is now really gone: its keep time starts now.
+     */
+    @Transaction
+    open suspend fun setMissingSince(songIds: List<Long>, at: Long) {
+        songIds.chunked(MAX_IDS).forEach { setMissingSinceRows(it, at) }
+    }
+
+    @Query("UPDATE songs SET missing_since = :at WHERE id IN (:songIds)")
+    protected abstract suspend fun setMissingSinceRows(songIds: List<Long>, at: Long)
 
     /**
      * Removes songs for good, with their search rows. Their favourite,
@@ -403,5 +448,12 @@ internal abstract class LibraryDao {
     companion object {
         /** The most ids in one statement. SQLite limits the number of values a statement can take. */
         const val MAX_IDS = 500
+
+        /**
+         * The `missing_since` value of a song that the settings of the user
+         * leave out while its file is still on the phone. It is later than
+         * any real time, so such a song is never old enough to be removed.
+         */
+        const val HIDDEN_SINCE = Long.MAX_VALUE
     }
 }

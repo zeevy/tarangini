@@ -9,7 +9,7 @@ Status: version 1, 19 Nov 2026. Rule ids such as D1 are from [CONTRIBUTING.md](.
 - One SQLite database on the phone, through Room. One user, one writer process. No server and no sync.
 - It holds the library index (a copy of what MediaStore knows), saved stations, favourites, playlists, play counts and the saved play queue.
 - Settings are not in the database. They are in a DataStore file (section 9).
-- Out of scope for version 1: the MediaStore scanner, the repositories, a cache of Radio Browser results, genres, lyrics.
+- Out of scope for version 1: the repositories, a cache of Radio Browser results, genres, lyrics.
 
 ## 2. Numbers and recovery
 
@@ -42,6 +42,7 @@ Every list and search has an index behind it (D2). Tables under 1,000 rows need 
 | Albums by title, albums of one artist, with song counts | Hot | `albums(title_key)`, `albums(artist_id, title_key)`; the count uses `songs(album_id, ...)` |
 | Artists by name, with song counts | Hot | `artists(name_key)`; the count uses `songs(artist_id, ...)` |
 | Search title, artist and album as the user types | Hot | The full text table `song_search` |
+| A scan reads the key, change time, size, file name and folder of every stored song, once | Per scan | Unique `songs(source, source_id)`; the folder comes by primary key |
 | A scan finds a stored song by its file | Per file | Unique `songs(source, source_id)` |
 | A scan saves an artist, an album, a folder | Per file | Unique `artists(name_key)`, `albums(artist_id, title_key)`, `folders(path)` |
 | Favourite songs, newest first; is this song a favourite | Hot | `favourite_songs(added_at)`; primary key |
@@ -52,6 +53,8 @@ Every list and search has an index behind it (D2). Tables under 1,000 rows need 
 | A station by its directory id | Warm | Unique `stations(radio_browser_uuid)` |
 | Stream URLs of a station | Hot | Unique `station_streams(station_id, position)` |
 | Saved queue in order, the resume state | On start | Primary keys |
+| A scan marks songs as gone, gives a song a new file id, removes songs | Per changed file | Primary key |
+| A scan removes albums, artists and folders that no song uses | Once, only in a scan that changed or removed a song | The indexes on `songs(album_id, ...)`, `songs(artist_id, ...)`, `songs(folder_id, ...)`, `albums(artist_id, ...)` and `folders(parent_id, ...)` |
 | Rows that go when a song or a station goes | Rare | An index on every foreign key column |
 
 Long lists take a limit and an offset. Measured on a development PC with 100,000 songs: no list needs a sort step, the first page of every song list takes under 1 ms, and a page at offset 90,000 takes 55 to 90 ms because the skipped rows are still walked. A phone is several times slower, so the far end of a very large library can take a few tenths of a second. The library screens issue measures this on a phone and moves a list to "rows after this key" if it is too slow.
@@ -120,8 +123,9 @@ Choices worth a line:
 |---|---|
 | A file is stored once | Unique `songs(source, source_id)`; saving is "insert, or change the row with this key" in one statement |
 | A scan never loses a favourite, a playlist place, a play count or a queue place | Saving never replaces a row, so nothing that points to it is removed. Test: "saving a song again keeps ..." (D3) |
+| A song that the settings leave out while its file is on the phone | The scan sets `missing_since` to the mark `HIDDEN_SINCE` (the largest number). Lists leave the song out and it is never removed for good |
 | A song whose file is gone | The scan sets `missing_since`; it does not remove the row. Lists leave the song out. Its favourite, playlist, play count and queue rows stay, so a memory card that is taken out and put back loses nothing. When the file is back, saving it empties `missing_since` |
-| A song row that is removed for good | Its favourite, playlist, play count and queue rows go with it (foreign keys), and its search row goes in the same transaction. The scanner issue decides when a missing song is removed for good |
+| A song row that is removed for good | Its favourite, playlist, play count and queue rows go with it (foreign keys), and its search row goes in the same transaction. The scanner removes a song for good when its file has been gone for 30 days |
 | A playlist song whose file is gone | It keeps its place and is left out of the playlist until the file is back |
 | The search table matches the songs | Only the library DAO writes it, in the transaction that saves or removes the song. An artist name and an album title never change in place: a changed tag points the song to another row, and saving the song writes its search row again |
 | Every song has an artist and an album that exist | Foreign keys, not empty |
@@ -137,7 +141,7 @@ Choices worth a line:
 ## 7. Transactions
 
 - Room starts one transaction for each DAO function marked as a transaction: saving a song with its search row, saving a station with its streams, a new order for a playlist or for favourite stations, replacing the queue.
-- The scanner will wrap one batch of files in one transaction (D3).
+- The scanner wraps one batch of 500 files in one transaction (D3), through `inOneTransaction` of the library DAO. The block of such a transaction calls only functions of that DAO.
 - Nothing calls the network or the file system inside a transaction.
 - There is one writer, the app process. Room runs writes one at a time.
 
@@ -159,7 +163,7 @@ One DataStore (Preferences) file named `settings`, one instance for the whole ap
 | `theme_mode` | text | `system`, `light` or `dark` |
 | `dynamic_color` | true or false | Wallpaper colours, or the brand colours |
 | `min_track_seconds` | whole number | Shorter files are left out of the library |
-| `included_folders` | set of text | When not empty, only these folders are scanned |
+| `included_folders` | set of text | When not empty, only these folders are scanned. A folder is a whole path such as `external_primary/Music` and covers the folders inside it |
 | `excluded_folders` | set of text | Folders a scan skips |
 
 A key is added by the issue that first uses it.
@@ -175,6 +179,5 @@ A key is added by the issue that first uses it.
 
 | # | Question | What would settle it |
 |---|---|---|
-| 1 | Favourites, playlists and play counts are lost when the app is removed or the phone is changed, because the app data is left out of backup | The owner decides: keep it so (most private), or let Android back up only these tables, or wait for the planned "backup to a file" feature |
-| 2 | How long a missing song is kept before it is removed for good | Decided in the scanner issue (#16), with a number |
-| 3 | MediaStore may give a file a new id after a memory card is put back or the phone is scanned again. The song would then come back as a new row, and the old row with its favourite and playlist places would stay marked as gone | The scanner issue (#16) checks this on a phone. If ids change, the scanner matches a returning file to its marked row by path, size and date before it adds a new row |
+| 1 | Favourites, playlists and play counts are lost when the app is removed or the phone is changed, because the app data is left out of backup | A choice between three: keep it so (most private), let Android back up only these tables, or wait for the planned "backup to a file" feature |
+| 2 | Whether MediaStore really gives a file a new id after a memory card is put back | A run on a phone with a memory card (manual test 20). The scanner is ready for it: a new file in the folder, with the name and the size, of exactly one song that is gone is taken as that song (ADR 0010) |

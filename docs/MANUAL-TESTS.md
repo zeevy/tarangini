@@ -43,6 +43,15 @@ Copy the folder `core/playback/src/test/resources/gapless` to the Music folder o
 | 17 | Play `with-edit-list-skip-1.m4a`, `-2` and `-3` in order | The same |
 | 18 | Play a real album that runs on without a pause (a live recording or a mix), as MP3 from LAME and as M4A | No gap between the tracks |
 
+## Library: scan
+
+Run on a mid range phone. A scan is started from the library screen.
+
+| No. | Steps | Expected |
+|---|---|---|
+| 19 | Put 10,000 songs on the phone. Install the app new, allow access and time the first scan. Scroll a list while it runs | The scan ends in under 10 seconds and the list scrolls with no stutter |
+| 20 | Mark a song on a memory card as a favourite. Take the card out, scan, put the card back and scan | The song leaves the lists and comes back, and it is still a favourite. It is in the lists once |
+
 ## Results
 
 Write each run here: the date, the phone and Android version, the app version, the checks that failed, and who ran it.
