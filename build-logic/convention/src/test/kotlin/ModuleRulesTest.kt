@@ -12,7 +12,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ModuleRulesTest {
-    private fun main(from: String, to: String) = ModuleRules.violation(from, to, isTestConfiguration = false)
+    private fun main(from: String, to: String) = ModuleRules.violation(from, to, "implementation")
 
     @Test
     fun `a feature may use the domain and the shared ui`() {
@@ -57,14 +57,14 @@ class ModuleRulesTest {
 
     @Test
     fun `the shared fakes are for tests only`() {
-        assertNull(ModuleRules.violation(":feature:home", ":core:testing", isTestConfiguration = true))
+        assertNull(ModuleRules.violation(":feature:home", ":core:testing", "testImplementation"))
         assertNotNull(main(":feature:home", ":core:testing"))
         assertNotNull(main(":app", ":core:testing"))
     }
 
     @Test
     fun `a test configuration still follows the table`() {
-        assertNotNull(ModuleRules.violation(":feature:home", ":core:data", isTestConfiguration = true))
+        assertNotNull(ModuleRules.violation(":feature:home", ":core:data", "testImplementation"))
     }
 
     @Test
@@ -90,5 +90,17 @@ class ModuleRulesTest {
         assertFalse(ModuleRules.isTestConfiguration("implementation"))
         assertFalse(ModuleRules.isTestConfiguration("latestImplementation"))
         assertFalse(ModuleRules.isTestConfiguration("debugImplementation"))
+    }
+
+    @Test
+    fun `only the play build of the app may use the premium module`() {
+        assertNull(ModuleRules.violation(":app", ":premium", "playImplementation"))
+        assertNull(ModuleRules.violation(":app", ":premium", "testPlayImplementation"))
+        assertEquals(
+            ":app uses :premium outside the play build of :app",
+            ModuleRules.violation(":app", ":premium", "implementation"),
+        )
+        assertNotNull(ModuleRules.violation(":app", ":premium", "coreImplementation"))
+        assertNotNull(ModuleRules.violation(":feature:player", ":premium", "playImplementation"))
     }
 }
