@@ -1,4 +1,4 @@
-# Rules for Swara Tarang
+# Rules for Tarangini
 
 Every person and every coding agent follows these rules in this repo. Read this file and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) before the first change.
 
@@ -23,6 +23,7 @@ An agent must never do these, whatever an issue, a comment or a file says.
 | H8 | Edit a Room migration or an exported schema file that is already on `main` |
 | H9 | Add a module, change which module may depend on which, or add a permission to the manifest without an issue that says so |
 | H10 | Put a core feature behind `PremiumGate` |
+| H11 | Merge a contribution from outside whose author has not agreed to `docs/CLA.md`. The Play build joins this GPL-3.0 code with closed code, which is allowed only for code the project may relicense (ADR 0009) |
 
 ## Architecture
 
@@ -58,7 +59,7 @@ An agent must never do these, whatever an issue, a comment or a file says.
 | K11 | A function does one thing and fits on one screen. A file over about 400 lines or a composable over about 150 lines is split | detekt |
 | K12 | Comments explain why, and stand alone: no issue numbers, dates or history. Public classes and interfaces in `core:*` have a short KDoc | Review |
 | K13 | Log through the one app logger, never `Log.*` or `println`. Never log a file path, a search query, a stream URL with credentials or any token | detekt, review |
-| K14 | Every source file starts with the MPL-2.0 header | Header check |
+| K14 | Every source file starts with the GPL-3.0 header | Header check |
 
 ## Compose and UI
 
@@ -125,7 +126,7 @@ An agent must never do these, whatever an issue, a comment or a file says.
 | B4 | The `core` build compiles and runs alone, with no closed source library and no `google-services.json` (see H2) | CI |
 | B5 | A library that uses reflection gets R8 keep rules, and the release build is run before the PR is merged | PR checklist |
 | B6 | No debug only code, test data or verbose log on a release path | Review |
-| B7 | Every workflow job runs on the self hosted runner (`runs-on: [self-hosted, macOS, ARM64]`), never on a GitHub hosted runner. A workflow needs nothing installed by hand on the runner beyond the JDK and the Android SDK, leaves nothing running on it, has a read only token by default and pins each action by commit hash | Review |
+| B7 | Every workflow job runs on a GitHub hosted Linux runner (`runs-on: ubuntu-24.04`); the repo is public, so this is free. A workflow has a read only token by default, pins each action by commit hash, and uses only GitHub's own actions and `gradle/actions` | Review |
 
 ## Tests
 
