@@ -16,18 +16,22 @@ Use JDK 21 (`JAVA_HOME`) and the Android SDK (`sdk.dir` in `local.properties`, o
 
 | Task | Command |
 |---|---|
-| Build the debug app | `./gradlew assembleDebug` |
+| Build the debug app (the `core` build) | `./gradlew assembleCoreDebug` |
 | All unit tests, with the build logic tests | `./gradlew test` |
-| Unit tests of one module | `./gradlew :core:domain:test` (plain Kotlin module) or `./gradlew :feature:library:testDebugUnitTest` (Android module) |
+| Unit tests of one module | `./gradlew :core:domain:test` (plain Kotlin module) or `./gradlew :feature:library:testDebugUnitTest` (Android module) or `./gradlew :app:testCoreDebugUnitTest` (the app) |
 | One test class or one test | `./gradlew :core:domain:test --tests "*.SomeTest"` or `--tests "*.SomeTest.some test name"` |
 | Only the build logic tests (module rules) | `./gradlew :build-logic:convention:test` |
-| Android lint | `./gradlew lintDebug` |
-| Install on a connected device | `./gradlew :app:installDebug` |
+| Android lint | `./gradlew lint` |
+| Premium boundary check alone | `./gradlew checkPremiumBoundary` |
+| Install on a connected device | `./gradlew :app:installCoreDebug` |
 
 - Application id and base package: `com.siliconcircuits.swaratarang`. A module's namespace follows its path (`:feature:library` is `com.siliconcircuits.swaratarang.feature.library`).
 - Every version number lives in `gradle/libs.versions.toml`. A library is added there by the change that first uses it.
-- Module build files apply a convention plugin and list their own dependencies, nothing more. The plugins are in `build-logic/convention` (`swaratarang.android.feature`, `swaratarang.android.library`, `swaratarang.android.application`, `swaratarang.android.compose`, `swaratarang.kotlin.library`).
+- Module build files apply a convention plugin and list their own dependencies, nothing more. The plugins are in `build-logic/convention` (`swaratarang.android.feature`, `swaratarang.android.library`, `swaratarang.android.application`, `swaratarang.android.compose`, `swaratarang.android.hilt`, `swaratarang.kotlin.library`).
 - Every build fails when a module breaks the dependency table. The rule is in `build-logic/convention/src/main/kotlin/ModuleRules.kt`; change it only together with the table in `docs/ARCHITECTURE.md`.
+- The app has the flavours `core` and `play`. `play` exists only when the private module is checked out in `premium/` (ignored by git). Flavour code lives in `app/src/core` (and `app/src/play` when it is needed); the `core` bindings of the premium interfaces are in `app/src/core/kotlin/.../di`.
+- `checkPremiumBoundary` runs before every app build and with `./gradlew test`. It fails when a Kotlin, Java, XML or ProGuard file under `app`, `core` or `feature` names the package `com.siliconcircuits.swaratarang.premium`. The module rules also refuse a dependency on `:premium` from anything but the `play` configurations of `app`.
+- Hilt is added to a module with the `swaratarang.android.hilt` plugin.
 - ktlint, detekt, the licence check and CI come with issue #4.
 
 ## Decisions already made

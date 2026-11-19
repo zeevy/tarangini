@@ -23,5 +23,8 @@ captures/
 keystore.properties
 google-services.json
 
+# The private premium module, when it is checked out for the play build
+/premium/
+
 # Tools
 graphify-out/

@@ -41,3 +41,8 @@ include(":core:data")
 include(":core:playback")
 include(":core:ui")
 include(":core:testing")
+
+// The private premium module is not part of this repo. The play build exists only when it is checked out here.
+if (file("premium/build.gradle.kts").exists()) {
+    include(":premium")
+}
