@@ -10,11 +10,11 @@ An Android media player for local MP3 and AAC files and for online radio, on the
 | Area | What the app will do |
 |---|---|
 | Local music | Plays `.mp3`, `.aac` and `.m4a` files from the phone. Browse by song, album, artist and folder. Gapless playback |
-| Online radio | Add a station by name and URL, or search the public Radio Browser list. Icecast, Shoutcast and HLS streams. The song title is shown when the station sends it |
+| Online radio | Add a station by name and URL. Search in the public Radio Browser list is planned for the version after the first release. Icecast, Shoutcast and HLS streams. The song title is shown when the station sends it |
 | Android Auto | The same library, radio, favourites and recent lists in the car, with voice play |
 | Personal lists | Favourites, playlists, history and a sleep timer |
 | Sound | A 5 band equalizer |
-| Privacy | No ads, no account and no usage analytics. The app built from this repo makes only two kinds of outside call: to Radio Browser and to the stream you picked. The Play Store build also sends crash reports |
+| Privacy | No ads, no account and no usage analytics. The app built from this repo makes only one kind of outside call: to the stream you picked. When the Radio Browser search is added, calls to Radio Browser join it. The Play Store build also sends crash reports |
 
 ## Build
 
