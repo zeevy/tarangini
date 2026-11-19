@@ -11,8 +11,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.siliconcircuits.swaratarang.core.ui.component.PlaceholderScreen
 import com.siliconcircuits.swaratarang.feature.library.R
+import com.siliconcircuits.swaratarang.feature.library.permission.AudioPermissionGate
 
 @Composable
 internal fun LibraryScreen(modifier: Modifier = Modifier) {
-    PlaceholderScreen(title = stringResource(R.string.library_title), modifier = modifier)
+    AudioPermissionGate(modifier = modifier) {
+        PlaceholderScreen(title = stringResource(R.string.library_title))
+    }
 }
