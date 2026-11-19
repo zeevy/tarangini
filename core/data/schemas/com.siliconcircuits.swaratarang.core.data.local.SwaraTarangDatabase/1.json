@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "09f24d573cbc2cad0ec411f0edc830e0",
+    "identityHash": "d176c72c3398ad8d6db05d48c35fcbf6",
     "entities": [
       {
         "tableName": "albums",
@@ -46,14 +46,14 @@
         },
         "indices": [
           {
-            "name": "index_albums_artist_id_title",
+            "name": "index_albums_artist_id_title_key",
             "unique": true,
             "columnNames": [
               "artist_id",
-              "title"
+              "title_key"
             ],
             "orders": [],
-            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_albums_artist_id_title` ON `${TABLE_NAME}` (`artist_id`, `title`)"
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_albums_artist_id_title_key` ON `${TABLE_NAME}` (`artist_id`, `title_key`)"
           },
           {
             "name": "index_albums_title_key",
@@ -110,22 +110,13 @@
         },
         "indices": [
           {
-            "name": "index_artists_name",
-            "unique": true,
-            "columnNames": [
-              "name"
-            ],
-            "orders": [],
-            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_artists_name` ON `${TABLE_NAME}` (`name`)"
-          },
-          {
             "name": "index_artists_name_key",
-            "unique": false,
+            "unique": true,
             "columnNames": [
               "name_key"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_artists_name_key` ON `${TABLE_NAME}` (`name_key`)"
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_artists_name_key` ON `${TABLE_NAME}` (`name_key`)"
           }
         ]
       },
@@ -1067,7 +1058,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '09f24d573cbc2cad0ec411f0edc830e0')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd176c72c3398ad8d6db05d48c35fcbf6')"
     ]
   }
 }

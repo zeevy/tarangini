@@ -56,8 +56,8 @@ jobs:
       # changed with no new database version, or a schema file was not committed.
       - name: Committed database schemas match the entities
         run: |
-          git add --intent-to-add -- core/data/schemas
-          git diff --exit-code -- core/data/schemas
+          CHANGED=$(git status --porcelain -- core/data/schemas)
+          test -z "$CHANGED" || { echo "::error::Schema files differ from git: $CHANGED"; exit 1; }
 
       - name: Style (ktlint)
         run: ./gradlew ktlintCheck

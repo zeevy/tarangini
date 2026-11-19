@@ -29,14 +29,17 @@ class TextHelpersTest {
     }
 
     @Test
-    fun `quotes and stars in a search are dropped`() {
+    fun `quotes, stars and other signs in a search are dropped`() {
         assertEquals("\"a*\" \"b*\" \"OR*\" \"c*\"", FtsQuery.prefix("a\"b* OR \"\"c"))
+        assertEquals("\"rock*\" \"roll*\"", FtsQuery.prefix("rock - (roll): & ^"))
+        assertEquals("\"ఎందరో*\"", FtsQuery.prefix("-ఎందరో-"))
     }
 
     @Test
     fun `a search with no word gives no query`() {
         assertNull(FtsQuery.prefix(""))
         assertNull(FtsQuery.prefix(" \"* \" "))
+        assertNull(FtsQuery.prefix(" - & / "))
     }
 
     @Test

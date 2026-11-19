@@ -30,10 +30,14 @@ internal abstract class QueueDao {
     @Insert
     protected abstract suspend fun insertItems(items: List<QueueItemEntity>)
 
-    /** The saved queue in order, without songs whose file is gone. */
+    /**
+     * The saved queue in order, without songs whose file is gone. The resume
+     * state names a song by [QueueSongRow.position], not by its place in
+     * this list.
+     */
     @Query(
         """
-            SELECT s.*, ar.name AS artist_name, al.title AS album_title
+            SELECT q.position, s.*, ar.name AS artist_name, al.title AS album_title
             FROM queue_items q
             JOIN songs s ON s.id = q.song_id
             JOIN artists ar ON ar.id = s.artist_id
@@ -42,7 +46,7 @@ internal abstract class QueueDao {
             ORDER BY q.position
         """,
     )
-    abstract suspend fun queue(): List<SongRow>
+    abstract suspend fun queue(): List<QueueSongRow>
 
     @Upsert
     abstract suspend fun saveResumeState(state: ResumeStateEntity)

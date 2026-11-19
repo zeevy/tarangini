@@ -7,6 +7,7 @@
 package com.siliconcircuits.swaratarang.core.data.local
 
 import android.database.SQLException
+import com.siliconcircuits.swaratarang.core.data.local.dao.LibraryDao
 import com.siliconcircuits.swaratarang.core.data.local.entity.FavouriteSongEntity
 import com.siliconcircuits.swaratarang.core.data.local.entity.SongSource
 import kotlinx.coroutines.runBlocking
@@ -39,6 +40,41 @@ class LibraryDaoTest {
         assertEquals(album, library.saveAlbum("Hits", "hits", artist, year = 1991))
         assertEquals(folder, library.saveFolder("Music/Old", "Old", parentId = null))
         assertEquals(1991, library.albums(limit = 10, offset = 0).single().album.year)
+        assertEquals(album, library.saveAlbum("Hits", "hits", artist, year = null))
+        assertEquals(1991, library.albums(limit = 10, offset = 0).single().album.year)
+    }
+
+    @Test
+    fun `two spellings of one name are one artist and one album, with the first spelling`() = runTest {
+        database.addSong("One", artist = "ABBA", album = "Gold")
+        database.addSong("Two", artist = " Abba", album = "GOLD")
+
+        assertEquals(listOf("ABBA" to 2), library.artists(10, 0).map { it.artist.name to it.songCount })
+        assertEquals(listOf("Gold" to 2), library.albums(10, 0).map { it.album.title to it.songCount })
+    }
+
+    @Test
+    fun `songs by artist keep each artist together, and songs by album keep each album together`() = runTest {
+        database.addSong("b", artist = "Amy", album = "Same")
+        database.addSong("a", artist = "Zed", album = "Same")
+        database.addSong("c", artist = "Amy", album = "Same")
+
+        assertEquals(listOf("b", "c", "a"), library.songsByArtist(10, 0).map { it.song.title })
+        assertEquals(listOf("b", "c", "a"), library.songsByAlbum(10, 0).map { it.song.title })
+    }
+
+    @Test
+    fun `a list of ids longer than one statement takes is marked and removed in full`() = runTest {
+        val artist = library.saveArtist("A", "a")
+        val album = library.saveAlbum("B", "b", artist, year = null)
+        val ids = List(2 * LibraryDao.MAX_IDS + 1) { library.saveSong(songEntity("s$it", "$it", artist, album)) }
+
+        library.markMissing(ids, at = 1)
+        assertTrue(library.songsByTitle(10, 0).isEmpty())
+        assertEquals(ids.size, library.songKeys(SongSource.LOCAL).count { it.missingSince == 1L })
+
+        library.deleteSongs(ids)
+        assertTrue(library.songKeys(SongSource.LOCAL).isEmpty())
     }
 
     @Test
@@ -73,7 +109,7 @@ class LibraryDaoTest {
         assertEquals(listOf(id), database.favouriteDao().favouriteSongs(10, 0).map { it.song.id })
         assertEquals(listOf(id), database.playlistDao().items(playlist, 10, 0).map { it.row.song.id })
         assertEquals(listOf(id), database.historyDao().recentSongs(10).map { it.song.id })
-        assertEquals(listOf(id), database.queueDao().queue().map { it.song.id })
+        assertEquals(listOf(id), database.queueDao().queue().map { it.row.song.id })
     }
 
     @Test
@@ -177,7 +213,7 @@ class LibraryDaoTest {
         assertTrue(database.favouriteDao().favouriteSongs(10, 0).isEmpty())
         assertEquals(listOf(kept), database.playlistDao().items(playlist, 10, 0).map { it.row.song.id })
         assertTrue(database.historyDao().recentSongs(10).isEmpty())
-        assertEquals(listOf(kept), database.queueDao().queue().map { it.song.id })
+        assertEquals(listOf(kept), database.queueDao().queue().map { it.row.song.id })
         assertTrue(library.searchSongs(requireNotNull(FtsQuery.prefix("gone")), 10).isEmpty())
         assertNull(library.song(id))
     }
@@ -209,6 +245,16 @@ class LibraryDaoTest {
         assertEquals(listOf("Morning Raga"), search("delhi"))
         assertEquals(listOf("Morning Raga"), search("raga ravi"))
         assertTrue(search("zzz").isEmpty())
+    }
+
+    @Test
+    fun `search ignores signs between words`() = runTest {
+        database.addSong("Rock - Roll", artist = "AC/DC")
+
+        assertEquals(listOf("Rock - Roll"), search("rock - roll"))
+        assertEquals(listOf("Rock - Roll"), search("rock & roll"))
+        assertEquals(listOf("Rock - Roll"), search("ac/dc"))
+        assertEquals(listOf("Rock - Roll"), search("AC - DC"))
     }
 
     @Test
