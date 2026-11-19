@@ -33,6 +33,16 @@ Run on a real phone with a large library. Until the library is built, the list i
 | 14 | With 20,000 songs in the queue, use the app for a minute: scroll, open the queue, press next | No freeze of more than a moment. The phone does not get warm |
 | 15 | With 20,000 songs in the queue, connect a Bluetooth headset or a car stereo | Play, pause, next and previous work. The title shows |
 
+## Playback: gapless
+
+Copy the folder `core/playback/src/test/resources/gapless` to the Music folder of the phone. Each album is one tone cut into three tracks, so any gap is heard as a tick or a break.
+
+| No. | Steps | Expected |
+|---|---|---|
+| 16 | Play `with-delay-header-1.mp3`, `-2` and `-3` in order | One even tone for 6 seconds. No tick and no break at 2 and 4 seconds |
+| 17 | Play `with-edit-list-skip-1.m4a`, `-2` and `-3` in order | The same |
+| 18 | Play a real album that runs on without a pause (a live recording or a mix), as MP3 from LAME and as M4A | No gap between the tracks |
+
 ## Results
 
 Write each run here: the date, the phone and Android version, the app version, the checks that failed, and who ran it.
@@ -41,3 +51,4 @@ Write each run here: the date, the phone and Android version, the app version, t
 |---|---|---|---|---|
 | 19 Nov 2026 | Emulator, Android 17 (API 37) | Build of the audio focus change | None of the ones tried. Tried: 1 with a simulated call (kept playing while it rang, paused on answer, went on after the call). Not tried in this build: 8 and 9 (play, pause, next and previous worked as media keys sent by the system in the builds before it, with the screen on). Not possible on the emulator: 2 to 7, 10, 11 | dev |
 | 19 Nov 2026 | Emulator, Android 17 (API 37) | Trial build of the queue change, 20,000 items made from 2 files | None of the ones tried. Tried: 12 (first sound after 670 ms, whole list loaded after 4.6 s; on a slow emulator, not a phone), 13 (a move, a remove, shuffle and repeat while playing: the song went on). Not tried: 14, 15 | dev |
+| 19 Nov 2026 | Emulator, Android 17 (API 37) | Trial build of the gapless change that writes the sound of the player to a file | None by ear: the emulator has no sound device. Measured for 16 and 17: no silence at the track changes and the wave goes on in step. Not tried: 18 | dev |
