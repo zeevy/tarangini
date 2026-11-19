@@ -14,8 +14,7 @@ object PremiumBoundary {
     private val premiumName = Regex("""(?<![\w.])""" + Regex.escape(PREMIUM_PACKAGE) + """(?![\w])""")
 
     /** The line numbers, from 1, of the lines in [source] that name the premium package. */
-    fun violations(source: String): List<Int> =
-        source.lineSequence()
-            .mapIndexedNotNull { index, line -> if (premiumName.containsMatchIn(line)) index + 1 else null }
-            .toList()
+    fun violations(source: String): List<Int> = source.lineSequence()
+        .mapIndexedNotNull { index, line -> if (premiumName.containsMatchIn(line)) index + 1 else null }
+        .toList()
 }

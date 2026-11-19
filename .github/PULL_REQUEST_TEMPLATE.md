@@ -14,7 +14,7 @@ Closes #
 
 ## Checklist
 
-- [ ] `./gradlew test lint assembleCoreDebug` passes
+- [ ] `./gradlew test ktlintCheck detekt lint :app:licenseeCoreRelease assembleCoreDebug` passes
 - [ ] New and changed behaviour has tests
 - [ ] The change follows [RULES.md](../blob/main/RULES.md) and the code is in the right module
 - [ ] New source files start with the MPL-2.0 header
