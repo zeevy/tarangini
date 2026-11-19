@@ -74,6 +74,7 @@ jobs:
           name: reports
           path: |
             **/build/reports/
+            **/build/outputs/roborazzi/
             !**/build/reports/problems/
           retention-days: 7
           if-no-files-found: ignore
