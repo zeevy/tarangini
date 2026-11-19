@@ -4,6 +4,20 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+// Plugins of the build logic's own build file. The plugin portal serves only the groups that are published
+// nowhere else; everything they bring with them comes from Maven Central.
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal {
+            content {
+                includeGroupByRegex("org\\.gradle\\.kotlin.*")
+                includeGroupByRegex("org\\.jlleitschuh\\.gradle.*")
+            }
+        }
+    }
+}
+
 dependencyResolutionManagement {
     repositories {
         google()
