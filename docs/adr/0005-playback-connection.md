@@ -1,6 +1,6 @@
 # ADR 0005: How the screens reach the player
 
-- Status: accepted. Decided by dev in auto mode, 19 Nov 2026.
+- Status: accepted, 19 Nov 2026.
 - Rules: A3, A5, K2, K3, T3.
 
 ## Context
