@@ -74,7 +74,7 @@ Use JDK 21 (`JAVA_HOME`) and the Android SDK (`sdk.dir` in `local.properties`, o
 
 - Kotlin, Jetpack Compose, Material 3, MVVM with clean architecture layers (UI, domain, data). Hilt for DI, Room for the library index, favourites, playlists and history. DataStore for settings, MediaStore for scanning, Retrofit with OkHttp for Radio Browser, WorkManager for rescans.
 - **One playback service for everything.** A single Media3 `MediaLibraryService` owns one ExoPlayer and one `MediaLibrarySession`. The phone UI talks to it through a `MediaController`. Android Auto, Google Assistant, Bluetooth, the notification, the lock screen and Wear OS all use the same session. Never add a second player or a separate path for the car.
-- The Auto browse tree is built from the same repositories as the phone UI. The root has at most 4 tabs: Library, Radio, Favourites, Recent. Keep the tree shallow, and make each item either browsable or playable.
+- The Auto browse tree is built from the same repositories as the phone UI. The root has at most 4 tabs: Library, Radio, Favourites, Recent. Keep the tree shallow, and make each item either browsable or playable. A node returns its whole, short list: the car has no paging.
 - Voice play ("play X on Swara Tarang") arrives as a search query in the session callback (`onSetMediaItems` / `onAddMediaItems` with `requestMetadata.searchQuery`) plus the `MEDIA_PLAY_FROM_SEARCH` intent filter.
 - Radio streams cover Icecast, Shoutcast, HLS (`media3-exoplayer-hls`) and `.pls` / `.m3u` playlists. Now playing titles come from ICY metadata.
 - Premium cloud storage playback (WebDAV, S3, OneDrive) plugs in behind one `StorageSource` interface in the data layer, next to MediaStore. The phone talks directly to the user's storage; there is no server of ours. Credentials are encrypted with the Android Keystore.
@@ -82,6 +82,6 @@ Use JDK 21 (`JAVA_HOME`) and the Android SDK (`sdk.dir` in `local.properties`, o
 
 ## Open points to check before building
 
-- Android Auto limits (tabs, depth, list caps) change over time. Check them against Google's current "Build media apps for cars" and "Car app quality" pages.
+- The Android Auto limits were checked on 19 Nov 2026 and are in section 4 of `docs/FEATURES.md`, with a link to each source page. The car gives the tab limit in the root hints, there is no paging in the car, and artwork must be a `content://` or `android.resource://` URI. Check the table again before the Play release.
 - Media3 has no built-in crossfade or ReplayGain. The equalizer processor, the pause and rewind buffer for live radio and crossfade each need a short trial build before they are committed to.
 - Section 9 of `docs/FEATURES.md` lists every check still open (Radio Browser terms, legal view, exact alarm permission and more).

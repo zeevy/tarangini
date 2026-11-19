@@ -243,22 +243,46 @@ The full module table, the dependency rules and the folder structure are in [ARC
 
 ## 4. Android Auto requirements and constraints
 
-| Topic | What we need |
-|---|---|
-| Manifest | Declare the service with intent filters for `androidx.media3.session.MediaLibraryService` and `android.media.browse.MediaBrowserService` |
-| Car app descriptor | `res/xml/automotive_app_desc.xml` with `<uses name="media"/>`, linked by `<meta-data android:name="com.google.android.gms.car.application" .../>` in `<application>` |
-| Voice search | Intent filter for `android.media.action.MEDIA_PLAY_FROM_SEARCH`, and handle the search query in the session callback (`onSetMediaItems` / `onAddMediaItems` with `requestMetadata.searchQuery`) |
-| Browse tree shape | Root has at most 4 tabs (Library, Radio, Favourites, Recent). Keep depth shallow, about 3 levels below the root. Each item is either browsable or playable |
-| List size | The car can cap how many items it shows per list, and the cap differs by car. Put the most useful items first and keep lists short |
-| Driver safety | No video, no ads, no long text, no sign-in or settings in the car. Text is limited by the car |
-| Artwork | Use content URIs or small bitmaps. Large images slow the car screen |
-| Errors | Show clear error states through the session (for example "No internet", "Allow access to audio files on your phone") |
-| Play Store review | Apps for Auto go through an extra review against the "Car app quality" guidelines. Rejections are common for driver distraction, missing voice support, and broken playback after a long run |
-| Testing | Desktop Head Unit (DHU) from the SDK Manager. Turn on Android Auto developer mode on the phone, start "head unit server", `adb forward tcp:5277 tcp:5277`, then run `desktop-head-unit`. Also test in a real car before release |
-| Tools | The "Media Controller Test" app helps check the session from outside |
+Checked against Google's pages on 19 Nov 2026 (check C3). Each row names its source page; the links are below the table. "Not stated" means the page gives no number, so the row is our own choice.
+
+| Topic | What Google says | What we do | Source |
+|---|---|---|---|
+| Root tabs | The car gives the limit in the root hints. "In most cases, expect this number to be four". More tabs may be dropped. With no hint, assume at most four | 4 tabs: Library, Radio, Favourites, Recent. Read the limit from the root hints and drop from the end if it is lower | [Hierarchy] |
+| Tab icons and labels | Monochrome icons, white preferred. Short labels | White vector icons, one word labels | [Hierarchy] |
+| Tree depth | Not stated | Our choice: about 3 levels below the root | [Hierarchy] |
+| List size | "Strict limits on how many media items can be displayed at each level". No number is given, and it differs by car | Most useful items first. Long lists (all songs) are split by letter or shown as "recent" and "most played", never as one list of thousands | [Hierarchy] |
+| Paging | Android Auto does not support paging. Do not rely on `page` and `pageSize` | Each node returns its whole, short list | [Hierarchy] |
+| Browsable and playable | An item can be browsable, playable, or both. An item that is both works like a playlist | Our choice: each item is one or the other. Simpler to test | [Media] |
+| Artwork | A local URI only: `content://` or `android.resource://`, pointing to a bitmap or a vector drawable. No bitmaps in the item itself (1 MB binder limit). No size is stated | A content provider serves album art and letter tiles. Our choice of size: 320 px, checked in the Desktop Head Unit | [Artwork] |
+| Text length | No number. The car cuts long text. Text must not scroll by itself (ST-1) | Title and one subtitle, short | [Quality] |
+| List or grid | Content style hints for browsable and playable items, and group titles. Items of one group must be next to each other | Grid for albums and stations, list for songs | [Styles] |
+| Voice | "All apps must support voice searches". An empty query means "play some music" and must start playback. Do not block while searching. Gemini and Google Assistant commands must work (VC-1) | Search in the session callback and the `MEDIA_PLAY_FROM_SEARCH` filter. An empty query resumes the last queue | [Voice], [Search] |
+| Start of playback | The app must not start playing by itself when the car connects (MA-1). It keeps the last state so the user can carry on | No auto play on connect. The saved queue and place are restored, paused | [Playback], [Quality] |
+| Response times | A button answers within 2 seconds (DR-1). The app starts within 10 seconds (DR-2) and loads content within 10 seconds (DR-3) | Browse reads only the database. A slow stream shows a buffering state at once | [Quality] |
+| Errors | Set the error state with a code and a message in the user's language. If the user must use the phone, the message says so. A message to look at the phone only when it is safe (VI-1) | "No internet", "Allow access to audio files on your phone, when it is safe" and the like, through the session | [Errors], [Quality] |
+| Driver safety | No moving pictures or video (SA-1), no text ads (AD-1), no pictures other than art and icons (IU-1), only useful notifications (IN-1, NA-1) | No video, no ads, no sign-in or settings in the car | [Quality] |
+| Colours and icons | Contrast, white icon sets and colour rules (VD-1 to VD-3) | White icons, the car's own colours | [Quality] |
+| Manifest | An exported service with the `android.media.browse.MediaBrowserService` action. Media3 `MediaLibraryService` is supported. A one colour attribution icon through the `androidx.car.app.TintableAttributionIcon` meta-data | One `MediaLibraryService` with both intent filters, and the attribution icon | [Manifest] |
+| Car app descriptor | Not on the pages read on this date | `res/xml/automotive_app_desc.xml` with `<uses name="media"/>`, linked by the `com.google.android.gms.car.application` meta-data. Confirmed when the app shows in the Desktop Head Unit | - |
+| Custom actions | No fixed number. Extra playback actions go to an overflow menu. For actions on browse items the car gives the limit in the root hints; 0 means not supported | Favourite, shuffle and repeat on the now playing screen. Browse actions only when the car allows them | [Actions] |
+| Play Store review | An extra review against the car app quality rules. For a media app: PC-1, EP-1, EP-2, SA-1, AD-1, IU-1, VI-1, ST-1, VC-1, DR-1 to DR-3, VD-1 to VD-3, GB-1, MA-1, NA-1, IN-1 | The quality pass records a result for each of these | [Quality] |
+| Testing | Desktop Head Unit 2.x from the SDK Manager. Turn on Android Auto developer mode on the phone. Over USB: `desktop-head-unit --usb`. Over ADB: start "head unit server" on the phone, `adb forward tcp:5277 tcp:5277`, then `desktop-head-unit` | The same, plus the "Media Controller Test" app, plus a real car before release | [Testing] |
+
+[Media]: https://developer.android.com/training/cars/media
+[Hierarchy]: https://developer.android.com/training/cars/media/create-media-browser/content-hierarchy
+[Styles]: https://developer.android.com/training/cars/media/create-media-browser/content-styles
+[Artwork]: https://developer.android.com/training/cars/media/create-media-browser/media-artwork
+[Search]: https://developer.android.com/training/cars/media/create-media-browser/browsable-search
+[Actions]: https://developer.android.com/training/cars/media/create-media-browser/custom-browse-actions
+[Voice]: https://developer.android.com/training/cars/media/voice-actions
+[Errors]: https://developer.android.com/training/cars/media/errors
+[Manifest]: https://developer.android.com/training/cars/media/configure-manifest
+[Playback]: https://developer.android.com/training/cars/media/enable-playback
+[Quality]: https://developer.android.com/docs/quality-guidelines/car-app-quality
+[Testing]: https://developer.android.com/training/cars/testing/dhu
 
 > [!NOTE]
-> Not sure: Google changes the exact Auto limits (tabs, depth, list caps) over time. Check the current "Build media apps for cars" and "Car app quality" pages before the MVP build, and update this table.
+> The rules that apply only to Android Automotive OS (the car's own system) are left out; that build is not part of the MVP. Check this table again before the Play release, because Google changes these pages.
 
 ## 5. Permissions and policies
 
@@ -344,6 +368,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D19 | Navigation Compose with typed routes. Four tabs as in the approved design (Home, Library, Radio, Favourites). Back from the first screen of a tab leaves the app. Decided by dev in auto mode; see [ADR 0001](adr/0001-navigation-and-tabs.md) | 19 Nov 2026 | Each feature offers its routes in its `navigation/` package. Settings opens from the Home top bar |
 | D20 | Screenshot tests with Robolectric and Roborazzi, run by `./gradlew test`. Decided by dev in auto mode; see [ADR 0002](adr/0002-screenshot-tests.md) | 19 Nov 2026 | Saved pictures are committed in `src/test/screenshots/` |
 | D21 | Database version 1: Room 3 on the phone's own SQLite, a song whose file is gone is marked and not removed, play counts and not a play log. Decided by dev in auto mode; see [DATABASE.md](DATABASE.md) and [ADR 0003](adr/0003-database.md) | 19 Nov 2026 | A rescan or a memory card that is taken out never costs favourites, playlists or play counts |
+| D22 | Android Auto limits checked at the source (check C3). No paging in the car, artwork only as local URIs, no auto play on connect, tab limit read from the root hints. Tree depth and "browsable or playable, never both" stay as our own choices | 19 Nov 2026 | Section 4 has the limits and their source pages; the Auto issues were updated |
 
 ## 9. Checks before building
 
@@ -353,7 +378,6 @@ All open questions are answered. These points still need a check at the source o
 |---|---|---|
 | C1 | Radio Browser terms | Confirm they allow an app with a paid tier, and what credit is asked for |
 | C2 | A lawyer's view before the paid tier | Linking to public streams, showing station names, and stream recording |
-| C3 | Android Auto limits | Tabs, tree depth and list caps change over time |
 | C4 | Exact alarm permission for the radio alarm | Play allows `USE_EXACT_ALARM` only for some app types |
 | C5 | Trial builds | Our own equalizer processor, the pause and rewind buffer for live radio, crossfade with gapless |
 | C6 | Play target API level and foreground service declaration | Rules at release time |
