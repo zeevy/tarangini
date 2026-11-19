@@ -7,3 +7,8 @@
 plugins {
     id("swaratarang.kotlin.library")
 }
+
+dependencies {
+    // `PlaybackController` gives its state as a `StateFlow`, so every user of the domain needs the type.
+    api(libs.kotlinx.coroutines.core)
+}
