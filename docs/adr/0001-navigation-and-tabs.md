@@ -1,6 +1,6 @@
 # ADR 0001: Navigation Compose with typed routes, and how the tabs behave
 
-- Status: accepted. Decided by dev in auto mode, 19 Nov 2026.
+- Status: accepted, 19 Nov 2026.
 - Rules: A10, U11.
 
 ## Context

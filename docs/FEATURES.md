@@ -25,7 +25,7 @@ Tarangini is one simple, fast player for the music on your phone and the radio s
 - Android Auto from day one, not added later.
 - No account, no ads and no usage tracking in the free app. Only crash reports are sent. Works offline for local files.
 - We publish no station list of our own. Users add stations themselves. From v1.1 they can also pick them from the public Radio Browser directory.
-- The core player is open source under MPL-2.0, so anyone can read the code and check what the app does.
+- The core player is open source under GPL-3.0, so anyone can read the code and check what the app does.
 - Data saver that is careful with mobile data during long drives.
 
 ## 2. Features by module
@@ -340,23 +340,23 @@ The app is open core (decision D5). The core player is open source. The premium 
 
 | Part | Where | Licence | Holds |
 |---|---|---|---|
-| Core | Public GitHub repo | MPL-2.0 | Library, playback, radio, Android Auto, phone UI, the 5 band equalizer, settings. Everything tagged [MVP] and [v1.1] |
+| Core | Public GitHub repo | GPL-3.0 (version 3 only) | Library, playback, radio, Android Auto, phone UI, the 5 band equalizer, settings. Everything tagged [MVP] and [v1.1] |
 | Premium | Private GitHub repo | All rights reserved | The ten premium features, Play Billing, Cast, Crashlytics |
 
 | Topic | Plan |
 |---|---|
 | Two builds | `core`: built from the public repo alone, a complete free app with no closed source libraries. `play`: core plus the private premium module, the build that goes to the Play Store |
 | The boundary | The public code defines interfaces (for example `StorageSource`, the equalizer band count, a `PremiumGate`). The core build binds them to "not available". The premium module binds the real ones through Hilt. Public code never imports premium code |
-| Why MPL-2.0 | Anyone who changes our files must share those changes. It still lets us ship the core together with closed code (the premium module, Play Billing). GPL-3.0 does not allow that without an exception |
-| Third party code | Apache-2.0, MIT, BSD and MPL-2.0 libraries only. No GPL or AGPL code, because the Play build mixes in closed code |
-| Contributions | Public issues and pull requests on the core. Contributors sign a contributor agreement (CLA), so we keep the right to relicense later |
+| Why GPL-3.0 | Anyone who ships the core, changed or not, must publish all of it under GPL-3.0. Nobody else can add closed features on top. The owner alone can ship it with closed code (the premium module, Play Billing), because the owner holds the right to relicense every line (decision D31) |
+| Third party code | Apache-2.0, MIT, BSD and MPL-2.0 libraries only. No GPL or AGPL code of others, because the Play build mixes in closed code and we cannot relicense what is not ours |
+| Contributions | Public issues and pull requests on the core. Every contributor agrees to the contributor agreement (`docs/CLA.md`) before the first merge. Without it the closed Play build would break the licence of their code. Today the agreement is the tick line in the pull request form; a CLA bot with a required check comes before outside contributions are invited |
 | Name and logo | The licence covers the code, not the name. Add a short trademark note in the README, and consider registering "Tarangini" and the logo |
 | Licence notices | An "Open source licences" screen in Settings that lists every library and its licence text |
 | Secrets | No keys in either repo. `google-services.json`, the signing key and the Play upload key live only in GitHub Actions secrets of the private repo |
 | CI | Public repo: build, unit tests and lint of the `core` build on every PR. Private repo: the `play` build and the signed release AAB on every version tag |
 | Releases | Play Store only for now (decision D6). The `core` build could go to GitHub Releases or F-Droid later |
 | Station list | None of our own. Stations come from the user or from Radio Browser |
-| What open core does not stop | Anyone may build the free core, or write their own version of a premium feature on top of it. Their changes to our files must stay open under MPL-2.0 |
+| What open core does not stop | Anyone may build the free core, or write their own version of a premium feature on top of it. Whatever they ship that holds our code must be open under GPL-3.0, and it needs another name |
 
 ## 7. Milestone roadmap
 
@@ -374,7 +374,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D2 | Android Auto only for MVP | 19 Nov 2026 | One APK for phone and car. Android Automotive OS stays in Future |
 | D3 | Users add stations (name and URL) or pick them from Radio Browser. We ship no station list of our own. Replaces the earlier "our own checked India list" choice | 19 Nov 2026 | Lower legal risk. The India section is only a Radio Browser filter |
 | D4 | Free core app with no ads | 19 Nov 2026 | No Play Billing in MVP or v1.1 |
-| D5 | Open core: public core under MPL-2.0, premium module private. Replaces the earlier GPL-3.0 and closed source choices | 19 Nov 2026 | Two repos and two builds (`core`, `play`). No GPL or AGPL libraries |
+| D5 | Open core: public core, premium module private. The licence of the core was MPL-2.0 at first and is GPL-3.0 since D31 | 19 Nov 2026 | Two repos and two builds (`core`, `play`). No GPL or AGPL libraries |
 | D6 | Publish on the Play Store only for now | 19 Nov 2026 | The `play` build may use Google libraries. The `core` build could go to GitHub Releases or F-Droid later |
 | D7 | Premium subscription after v1.1 with ten features: stream recording, advanced equalizer, cloud backup and sync, extra themes, pause and rewind live radio, radio alarm and schedule, sound profile per device, smart playlists, cast, play from your own cloud storage | 19 Nov 2026 | Play Billing in the one build. Sync needs a backend. Core features never move behind the paywall |
 | D8 | Copy the local library into Room and keep it in sync with MediaStore | 19 Nov 2026 | Fast search and Auto lists. Cloud songs fit the same tables |
@@ -387,19 +387,20 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D15 | Backup and sync stored in the user's own cloud storage | 19 Nov 2026 | No server of ours and no user data held by us |
 | D16 | Subscription checked on the phone through Play Billing | 19 Nov 2026 | No server. Purchase signature verified, R8 obfuscation |
 | D17 | Google Drive left out of cloud storage at first | 19 Nov 2026 | Launch with WebDAV, S3 and OneDrive. Revisit after reading Google's rules |
-| D18 | Module structure: `app`, `feature:*` and `core:*` modules, with features depending only on `core:domain` and `core:ui`. Decided by dev in auto mode; options and reasons are in section 10 of [ARCHITECTURE.md](ARCHITECTURE.md) | 19 Nov 2026 | The compiler enforces the layers. `RULES.md` holds the rules for people and agents |
-| D19 | Navigation Compose with typed routes. Four tabs as in the approved design (Home, Library, Radio, Favourites). Back from the first screen of a tab leaves the app. Decided by dev in auto mode; see [ADR 0001](adr/0001-navigation-and-tabs.md) | 19 Nov 2026 | Each feature offers its routes in its `navigation/` package. Settings opens from the Home top bar |
-| D20 | Screenshot tests with Robolectric and Roborazzi, run by `./gradlew test`. Decided by dev in auto mode; see [ADR 0002](adr/0002-screenshot-tests.md) | 19 Nov 2026 | Saved pictures are committed in `src/test/screenshots/` |
-| D21 | Database version 1: Room 3 on the phone's own SQLite, a song whose file is gone is marked and not removed, play counts and not a play log. Decided by dev in auto mode; see [DATABASE.md](DATABASE.md) and [ADR 0003](adr/0003-database.md) | 19 Nov 2026 | A rescan or a memory card that is taken out never costs favourites, playlists or play counts |
+| D18 | Module structure: `app`, `feature:*` and `core:*` modules, with features depending only on `core:domain` and `core:ui`. Options and reasons are in section 10 of [ARCHITECTURE.md](ARCHITECTURE.md) | 19 Nov 2026 | The compiler enforces the layers. `RULES.md` holds the rules for people and agents |
+| D19 | Navigation Compose with typed routes. Four tabs as in the approved design (Home, Library, Radio, Favourites). Back from the first screen of a tab leaves the app. See [ADR 0001](adr/0001-navigation-and-tabs.md) | 19 Nov 2026 | Each feature offers its routes in its `navigation/` package. Settings opens from the Home top bar |
+| D20 | Screenshot tests with Robolectric and Roborazzi, run by `./gradlew test`. See [ADR 0002](adr/0002-screenshot-tests.md) | 19 Nov 2026 | Saved pictures are committed in `src/test/screenshots/` |
+| D21 | Database version 1: Room 3 on the phone's own SQLite, a song whose file is gone is marked and not removed, play counts and not a play log. See [DATABASE.md](DATABASE.md) and [ADR 0003](adr/0003-database.md) | 19 Nov 2026 | A rescan or a memory card that is taken out never costs favourites, playlists or play counts |
 | D22 | Android Auto limits checked at the source (check C3). No paging in the car, artwork only as local URIs, no auto play on connect, tab limit read from the root hints. Tree depth and "browsable or playable, never both" stay as our own choices | 19 Nov 2026 | Section 4 has the limits and their source pages; the Auto issues were updated |
-| D23 | Radio Browser checked at the source (check C1): it may be used in paid software and asks for no credit. We credit it anyway, send click reports only for directory stations, use HTTPS only and never ask for the whole list. Decided by dev in auto mode | 19 Nov 2026 | Section 2.3 has the rules; the privacy text must name Radio Browser and the click report |
+| D23 | Radio Browser checked at the source (check C1): it may be used in paid software and asks for no credit. We credit it anyway, send click reports only for directory stations, use HTTPS only and never ask for the whole list. | 19 Nov 2026 | Section 2.3 has the rules; the privacy text must name Radio Browser and the click report |
 | D24 | Radio Browser stays out of the MVP (owner). Radio in the MVP plays only stations the user adds by name and URL. The station directory, its search and the India section move to v1.1 | 19 Nov 2026 | Issues #25 and #26 moved to v1.1. In the MVP the core app makes one kind of outside call: the stream the user picked |
-| D25 | The playback service: Media3 1.11.1, one player and one session. This app may do everything; callers the system trusts for media control may connect with the transport controls only; every other app is refused. A caller can play only MediaStore audio items. Decided by dev in auto mode; see [ADR 0004](adr/0004-playback-service-and-session-access.md) | 19 Nov 2026 | Android Auto and Assistant are let in by signing certificate with the Auto setup |
-| D26 | Screens reach the player only through `PlaybackController` in the domain. One connection for the whole app, open while a screen is open. Decided by dev in auto mode; see [ADR 0005](adr/0005-playback-connection.md) | 19 Nov 2026 | Commands for shuffle and repeat come with the screen that needs them |
-| D27 | Audio focus, the pause when headphones are unplugged and the media buttons are left to ExoPlayer and the Media3 session; no audio focus code of ours. Decided by dev in auto mode; see ADR 0004 | 19 Nov 2026 | The checks a person must do on a real phone are in [MANUAL-TESTS.md](MANUAL-TESTS.md) |
-| D28 | The queue lives only in the player. Screens change it through `PlaybackQueue` in the domain; there are no use cases that only pass a call on. A long list starts with 20 items and gets the rest in parts of 5,000 once sound is out. Decided by dev in auto mode; see [ADR 0006](adr/0006-queue.md) | 19 Nov 2026 | Open: a very long queue makes the system (Bluetooth) work on every item; see the ADR |
-| D29 | Gapless playback is proven with test albums. The audio renderer corrects the start and end silence of MP3 files for the MP3 decoder of Android, because Media3 and that decoder both cut the decoder delay. Decided by dev in auto mode; see [ADR 0007](adr/0007-gapless-playback.md) | 19 Nov 2026 | Files with no delay header keep a gap of about 40 ms: a known limit |
-| D30 | Only the Library tab asks for the audio permission, after a reason screen. Four states; "denied for good" is worked out from the answers of Android, with no saved flag. Decided by dev in auto mode; see [ADR 0008](adr/0008-audio-permission.md) | 19 Nov 2026 | Open: a run on the API 31 and 33 emulator images |
+| D25 | The playback service: Media3 1.11.1, one player and one session. This app may do everything; callers the system trusts for media control may connect with the transport controls only; every other app is refused. A caller can play only MediaStore audio items. See [ADR 0004](adr/0004-playback-service-and-session-access.md) | 19 Nov 2026 | Android Auto and Assistant are let in by signing certificate with the Auto setup |
+| D26 | Screens reach the player only through `PlaybackController` in the domain. One connection for the whole app, open while a screen is open. See [ADR 0005](adr/0005-playback-connection.md) | 19 Nov 2026 | Commands for shuffle and repeat come with the screen that needs them |
+| D27 | Audio focus, the pause when headphones are unplugged and the media buttons are left to ExoPlayer and the Media3 session; no audio focus code of ours. See ADR 0004 | 19 Nov 2026 | The checks a person must do on a real phone are in [MANUAL-TESTS.md](MANUAL-TESTS.md) |
+| D28 | The queue lives only in the player. Screens change it through `PlaybackQueue` in the domain; there are no use cases that only pass a call on. A long list starts with 20 items and gets the rest in parts of 5,000 once sound is out. See [ADR 0006](adr/0006-queue.md) | 19 Nov 2026 | Open: a very long queue makes the system (Bluetooth) work on every item; see the ADR |
+| D29 | Gapless playback is proven with test albums. The audio renderer corrects the start and end silence of MP3 files for the MP3 decoder of Android, because Media3 and that decoder both cut the decoder delay. See [ADR 0007](adr/0007-gapless-playback.md) | 19 Nov 2026 | Files with no delay header keep a gap of about 40 ms: a known limit |
+| D30 | Only the Library tab asks for the audio permission, after a reason screen. Four states; "denied for good" is worked out from the answers of Android, with no saved flag. See [ADR 0008](adr/0008-audio-permission.md) | 19 Nov 2026 | Open: a run on the API 31 and 33 emulator images |
+| D31 | The public core is under GPL-3.0 (version 3 only) with a contributor agreement. The owner keeps the right to relicense and ships the Play build with the closed premium module (dual licensing). Replaces MPL-2.0 from D5 | 19 Nov 2026 | `LICENSE`, the header of every source file and the header check changed. No outside contribution is merged without the agreement. GPL and AGPL libraries of others stay forbidden. See `docs/adr/0009-licence-gpl3.md` |
 
 ## 9. Checks before building
 
@@ -413,4 +414,4 @@ All open questions are answered. These points still need a check at the source o
 | C6 | Play target API level and foreground service declaration | Rules at release time |
 | C7 | Subscription prices | Monthly and yearly amounts |
 | C8 | Google Drive rules, if it is added later | Verification and yearly assessment cost |
-| C9 | Open core licence review | A lawyer confirms MPL-2.0 for the core, the contributor agreement text and the trademark note |
+| C9 | Open core licence review | A lawyer confirms GPL-3.0 with dual licensing for the core, the contributor agreement text and the trademark note |

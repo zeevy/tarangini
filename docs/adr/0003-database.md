@@ -1,6 +1,6 @@
 # ADR 0003: The Room database, version 1
 
-- Status: accepted. Decided by dev in auto mode, 19 Nov 2026.
+- Status: accepted, 19 Nov 2026.
 - Rules: D1 to D4, D7, D8, H8, B1.
 - The full design is in [docs/DATABASE.md](../DATABASE.md).
 

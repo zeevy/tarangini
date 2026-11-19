@@ -1,6 +1,6 @@
 # ADR 0002: Screenshot tests with Robolectric and Roborazzi
 
-- Status: accepted. Decided by dev in auto mode, 19 Nov 2026.
+- Status: accepted, 19 Nov 2026.
 - Rules: T4, U9, B1.
 
 ## Context

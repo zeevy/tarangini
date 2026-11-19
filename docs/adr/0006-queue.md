@@ -1,6 +1,6 @@
 # ADR 0006: The queue, shuffle and repeat
 
-- Status: accepted. Decided by dev in auto mode, 19 Nov 2026.
+- Status: accepted, 19 Nov 2026.
 - Rules: A5, A9, H1, T6.
 
 ## Context
