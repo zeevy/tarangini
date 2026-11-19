@@ -1,8 +1,8 @@
 # Swara Tarang: product and feature plan
 
-Swara Tarang (Sanskrit: "waves of musical notes") is an Android media player for local MP3 and AAC files and for online radio. It works on the phone and in Android Auto. This is a planning document. It has no app code.
+Swara Tarang (Sanskrit: "waves of musical notes") is an Android media player for local MP3 and AAC files and for online radio. It works on the phone and in Android Auto. This document says what the app does. [ARCHITECTURE.md](ARCHITECTURE.md) says how the code is laid out, and [RULES.md](../RULES.md) holds the rules for the code.
 
-Status: draft, 19 Nov 2026. 17 decisions made (section 8). No open questions are left; section 9 lists the checks to do before building.
+Status: build started, 19 Nov 2026. 18 decisions made (section 8). The work is tracked in GitHub issues under milestones M1 to M10. Section 9 lists the checks still open; each has an issue or is noted there.
 
 ## 1. Overview
 
@@ -226,15 +226,19 @@ flowchart TD
     REPO --> RB["Radio Browser API"]
 ```
 
-### 3.4 Modules (first idea)
+### 3.4 Modules
+
+The full module table, the dependency rules and the folder structure are in [ARCHITECTURE.md](ARCHITECTURE.md) (decision D18). In short:
 
 | Module | Holds |
 |---|---|
-| `app` | Activity, navigation, Hilt setup |
-| `feature-library`, `feature-radio`, `feature-player`, `feature-settings` | Screens and ViewModels |
-| `playback` | `MediaLibraryService`, session callback, browse tree, audio focus |
-| `data` | Room, MediaStore reader, Radio Browser client, DataStore |
-| `domain` | Models and use cases |
+| `app` | Activity, navigation, Hilt setup, the `core` and `play` builds |
+| `feature:home`, `feature:library`, `feature:radio`, `feature:player`, `feature:search`, `feature:settings` | Screens and ViewModels. Depend only on `core:domain` and `core:ui` |
+| `core:domain` | Models, use cases and interfaces, in plain Kotlin |
+| `core:data` | Room, MediaStore reader, Radio Browser client, DataStore |
+| `core:playback` | `MediaLibraryService`, session callback, browse tree, audio focus |
+| `core:ui` | Theme and shared composables |
+| `core:testing` | Fakes and test helpers |
 | `premium` (private repo) | The ten premium features, Play Billing, Cast, Crashlytics. Plugs into interfaces that the public modules define |
 
 ## 4. Android Auto requirements and constraints
@@ -336,6 +340,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D15 | Backup and sync stored in the user's own cloud storage | 19 Nov 2026 | No server of ours and no user data held by us |
 | D16 | Subscription checked on the phone through Play Billing | 19 Nov 2026 | No server. Purchase signature verified, R8 obfuscation |
 | D17 | Google Drive left out of cloud storage at first | 19 Nov 2026 | Launch with WebDAV, S3 and OneDrive. Revisit after reading Google's rules |
+| D18 | Module structure: `app`, `feature:*` and `core:*` modules, with features depending only on `core:domain` and `core:ui`. Decided by dev in auto mode; options and reasons are in section 10 of [ARCHITECTURE.md](ARCHITECTURE.md) | 19 Nov 2026 | The compiler enforces the layers. `RULES.md` holds the rules for people and agents |
 
 ## 9. Checks before building
 

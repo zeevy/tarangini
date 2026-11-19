@@ -4,11 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project state
 
-Swara Tarang is an Android media player for local MP3 and AAC files (`.mp3`, `.aac`, `.m4a`) and online radio, on the phone and in Android Auto. It is in the **planning stage**. There is no app code and no Gradle build yet. The git repo is `silicon-circuits/swara-tarang` on GitHub (private for now, default branch `main`) and holds only the planning docs. The only source of truth is [docs/FEATURES.md](docs/FEATURES.md).
+Swara Tarang is an Android media player for local MP3 and AAC files (`.mp3`, `.aac`, `.m4a`) and online radio, on the phone and in Android Auto. The owner started the build on 19 Nov 2026. There is no app code and no Gradle build yet; issue #1 creates them. The git repo is `silicon-circuits/swara-tarang` on GitHub (private for now, default branch `main`).
 
-- Do not write app code, create a Gradle project or open issues until the owner says to start building.
-- When a decision is made, record it in the "Decisions made" table of `docs/FEATURES.md` and remove it from "Open questions".
-- When the build starts, replace this section with the real build, lint and test commands (including how to run a single test).
+- Read [RULES.md](RULES.md) and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) before any change. `RULES.md` has the hard stops and the coding standards. `docs/ARCHITECTURE.md` has the layers, the modules and the folder structure. [docs/FEATURES.md](docs/FEATURES.md) says what the app does.
+- The work is in GitHub issues under milestones M1 to M10. Work them in milestone order and respect each issue's "Depends on" list. One issue, one branch, one PR.
+- When a decision is made, record it in the "Decisions made" table of `docs/FEATURES.md`. A design decision made during the build also gets a short ADR in `docs/adr/`.
+- Issue #1 replaces this section with the real build, lint and test commands (including how to run a single test).
 
 ## Decisions already made
 
@@ -35,7 +36,7 @@ Swara Tarang is an Android media player for local MP3 and AAC files (`.mp3`, `.a
 - Voice play ("play X on Swara Tarang") arrives as a search query in the session callback (`onSetMediaItems` / `onAddMediaItems` with `requestMetadata.searchQuery`) plus the `MEDIA_PLAY_FROM_SEARCH` intent filter.
 - Radio streams cover Icecast, Shoutcast, HLS (`media3-exoplayer-hls`) and `.pls` / `.m3u` playlists. Now playing titles come from ICY metadata.
 - Premium cloud storage playback (WebDAV, S3, OneDrive) plugs in behind one `StorageSource` interface in the data layer, next to MediaStore. The phone talks directly to the user's storage; there is no server of ours. Credentials are encrypted with the Android Keystore.
-- Planned modules: `app`, `feature-*` (library, radio, player, settings), `playback`, `data`, `domain`.
+- Modules: `app`, `feature:*` (home, library, radio, player, search, settings), `core:domain` (plain Kotlin), `core:data`, `core:playback`, `core:ui`, `core:testing`, plus `build-logic`. A feature depends only on `core:domain` and `core:ui`. The full table and the folder tree are in `docs/ARCHITECTURE.md`.
 
 ## Open points to check before building
 
