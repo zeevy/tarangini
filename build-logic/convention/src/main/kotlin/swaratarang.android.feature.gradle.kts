@@ -8,9 +8,15 @@
 plugins {
     id("swaratarang.android.library")
     id("swaratarang.android.compose")
+    // A feature offers its routes as serializable classes.
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
+val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
+
 dependencies {
+    "implementation"(libs.findLibrary("androidx-navigation-compose").get())
+    "implementation"(libs.findLibrary("kotlinx-serialization-core").get())
     "implementation"(project(":core:domain"))
     "implementation"(project(":core:ui"))
     "testImplementation"(project(":core:testing"))
