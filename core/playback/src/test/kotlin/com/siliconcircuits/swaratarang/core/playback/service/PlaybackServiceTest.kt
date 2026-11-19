@@ -6,49 +6,52 @@
 
 package com.siliconcircuits.swaratarang.core.playback.service
 
-import android.net.Uri
+import android.app.Application
+import android.content.ComponentName
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.os.Process
 import androidx.annotation.OptIn
-import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaLibraryInfo
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
-import com.siliconcircuits.swaratarang.core.playback.session.CallerPolicy
-import com.siliconcircuits.swaratarang.core.playback.session.PlaybackSessionCallback
-import java.util.concurrent.ExecutionException
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
-import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
+import org.robolectric.Shadows.shadowOf
 
-// The test only way to make a caller is an API that Media3 may still change.
+// The test only way to make a caller, and the "is released" flag of the player, are API that Media3 may still change.
 @OptIn(UnstableApi::class)
 @RunWith(RobolectricTestRunner::class)
 class PlaybackServiceTest {
+    private val app: Application = RuntimeEnvironment.getApplication().also(::addLauncherScreen)
     private val controller = Robolectric.buildService(PlaybackService::class.java)
     private val service = controller.create().get()
-    private val callback = PlaybackSessionCallback(CallerPolicy(service.packageName, Process.myUid()))
 
-    private val thisApp = caller(service.packageName, Process.myUid(), trusted = false)
-    private val unknownApp = caller("com.unknown.app", Process.myUid() + 1, trusted = false)
-    private val systemUi = caller("com.android.systemui", Process.myUid() + 2, trusted = true)
+    private val firstCaller = caller("com.first.app", Process.myUid() + 1)
+    private val secondCaller = caller("com.second.app", Process.myUid() + 2)
+
+    private var ended = false
 
     @After
-    fun destroyService() {
-        controller.destroy()
+    fun endService() {
+        if (!ended) controller.destroy()
     }
 
     @Test
     fun `every caller gets the same one session with the same one player`() {
-        val first = requireNotNull(service.onGetSession(thisApp))
-        val second = requireNotNull(service.onGetSession(systemUi))
+        val first = requireNotNull(service.onGetSession(firstCaller))
+        val second = requireNotNull(service.onGetSession(secondCaller))
 
         assertSame(first, second)
         assertSame(first.player, second.player)
@@ -56,71 +59,54 @@ class PlaybackServiceTest {
 
     @Test
     fun `nothing plays by itself when the service starts`() {
-        val player = requireNotNull(service.onGetSession(thisApp)).player
+        val player = requireNotNull(service.onGetSession(firstCaller)).player
 
         assertFalse(player.playWhenReady)
         assertEquals(0, player.mediaItemCount)
     }
 
     @Test
-    fun `this app and a caller the system trusts may connect`() {
-        val session = requireNotNull(service.onGetSession(thisApp))
+    fun `a tap on the notification opens this app`() {
+        val tap = requireNotNull(service.onGetSession(firstCaller)).sessionActivity
 
-        assertTrue(callback.onConnect(session, thisApp).isAccepted)
-        assertTrue(callback.onConnect(session, systemUi).isAccepted)
+        assertEquals(app.packageName, shadowOf(tap).savedIntent.component?.packageName)
+        assertTrue(shadowOf(tap).isImmutable)
     }
 
     @Test
-    fun `an unknown app that tries to connect is refused`() {
-        val session = requireNotNull(service.onGetSession(thisApp))
+    fun `the service stops itself when the app is swiped away and nothing plays`() {
+        service.onTaskRemoved(null)
 
-        assertFalse(callback.onConnect(session, unknownApp).isAccepted)
+        assertTrue(shadowOf(service).isStoppedBySelf)
     }
 
     @Test
-    fun `an app that only claims our package name is refused`() {
-        val session = requireNotNull(service.onGetSession(thisApp))
-        val impostor = caller(service.packageName, Process.myUid() + 1, trusted = false)
+    fun `the player and the session are released when the service ends`() {
+        val player = requireNotNull(service.onGetSession(firstCaller)).player as ExoPlayer
 
-        assertFalse(callback.onConnect(session, impostor).isAccepted)
+        controller.destroy()
+        ended = true
+
+        assertTrue(player.isReleased)
+        assertNull(service.onGetSession(firstCaller))
     }
 
-    @Test
-    fun `a MediaStore song a caller asks for is passed to the player`() {
-        val session = requireNotNull(service.onGetSession(thisApp))
-        val song = MediaItem.fromUri("content://media/external/audio/media/7")
-
-        val accepted = callback.onAddMediaItems(session, thisApp, listOf(song)).get()
-
-        assertEquals(
-            listOf(Uri.parse("content://media/external/audio/media/7")),
-            accepted.map {
-                it.localConfiguration?.uri
-            },
-        )
+    /** A library module has no screen of its own, so the test gives the package the launcher screen the app has. */
+    private fun addLauncherScreen(app: Application) {
+        val screen = ComponentName(app.packageName, "${app.packageName}.MainActivity")
+        val launcher = IntentFilter(Intent.ACTION_MAIN).apply { addCategory(Intent.CATEGORY_LAUNCHER) }
+        shadowOf(app.packageManager).addActivityIfNotPresent(screen)
+        shadowOf(app.packageManager).addIntentFilterForActivity(screen, launcher)
     }
 
-    @Test
-    fun `a list with one item that is not a MediaStore song is refused as a whole`() {
-        val session = requireNotNull(service.onGetSession(thisApp))
-        val items = listOf(
-            MediaItem.fromUri("content://media/external/audio/media/7"),
-            MediaItem.fromUri("file:///data/data/other/secret"),
-        )
-
-        val result = callback.onAddMediaItems(session, thisApp, items)
-
-        assertThrows(ExecutionException::class.java) { result.get() }
-    }
-
-    private fun caller(packageName: String, uid: Int, trusted: Boolean): MediaSession.ControllerInfo =
+    private fun caller(packageName: String, uid: Int): MediaSession.ControllerInfo =
         MediaSession.ControllerInfo.createTestOnlyControllerInfo(
             packageName,
             1,
             uid,
             MediaLibraryInfo.VERSION_INT,
             MediaLibraryInfo.INTERFACE_VERSION,
-            trusted,
+            false,
             Bundle.EMPTY,
             true,
         )

@@ -6,6 +6,7 @@
 
 package com.siliconcircuits.swaratarang.core.playback.service
 
+import android.app.PendingIntent
 import android.os.Process
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
@@ -24,7 +25,14 @@ internal class PlaybackService : MediaLibraryService() {
     override fun onCreate() {
         super.onCreate()
         val callback = PlaybackSessionCallback(CallerPolicy(ownPackage = packageName, ownUid = Process.myUid()))
-        session = MediaLibrarySession.Builder(this, createPlayer(this), callback).build()
+        val builder = MediaLibrarySession.Builder(this, createPlayer(this), callback)
+        openAppIntent()?.let(builder::setSessionActivity)
+        session = builder.build()
+    }
+
+    /** What a tap on the notification or the lock screen card opens: this app. */
+    private fun openAppIntent(): PendingIntent? = packageManager.getLaunchIntentForPackage(packageName)?.let { launch ->
+        PendingIntent.getActivity(this, 0, launch, PendingIntent.FLAG_IMMUTABLE)
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? = session
