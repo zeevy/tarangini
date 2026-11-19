@@ -10,4 +10,6 @@ plugins {
 
 dependencies {
     implementation(project(":core:domain"))
+    implementation(libs.media3.exoplayer)
+    implementation(libs.media3.session)
 }
