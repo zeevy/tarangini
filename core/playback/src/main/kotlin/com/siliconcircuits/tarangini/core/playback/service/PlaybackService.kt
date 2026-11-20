@@ -14,7 +14,10 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionError
+import com.siliconcircuits.tarangini.core.domain.model.Page
+import com.siliconcircuits.tarangini.core.domain.model.SongSort
 import com.siliconcircuits.tarangini.core.domain.playback.ResumeStore
+import com.siliconcircuits.tarangini.core.domain.repository.AudioAccess
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryLetters
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SearchRepository
@@ -35,6 +38,7 @@ import com.siliconcircuits.tarangini.core.playback.resume.PlaybackResume
 import com.siliconcircuits.tarangini.core.playback.session.CallerPolicy
 import com.siliconcircuits.tarangini.core.playback.session.CarLibrary
 import com.siliconcircuits.tarangini.core.playback.session.CarPlay
+import com.siliconcircuits.tarangini.core.playback.session.CarProblems
 import com.siliconcircuits.tarangini.core.playback.session.CertificateCallers
 import com.siliconcircuits.tarangini.core.playback.session.NothingToPlay
 import com.siliconcircuits.tarangini.core.playback.session.PlaybackSessionCallback
@@ -72,6 +76,8 @@ internal class PlaybackService : MediaLibraryService() {
 
         fun searchRepository(): SearchRepository
 
+        fun audioAccess(): AudioAccess
+
         fun httpClient(): OkHttpClient
 
         fun stationStreams(): StationStreams
@@ -100,12 +106,13 @@ internal class PlaybackService : MediaLibraryService() {
                 tree,
                 search,
                 CarPlay(app.playbackScope(), tree, search, app.libraryRepository(), resume::resumption),
+                carProblems(app.audioAccess(), app.libraryRepository()),
             ),
             spokenDone = ::spokenDone,
             texts = texts::addTo,
             resumption = resume::resumption,
         )
-        val builder = MediaLibrarySession.Builder(this, player, callback)
+        val builder = MediaLibrarySession.Builder(this, player, callback).showLibraryErrorsInTheCar()
         openAppIntent()?.let(builder::setSessionActivity)
         val session = builder.build()
         this.session = session
@@ -116,6 +123,33 @@ internal class PlaybackService : MediaLibraryService() {
             session.notifyChildrenChanged(listId, Int.MAX_VALUE, null)
         }.also(LibraryChangeNotices::start)
     }
+
+    /**
+     * A list that cannot be shown because the audio permission is missing stops the car screen with its
+     * text. Media3 passes on only that kind of error, and takes it away after the next good answer.
+     */
+    // How a library error reaches the car is API of Media3 that may still change.
+    @OptIn(UnstableApi::class)
+    private fun MediaLibrarySession.Builder.showLibraryErrorsInTheCar() =
+        setLibraryErrorReplicationMode(MediaLibrarySession.LIBRARY_ERROR_REPLICATION_MODE_FATAL)
+
+    /**
+     * The texts the car shows while it has nothing to list. A problem that needs the phone says so,
+     * and says to do it when it is safe.
+     */
+    // The error of a session is API of Media3 that may still change.
+    @OptIn(UnstableApi::class)
+    private fun carProblems(access: AudioAccess, library: LibraryRepository) = CarProblems(
+        noAccess = {
+            val text = getString(R.string.car_allow_audio)
+            // This is the one kind of error Media3 shows in the car for a list.
+            SessionError(SessionError.ERROR_SESSION_AUTHENTICATION_EXPIRED, text).takeUnless { access.isAllowed() }
+        },
+        noSongs = {
+            val none = library.songs(SongSort.TITLE, Page(1)).isEmpty()
+            SessionError(SessionError.INFO_CANCELLED, getString(R.string.car_no_songs)).takeIf { none }
+        },
+    )
 
     /**
      * Ends a spoken request. With a queue found, playback starts here, once the queue is in the player:

@@ -16,6 +16,7 @@ import com.siliconcircuits.tarangini.core.domain.model.Artist
 import com.siliconcircuits.tarangini.core.domain.model.Folder
 import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.playback.R
+import com.siliconcircuits.tarangini.core.playback.artwork.ArtworkAddress
 import com.siliconcircuits.tarangini.core.playback.mapper.toMediaItem
 
 /**
@@ -79,6 +80,7 @@ internal class BrowseItems(private val labels: BrowseLabels) {
         album.title.ifEmpty { labels.unknownAlbum },
         MediaMetadata.MEDIA_TYPE_ALBUM,
         subtitle = album.artist.ifEmpty { null },
+        icon = ArtworkAddress.ofAlbum(album.id),
     )
 
     /** An artist. It opens the songs of the artist. */

@@ -8,6 +8,7 @@ package com.siliconcircuits.tarangini.core.playback.mapper
 
 import androidx.media3.common.MediaMetadata
 import com.siliconcircuits.tarangini.core.domain.model.Song
+import com.siliconcircuits.tarangini.core.playback.artwork.ArtworkAddress
 import com.siliconcircuits.tarangini.core.playback.session.toPlayable
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -43,7 +44,7 @@ class SongMediaItemTest {
         assertEquals("Morning", item.mediaMetadata.albumTitle)
         assertEquals(4, item.mediaMetadata.trackNumber)
         assertEquals(240_000L, item.mediaMetadata.durationMs)
-        assertEquals(song.artworkUri, item.mediaMetadata.artworkUri.toString())
+        assertEquals(ArtworkAddress.ofSong(song.mediaUri), item.mediaMetadata.artworkUri)
         assertEquals(MediaMetadata.MEDIA_TYPE_MUSIC, item.mediaMetadata.mediaType)
         assertEquals(true, item.mediaMetadata.isPlayable)
         assertEquals(false, item.mediaMetadata.isBrowsable)
@@ -68,7 +69,7 @@ class SongMediaItemTest {
 
         assertEquals(song.mediaUri, item.mediaId)
         assertEquals(song.mediaUri, item.localConfiguration?.uri.toString())
-        assertEquals(song.artworkUri, item.mediaMetadata.artworkUri.toString())
+        assertEquals(ArtworkAddress.ofSong(song.mediaUri), item.mediaMetadata.artworkUri)
         assertNull(item.mediaMetadata.title)
     }
 

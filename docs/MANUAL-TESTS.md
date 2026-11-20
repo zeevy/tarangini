@@ -127,7 +127,7 @@ These need the Desktop Head Unit or a car. The steps are in [ANDROID-AUTO.md](AN
 | 70 | With more than 100 songs on the phone, open Songs | The car shows letters, with "#" first when a title starts with a digit or a sign. Each letter opens its songs |
 | 71 | Tap a song in an album, then press next in the car | The song plays, and next plays the song after it in that album |
 | 72 | With a list open in the car, copy a new song onto the phone and wait a few seconds | The song shows in the car after leaving and opening the list again, without a restart of the app or the car |
-| 73 | In the settings of the phone take away the audio permission of Tarangini, then open Library in the car | The lists show what the library last held or are empty. The app does not crash and the car shows no endless loading |
+| 73 | In the settings of the phone take away the audio permission of Tarangini, then open Library in the car | The car shows the text of row 85. The app does not crash and the car shows no endless loading |
 | 74 | Press next, previous and play or pause on the steering wheel, once over Android Auto and once over Bluetooth alone | The phone does the same. The volume buttons change the volume of the car |
 | 75 | Play a song in Tarangini, disconnect the phone from the car, then connect it again | Tarangini is still the player the car shows, with the same song at the same place. It does not start to play by itself unless the car is set to resume |
 | 76 | With nothing playing, press play on the steering wheel after Tarangini was the last player | The last queue goes on from where it stopped |
@@ -137,6 +137,11 @@ These need the Desktop Head Unit or a car. The steps are in [ANDROID-AUTO.md](AN
 | 80 | Say "play (words that match nothing) on Tarangini" | Nothing plays, and the car shows that nothing matches. No silence with a playing state |
 | 81 | Say "play music on Tarangini" once with a queue from before and once after the app data was cleared | The last queue goes on. With no queue, songs of the library play in a mixed order |
 | 82 | On the phone alone, with the app closed, say "play (a song title) on Tarangini" to the assistant | The app opens and the song plays |
+| 83 | Open Albums and a list of songs in the car, with albums that have a cover and some that have none | Covers show in the lists. A row with no cover shows the placeholder of the car, and no row loads for ever |
+| 84 | Play a song with a cover and open the now playing screen of the car | The cover shows there, and on the lock screen and the notification of the phone |
+| 85 | Take away the audio permission of Tarangini in the settings of the phone, then open Library in the car | The car shows "Allow access to audio files on your phone, when it is safe" and no endless loading |
+| 86 | Give the permission back on the phone and open the app once | The lists come back in the car without a reconnect |
+| 87 | Use a phone with no music (or hide all folders), then open Library in the car | The tab is empty and the car shows that there are no songs yet |
 
 ## Results
 

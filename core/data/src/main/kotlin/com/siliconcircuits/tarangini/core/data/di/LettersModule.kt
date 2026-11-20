@@ -6,17 +6,25 @@
 
 package com.siliconcircuits.tarangini.core.data.di
 
+import com.siliconcircuits.tarangini.core.data.mediastore.DefaultAudioAccess
 import com.siliconcircuits.tarangini.core.data.repository.DefaultLibraryLetters
+import com.siliconcircuits.tarangini.core.domain.repository.AudioAccess
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryLetters
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 
-/** Gives the playback service the first letters of the library lists, for the list the car shows. */
+/**
+ * What the playback service needs for the list the car shows: the first
+ * letters of the lists, and the state of the audio permission.
+ */
 @Module
 @InstallIn(SingletonComponent::class)
 internal abstract class LettersModule {
     @Binds
     abstract fun libraryLetters(letters: DefaultLibraryLetters): LibraryLetters
+
+    @Binds
+    abstract fun audioAccess(access: DefaultAudioAccess): AudioAccess
 }

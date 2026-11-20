@@ -11,6 +11,7 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
+import androidx.media3.session.SessionError
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
 import com.siliconcircuits.tarangini.core.domain.model.Page
@@ -34,8 +35,17 @@ import kotlinx.coroutines.launch
  * @property tree the list the car shows
  * @property search finds what the car searches for
  * @property play turns a tap in the car list and a spoken request into a queue
+ * @property problems what stops the car from showing the library
  */
-internal class CarLibrary(val tree: BrowseTree, val search: CarSearch, val play: CarPlay)
+internal class CarLibrary(val tree: BrowseTree, val search: CarSearch, val play: CarPlay, val problems: CarProblems)
+
+/**
+ * The two states in which the car has nothing to list, each with the text the car shows for it.
+ *
+ * @property noAccess the error while the audio permission is not given on the phone, or null when it is
+ * @property noSongs the note while the library has no song, or null when it has one
+ */
+internal class CarProblems(val noAccess: () -> SessionError?, val noSongs: suspend () -> SessionError?)
 
 /** Why a request of the car could not start anything. The car shows a short text for it. */
 internal enum class NothingToPlay { NOTHING_FOUND, NO_SONGS }

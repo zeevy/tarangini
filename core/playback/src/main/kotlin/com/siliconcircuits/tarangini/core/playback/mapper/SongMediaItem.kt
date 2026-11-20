@@ -6,10 +6,10 @@
 
 package com.siliconcircuits.tarangini.core.playback.mapper
 
-import android.net.Uri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import com.siliconcircuits.tarangini.core.domain.model.Song
+import com.siliconcircuits.tarangini.core.playback.artwork.ArtworkAddress
 
 /**
  * The song as the player and the car take it: a playable item whose id is
@@ -27,7 +27,7 @@ internal fun Song.toMediaItem(): MediaItem = MediaItem.Builder()
             .setAlbumTitle(album.ifEmpty { null })
             .setTrackNumber(trackNumber)
             .setDiscNumber(discNumber)
-            .setArtworkUri(artworkUri?.let(Uri::parse))
+            .setArtworkUri(ArtworkAddress.ofSong(mediaUri))
             .setDurationMs(durationMs.takeIf { it > 0 })
             .setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC)
             .setIsBrowsable(false)
