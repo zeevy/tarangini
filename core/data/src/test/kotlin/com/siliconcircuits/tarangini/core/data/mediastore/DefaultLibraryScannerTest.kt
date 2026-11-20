@@ -370,7 +370,7 @@ class DefaultLibraryScannerTest {
     }
 
     private suspend fun LibraryDao.searchSongsByPrefix(word: String): List<String> =
-        searchSongs(checkNotNull(FtsQuery.prefix(word)), limit = 10).map { it.song.title }
+        checkNotNull(FtsQuery.prefix(word)).let { searchSongs(it, it, "", limit = 10) }.map { it.song.title }
 
     private companion object {
         const val MUSIC = "external_primary/Music"

@@ -439,22 +439,86 @@ internal abstract class LibraryDao {
     abstract fun hasSongs(): Flow<Boolean>
 
     /**
-     * Songs whose title, artist or album matches [query]. Build the query
-     * with [FtsQuery], never from raw text.
+     * Songs whose title, artist or album matches [query]. A title that
+     * starts with [titleStart] (in the form of a sort key) comes first, then
+     * a title that matches [titleQuery], then the rest; inside these by
+     * title. Build the queries with [FtsQuery], never from raw text.
+     *
+     * The inner query picks the ids and the outer one adds the names, so
+     * the names are read for the rows that are returned and not for every
+     * match.
      */
     @Query(
         """
             SELECT s.*, ar.name AS artist_name, al.title AS album_title
-            FROM song_search
-            JOIN songs s ON s.id = song_search.rowid
+            FROM (
+                SELECT m.id AS id,
+                    substr(m.title_key, 1, length(:titleStart)) = :titleStart AS starts,
+                    m.id IN (SELECT rowid FROM song_search WHERE song_search MATCH :titleQuery) AS in_title
+                FROM song_search
+                JOIN songs m ON m.id = song_search.rowid
+                WHERE song_search MATCH :query AND m.missing_since IS NULL
+                ORDER BY starts DESC, in_title DESC, m.title_key, m.id
+                LIMIT :limit
+            ) hit
+            JOIN songs s ON s.id = hit.id
             JOIN artists ar ON ar.id = s.artist_id
             JOIN albums al ON al.id = s.album_id
-            WHERE song_search MATCH :query AND s.missing_since IS NULL
-            ORDER BY s.title_key, s.id
-            LIMIT :limit
+            ORDER BY hit.starts DESC, hit.in_title DESC, s.title_key, s.id
         """,
     )
-    abstract suspend fun searchSongs(query: String, limit: Int): List<SongRow>
+    abstract suspend fun searchSongs(query: String, titleQuery: String, titleStart: String, limit: Int): List<SongRow>
+
+    /**
+     * Albums with a song that can be played and matches [albumQuery], which
+     * looks only at the album title. A title that starts with [titleStart]
+     * comes first; inside that by title. The songs are counted only for the
+     * albums that are returned.
+     */
+    @Query(
+        """
+            SELECT t.*,
+            (SELECT COUNT(*) FROM songs s WHERE s.album_id = t.id AND s.missing_since IS NULL) AS song_count
+            FROM (
+                SELECT al.*, ar.name AS artist_name
+                FROM albums al
+                JOIN artists ar ON ar.id = al.artist_id
+                WHERE al.id IN (
+                    SELECT s.album_id FROM song_search JOIN songs s ON s.id = song_search.rowid
+                    WHERE song_search MATCH :albumQuery AND s.missing_since IS NULL
+                )
+                ORDER BY substr(al.title_key, 1, length(:titleStart)) = :titleStart DESC, al.title_key, al.id
+                LIMIT :limit
+            ) t
+            ORDER BY substr(t.title_key, 1, length(:titleStart)) = :titleStart DESC, t.title_key, t.id
+        """,
+    )
+    abstract suspend fun searchAlbums(albumQuery: String, titleStart: String, limit: Int): List<AlbumRow>
+
+    /**
+     * Artists with a song that can be played and matches [artistQuery],
+     * which looks only at the artist name. A name that starts with
+     * [nameStart] comes first; inside that by name. The songs are counted
+     * only for the artists that are returned.
+     */
+    @Query(
+        """
+            SELECT t.*,
+            (SELECT COUNT(*) FROM songs s WHERE s.artist_id = t.id AND s.missing_since IS NULL) AS song_count
+            FROM (
+                SELECT ar.*
+                FROM artists ar
+                WHERE ar.id IN (
+                    SELECT s.artist_id FROM song_search JOIN songs s ON s.id = song_search.rowid
+                    WHERE song_search MATCH :artistQuery AND s.missing_since IS NULL
+                )
+                ORDER BY substr(ar.name_key, 1, length(:nameStart)) = :nameStart DESC, ar.name_key, ar.id
+                LIMIT :limit
+            ) t
+            ORDER BY substr(t.name_key, 1, length(:nameStart)) = :nameStart DESC, t.name_key, t.id
+        """,
+    )
+    abstract suspend fun searchArtists(artistQuery: String, nameStart: String, limit: Int): List<ArtistRow>
 
     companion object {
         /** The most ids in one statement. SQLite limits the number of values a statement can take. */
