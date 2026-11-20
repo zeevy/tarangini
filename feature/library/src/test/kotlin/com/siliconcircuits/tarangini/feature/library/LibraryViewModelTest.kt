@@ -12,6 +12,7 @@ import com.siliconcircuits.tarangini.core.domain.model.SongSort
 import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryScanner
+import com.siliconcircuits.tarangini.core.testing.library.FakePlaylistRepository
 import com.siliconcircuits.tarangini.core.testing.library.testAlbum
 import com.siliconcircuits.tarangini.core.testing.library.testArtist
 import com.siliconcircuits.tarangini.core.testing.library.testFolder
@@ -50,8 +51,12 @@ class LibraryViewModelTest {
     private val playback = FakePlaybackController()
     private val queue = FakePlaybackQueue()
 
-    private fun viewModel() =
-        LibraryViewModel(library, settings, scanner, SongActions(playback, queue, FakeFavouriteRepository()))
+    private fun viewModel() = LibraryViewModel(
+        library,
+        settings,
+        scanner,
+        SongActions(playback, queue, FakeFavouriteRepository(), FakePlaylistRepository()),
+    )
 
     private fun LibraryViewModel.titles() = songs.state.value.items.map { it.title }
 

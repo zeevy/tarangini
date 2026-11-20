@@ -9,6 +9,7 @@ package com.siliconcircuits.tarangini.feature.search
 import com.siliconcircuits.tarangini.core.domain.model.SearchResults
 import com.siliconcircuits.tarangini.core.domain.repository.SearchRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
+import com.siliconcircuits.tarangini.core.testing.library.FakePlaylistRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeSearchRepository
 import com.siliconcircuits.tarangini.core.testing.library.testAlbum
 import com.siliconcircuits.tarangini.core.testing.library.testSong
@@ -41,7 +42,7 @@ class SearchViewModelTest {
     private val queue = FakePlaybackQueue()
 
     private fun viewModel(repository: SearchRepository = search) =
-        SearchViewModel(repository, playback, queue, FakeFavouriteRepository())
+        SearchViewModel(repository, playback, queue, FakeFavouriteRepository(), FakePlaylistRepository())
 
     @Test
     fun `nothing is searched before the person types`() = runTest(mainDispatcher.dispatcher) {

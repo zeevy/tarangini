@@ -27,6 +27,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,9 +43,11 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
+import com.siliconcircuits.tarangini.core.ui.component.AddToPlaylistDialog
 import com.siliconcircuits.tarangini.core.ui.component.AlbumArt
 import com.siliconcircuits.tarangini.core.ui.component.BackButton
 import com.siliconcircuits.tarangini.core.ui.component.MessageState
+import com.siliconcircuits.tarangini.core.ui.component.PlaylistPick
 import com.siliconcircuits.tarangini.core.ui.theme.Spacing
 import com.siliconcircuits.tarangini.core.ui.theme.glassBackground
 import com.siliconcircuits.tarangini.core.ui.theme.glassTopBarColors
@@ -66,7 +71,7 @@ internal fun NowPlayingScreen(
         onCycleRepeat = viewModel::cycleRepeat,
         onToggleFavourite = viewModel::toggleFavourite,
     )
-    NowPlayingContent(state, actions, onBackClick, onOpenQueue, modifier)
+    NowPlayingContent(state, actions, onBackClick, onOpenQueue, modifier, viewModel.playlistPick)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,6 +82,7 @@ internal fun NowPlayingContent(
     onBackClick: () -> Unit,
     onOpenQueue: () -> Unit,
     modifier: Modifier = Modifier,
+    playlists: PlaylistPick? = null,
 ) {
     Scaffold(
         modifier = modifier.glassBackground(),
@@ -89,6 +95,7 @@ internal fun NowPlayingContent(
                 navigationIcon = { BackButton(onClick = onBackClick) },
                 actions = {
                     state?.isFavourite?.let { on -> FavouriteButton(on, actions.onToggleFavourite) }
+                    state?.songId?.let { songId -> playlists?.let { pick -> AddToPlaylistButton(pick, songId) } }
                     IconButton(onClick = onOpenQueue) {
                         Icon(
                             painter = painterResource(CoreUiR.drawable.ic_queue),
@@ -222,6 +229,19 @@ private fun LiveLine(isBuffering: Boolean) {
 }
 
 private const val LARGEST_COVER = 7
+
+/** Opens the question which playlist the song that plays goes into. */
+@Composable
+private fun AddToPlaylistButton(pick: PlaylistPick, songId: Long) {
+    var asking by rememberSaveable { mutableStateOf(false) }
+    IconButton(onClick = { asking = true }) {
+        Icon(
+            painter = painterResource(CoreUiR.drawable.ic_add),
+            contentDescription = stringResource(CoreUiR.string.song_add_to_playlist),
+        )
+    }
+    if (asking) AddToPlaylistDialog(pick, songId) { asking = false }
+}
 
 /** The heart in the top bar. Its name for a screen reader is what a tap does. */
 @Composable

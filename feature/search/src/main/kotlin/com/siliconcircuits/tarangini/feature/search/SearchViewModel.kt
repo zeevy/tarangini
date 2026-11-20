@@ -16,8 +16,10 @@ import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackController
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackQueue
 import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
+import com.siliconcircuits.tarangini.core.domain.repository.PlaylistRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SearchRepository
 import com.siliconcircuits.tarangini.core.ui.component.SongRowActions
+import com.siliconcircuits.tarangini.core.ui.component.pickIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlin.coroutines.cancellation.CancellationException
@@ -53,6 +55,7 @@ internal class SearchViewModel @Inject constructor(
     private val playback: PlaybackController,
     private val queue: PlaybackQueue,
     private val favourites: FavouriteRepository,
+    playlists: PlaylistRepository,
 ) : ViewModel() {
     /**
      * What is in the search field. A text field needs its text back in the
@@ -77,6 +80,7 @@ internal class SearchViewModel @Inject constructor(
         onSetFavourite = { song, favourite ->
             viewModelScope.launch { runCatching { favourites.setFavourite(song.id, favourite) } }
         },
+        playlists = playlists.pickIn(viewModelScope),
     )
 
     init {

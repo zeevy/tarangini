@@ -9,6 +9,7 @@ package com.siliconcircuits.tarangini.feature.library.list
 import com.siliconcircuits.tarangini.core.domain.model.Page
 import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
+import com.siliconcircuits.tarangini.core.testing.library.FakePlaylistRepository
 import com.siliconcircuits.tarangini.core.testing.library.testSong
 import com.siliconcircuits.tarangini.core.testing.playback.FakePlaybackController
 import com.siliconcircuits.tarangini.core.testing.playback.FakePlaybackQueue
@@ -21,7 +22,7 @@ import org.junit.Test
 class SongActionsTest {
     private val playback = FakePlaybackController()
     private val favourites = FakeFavouriteRepository()
-    private val actions = SongActions(playback, FakePlaybackQueue(), favourites)
+    private val actions = SongActions(playback, FakePlaybackQueue(), favourites, FakePlaylistRepository())
     private val songs = listOf(testSong(1), testSong(2), testSong(3))
 
     private suspend fun slowRead(page: Page): List<Song> {

@@ -14,7 +14,10 @@ import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackController
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackQueue
 import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
+import com.siliconcircuits.tarangini.core.domain.repository.PlaylistRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SongLookup
+import com.siliconcircuits.tarangini.core.ui.component.PlaylistPick
+import com.siliconcircuits.tarangini.core.ui.component.pickIn
 import com.siliconcircuits.tarangini.feature.player.showsPause
 import com.siliconcircuits.tarangini.feature.player.togglePlay
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -40,6 +43,7 @@ import kotlinx.coroutines.withTimeoutOrNull
  * @property positionMs how far the item has played. After a seek it is the place asked for, until
  *   the player is there
  * @property durationMs the length of the item, or null for a live stream, which has no seek bar
+ * @property songId the library row of the song that plays, or null for an item that is no song of the library
  * @property error why the item does not play, or null. For a stream it is set only after the player
  *   has given up trying
  */
@@ -56,6 +60,7 @@ internal data class NowPlayingUiState(
     val repeat: RepeatMode,
     val error: PlaybackError? = null,
     val isFavourite: Boolean? = null,
+    val songId: Long? = null,
 ) {
     val isLive: Boolean get() = durationMs == null
 }
@@ -67,7 +72,11 @@ internal class NowPlayingViewModel @Inject constructor(
     private val queue: PlaybackQueue,
     private val favourites: FavouriteRepository,
     private val songs: SongLookup,
+    playlists: PlaylistRepository,
 ) : ViewModel() {
+    /** What "Add to playlist" needs. */
+    val playlistPick: PlaylistPick = playlists.pickIn(viewModelScope)
+
     /**
      * The place the last seek asked for, while the player is not there yet. The player goes on
      * reporting the old place for a moment after a seek. Shown as it is, the thumb of the seek bar
@@ -185,5 +194,6 @@ private fun PlaybackState.toUiState(seekTarget: SeekTarget?, mark: FavouriteMark
         error = error,
         // A mark read for one item says nothing about the next one.
         isFavourite = mark?.takeIf { it.itemId == item.id }?.on,
+        songId = mark?.takeIf { it.itemId == item.id }?.songId,
     )
 }

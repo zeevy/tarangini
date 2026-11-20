@@ -13,6 +13,7 @@ import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryLetters
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
 import com.siliconcircuits.tarangini.core.domain.repository.PlayHistory
+import com.siliconcircuits.tarangini.core.domain.repository.PlaylistRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SearchRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SongLookup
 import com.siliconcircuits.tarangini.core.domain.repository.StationStreams
@@ -21,6 +22,7 @@ import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepositor
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryLetters
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakePlayHistory
+import com.siliconcircuits.tarangini.core.testing.library.FakePlaylistRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeSearchRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeSongLookup
 import com.siliconcircuits.tarangini.core.testing.playback.FakeResumeStore
@@ -45,6 +47,7 @@ internal class TestPlaybackApp :
     val search = FakeSearchRepository()
     val favourites = FakeFavouriteRepository()
     val history = FakePlayHistory()
+    val playlists = FakePlaylistRepository()
     var audioAllowed = true
     private val scope = MainScope()
 
@@ -62,6 +65,8 @@ internal class TestPlaybackApp :
         override fun favouriteRepository(): FavouriteRepository = favourites
 
         override fun playHistory(): PlayHistory = history
+
+        override fun playlistRepository(): PlaylistRepository = playlists
 
         override fun audioAccess(): AudioAccess = AudioAccess { audioAllowed }
 

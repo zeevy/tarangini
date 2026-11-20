@@ -21,6 +21,7 @@ import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepositor
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryLetters
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakePlayHistory
+import com.siliconcircuits.tarangini.core.testing.library.FakePlaylistRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeSearchRepository
 import com.siliconcircuits.tarangini.core.testing.library.testAlbum
 import com.siliconcircuits.tarangini.core.testing.library.testArtist
@@ -53,10 +54,12 @@ class CarPlayTest {
                 favouritesIcon = null,
                 recent = "Recent",
                 recentIcon = null,
+                playlists = "Playlists",
             ),
         )
     private val search = CarSearch(found, library, items)
-    private val tree = BrowseTree(library, FakeLibraryLetters(library), items, favourites, history)
+    private val tree =
+        BrowseTree(library, FakeLibraryLetters(library), items, favourites, history, FakePlaylistRepository())
     private val carPlay = CarPlay(MainScope(), tree, search, library) { saved }
 
     private fun queueFor(item: MediaItem) = carPlay.queueFor(item) { told += it }

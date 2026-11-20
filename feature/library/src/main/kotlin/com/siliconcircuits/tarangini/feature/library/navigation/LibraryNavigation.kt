@@ -15,11 +15,13 @@ import androidx.navigation.compose.navigation
 import com.siliconcircuits.tarangini.core.domain.model.Album
 import com.siliconcircuits.tarangini.core.domain.model.Artist
 import com.siliconcircuits.tarangini.core.domain.model.Folder
+import com.siliconcircuits.tarangini.core.domain.model.Playlist
 import com.siliconcircuits.tarangini.feature.library.LibraryScreen
 import com.siliconcircuits.tarangini.feature.library.album.AlbumScreen
 import com.siliconcircuits.tarangini.feature.library.artist.ArtistScreen
 import com.siliconcircuits.tarangini.feature.library.favourites.FavouritesScreen
 import com.siliconcircuits.tarangini.feature.library.folder.FolderScreen
+import com.siliconcircuits.tarangini.feature.library.playlist.PlaylistScreen
 
 /**
  * The screens of the Library tab. The detail screens are inside the group
@@ -35,6 +37,7 @@ fun NavGraphBuilder.libraryGraph(navController: NavController, onSearch: () -> U
                 onOpenAlbum = { navController.open(entry, it.route()) },
                 onOpenArtist = { navController.open(entry, it.route()) },
                 onOpenFolder = { navController.open(entry, it.route()) },
+                onOpenPlaylist = { navController.open(entry, PlaylistRoute(it.id, it.name.take(MAX_TITLE))) },
                 onSearch = { if (entry.isShown()) onSearch() },
             )
         }
@@ -45,6 +48,7 @@ fun NavGraphBuilder.libraryGraph(navController: NavController, onSearch: () -> U
                 onOpenAlbum = { navController.open(entry, it.route()) },
             )
         }
+        composable<PlaylistRoute> { entry -> PlaylistScreen(onBack = { navController.back(entry) }) }
         composable<FolderRoute> { entry ->
             FolderScreen(
                 onBack = { navController.back(entry) },

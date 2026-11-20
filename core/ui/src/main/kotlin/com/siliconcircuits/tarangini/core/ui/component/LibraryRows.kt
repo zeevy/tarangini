@@ -80,6 +80,8 @@ fun SongRow(song: Song, actions: SongRowActions, modifier: Modifier = Modifier) 
 @Composable
 private fun SongMenu(song: Song, actions: SongRowActions, isFavourite: Boolean) {
     var open by remember { mutableStateOf(false) }
+    var adding by remember { mutableStateOf(false) }
+    actions.playlists?.takeIf { adding }?.let { pick -> AddToPlaylistDialog(pick, song.id) { adding = false } }
     Box {
         IconButton(onClick = { open = true }) {
             Icon(
@@ -115,6 +117,15 @@ private fun SongMenu(song: Song, actions: SongRowActions, isFavourite: Boolean) 
                     actions.onSetFavourite(song, !isFavourite)
                 },
             )
+            if (actions.playlists != null) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.song_add_to_playlist)) },
+                    onClick = {
+                        open = false
+                        adding = true
+                    },
+                )
+            }
         }
     }
 }

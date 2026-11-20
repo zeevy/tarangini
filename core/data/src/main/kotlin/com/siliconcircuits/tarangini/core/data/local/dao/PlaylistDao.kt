@@ -42,7 +42,8 @@ internal abstract class PlaylistDao {
 
     /**
      * Adds a song at the end of a playlist and returns the id of its place.
-     * One statement, so two adds at once cannot get the same place.
+     * One statement, so two adds at once cannot get the same place. A song
+     * or a playlist that is gone adds nothing.
      */
     @Query(
         """

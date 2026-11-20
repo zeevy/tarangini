@@ -91,7 +91,7 @@ tarangini/
 │   │       │   ├── list/                  PagedList (a long list read page by page), SongActions
 │   │       │   ├── component/             rows and frames only this feature uses
 │   │       │   ├── permission/            AudioPermissionGate
-│   │       │   ├── playlists/
+│   │       │   ├── playlist/              the Playlists list and one playlist
 │   │       │   ├── favourites/
 │   │       │   └── navigation/            LibraryNavigation.kt (routes this feature offers)
 │   │       ├── main/res/values/strings.xml

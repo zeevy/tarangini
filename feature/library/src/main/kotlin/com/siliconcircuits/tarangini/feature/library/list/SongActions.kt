@@ -11,7 +11,9 @@ import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackController
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackQueue
 import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
+import com.siliconcircuits.tarangini.core.domain.repository.PlaylistRepository
 import com.siliconcircuits.tarangini.core.ui.component.SongRowActions
+import com.siliconcircuits.tarangini.core.ui.component.pickIn
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -24,6 +26,7 @@ internal class SongActions @Inject constructor(
     private val playback: PlaybackController,
     private val queue: PlaybackQueue,
     private val favourites: FavouriteRepository,
+    private val playlists: PlaylistRepository,
 ) {
     /**
      * The actions for the rows of one list. [read] gives that list page by
@@ -44,6 +47,7 @@ internal class SongActions @Inject constructor(
             onSetFavourite = { song, favourite ->
                 scope.launch { attempt { favourites.setFavourite(song.id, favourite) } }
             },
+            playlists = playlists.pickIn(scope),
         )
     }
 

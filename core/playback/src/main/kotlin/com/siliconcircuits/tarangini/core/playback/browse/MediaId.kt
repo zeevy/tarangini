@@ -46,6 +46,12 @@ internal sealed interface MediaId {
      */
     data class Letter(val list: LibraryList, val letter: Int) : MediaId
 
+    /** The playlists, under the Library tab. */
+    data object Playlists : MediaId
+
+    /** One playlist: its songs in its order. */
+    data class Playlist(val id: Long) : MediaId
+
     /** One album: its songs. */
     data class Album(val id: Long) : MediaId
 
@@ -64,10 +70,10 @@ internal sealed interface MediaId {
     /** True for a node whose children are songs, so a song can name it as its list. */
     val holdsSongs: Boolean
         get() = when (this) {
-            is Album, is Artist, is Folder, Favourites, Recent -> true
+            is Album, is Artist, is Folder, is Playlist, Favourites, Recent -> true
             is Section -> list == LibraryList.SONGS
             is Letter -> list == LibraryList.SONGS
-            Root, Library, Folders, is SongIn -> false
+            Root, Library, Folders, Playlists, is SongIn -> false
         }
 
     /** The text form of the id, for example `album.12` or `song.345@album.12`. */
@@ -77,6 +83,8 @@ internal sealed interface MediaId {
         Folders -> FOLDERS
         Favourites -> FAVOURITES
         Recent -> RECENT
+        Playlists -> PLAYLISTS
+        is Playlist -> "$PLAYLIST$PART$id"
         is Section -> list.word
         is Letter -> "${list.word}$PART$letter"
         is Album -> "$ALBUM$PART$id"
@@ -94,6 +102,8 @@ internal sealed interface MediaId {
         private const val FOLDERS = "folders"
         private const val FAVOURITES = "favourites"
         private const val RECENT = "recent"
+        private const val PLAYLISTS = "playlists"
+        private const val PLAYLIST = "playlist"
         private const val ALBUM = "album"
         private const val ARTIST = "artist"
         private const val FOLDER = "folder"
@@ -140,6 +150,7 @@ internal sealed interface MediaId {
             FOLDERS -> Folders
             FAVOURITES -> Favourites
             RECENT -> Recent
+            PLAYLISTS -> Playlists
             else -> LibraryList.entries.firstOrNull { it.word == word }?.let(::Section)
         }
 
@@ -149,6 +160,8 @@ internal sealed interface MediaId {
             ARTIST -> Artist(number)
 
             FOLDER -> Folder(number)
+
+            PLAYLIST -> Playlist(number)
 
             else -> LibraryList.entries.firstOrNull { it.word == word }
                 ?.takeIf { number <= Character.MAX_CODE_POINT }

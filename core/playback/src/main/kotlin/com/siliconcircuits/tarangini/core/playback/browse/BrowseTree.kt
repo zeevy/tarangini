@@ -14,6 +14,7 @@ import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryLetters
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
 import com.siliconcircuits.tarangini.core.domain.repository.PlayHistory
+import com.siliconcircuits.tarangini.core.domain.repository.PlaylistRepository
 
 /** The songs a tap in the car plays, and which of them was tapped. */
 internal data class PickedQueue(val songs: List<Song>, val index: Int)
@@ -32,6 +33,7 @@ internal class BrowseTree(
     private val items: BrowseItems,
     private val favourites: FavouriteRepository,
     private val history: PlayHistory,
+    private val playlists: PlaylistRepository,
 ) {
     /** The top node. The car asks for it first, before any list. */
     val root: MediaItem = items.list(MediaId.Root)
@@ -43,12 +45,22 @@ internal class BrowseTree(
      */
     suspend fun children(parent: MediaId, tabLimit: Int): List<MediaItem>? = when (parent) {
         MediaId.Root -> items.tabs().take(tabLimit)
+
         MediaId.Library -> items.sections()
+
         is MediaId.Section -> section(parent)
+
         is MediaId.Letter -> rows(parent.list, parent, group(parent))
+
         MediaId.Folders -> library.folders(null).map(items::folder)
+
+        MediaId.Playlists -> playlists.playlists().take(Page.MAX_LIMIT).map(items::playlist)
+
         is MediaId.Folder -> library.folders(parent.id).map(items::folder) + songItems(parent)
-        is MediaId.Album, is MediaId.Artist, MediaId.Favourites, MediaId.Recent -> songItems(parent)
+
+        is MediaId.Album, is MediaId.Artist, is MediaId.Playlist, MediaId.Favourites, MediaId.Recent ->
+            songItems(parent)
+
         is MediaId.SongIn -> null
     }
 
@@ -101,13 +113,24 @@ internal class BrowseTree(
     /** The songs under a node whose children are songs, in the order the car shows them. */
     private suspend fun songsOf(list: MediaId): List<Song> = when (list) {
         is MediaId.Section -> library.songs(SongSort.TITLE, Page(Page.MAX_LIMIT))
+
         is MediaId.Letter -> group(list)?.page()?.let { page -> library.songs(SongSort.TITLE, page) }.orEmpty()
+
         is MediaId.Album -> library.songsOfAlbum(list.id, Page(Page.MAX_LIMIT))
+
         is MediaId.Artist -> library.songsOfArtist(list.id, Page(Page.MAX_LIMIT))
+
         is MediaId.Folder -> library.songsInFolder(list.id, Page(Page.MAX_LIMIT))
+
         MediaId.Favourites -> favourites.songs(Page(Page.MAX_LIMIT))
+
         MediaId.Recent -> history.recentSongs()
-        MediaId.Root, MediaId.Library, MediaId.Folders, is MediaId.SongIn -> emptyList()
+
+        // A song that is in the playlist twice is one row in the car: the car tells rows apart by the song.
+        is MediaId.Playlist ->
+            playlists.songs(list.id, Page(Page.MAX_LIMIT)).map { it.song }.distinctBy { it.id }
+
+        MediaId.Root, MediaId.Library, MediaId.Folders, MediaId.Playlists, is MediaId.SongIn -> emptyList()
     }
 
     private suspend fun group(letter: MediaId.Letter): LetterGroup? =

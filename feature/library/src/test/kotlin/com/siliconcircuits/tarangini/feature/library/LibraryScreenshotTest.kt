@@ -8,6 +8,8 @@ package com.siliconcircuits.tarangini.feature.library
 
 import androidx.compose.runtime.Composable
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.siliconcircuits.tarangini.core.domain.model.Playlist
+import com.siliconcircuits.tarangini.core.domain.model.PlaylistSong
 import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.testing.library.testAlbum
 import com.siliconcircuits.tarangini.core.testing.library.testArtist
@@ -19,6 +21,9 @@ import com.siliconcircuits.tarangini.feature.library.album.AlbumContent
 import com.siliconcircuits.tarangini.feature.library.artist.ArtistContent
 import com.siliconcircuits.tarangini.feature.library.folder.FolderContent
 import com.siliconcircuits.tarangini.feature.library.list.PagedItems
+import com.siliconcircuits.tarangini.feature.library.playlist.PlaylistActions
+import com.siliconcircuits.tarangini.feature.library.playlist.PlaylistContent
+import com.siliconcircuits.tarangini.feature.library.playlist.PlaylistsContent
 import java.io.File
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -109,6 +114,31 @@ class LibraryScreenshotTest {
     @Test
     fun `a folder with nothing left`() = shot("library_folder_empty") {
         FolderContent("Old", emptyList(), PagedItems(isLoading = false), songActions, {}, {}, {}, {})
+    }
+
+    @Test
+    fun playlists() = shot("library_playlists") {
+        LibraryContent(lists, songActions, LibraryActions(), firstTab = LibraryTab.PLAYLISTS) {
+            PlaylistsContent(
+                listOf(
+                    Playlist(1, "Drive", 12),
+                    Playlist(2, "A playlist with a name that does not fit on one line", 1),
+                ),
+                onOpenPlaylist = {},
+                onCreate = {},
+            )
+        }
+    }
+
+    @Test
+    fun playlist() = shot("library_playlist") {
+        val places = PagedItems(songs.items.mapIndexed { index, song -> PlaylistSong(index + 1L, song) }, false)
+        PlaylistContent("Drive", places, PlaylistActions(), onBack = {})
+    }
+
+    @Test
+    fun `a playlist with no songs`() = shot("library_playlist_empty") {
+        PlaylistContent("Drive", PagedItems(isLoading = false), PlaylistActions(), onBack = {})
     }
 
     private fun shot(name: String, screen: @Composable () -> Unit) {
