@@ -59,6 +59,7 @@ Run on a mid range phone. A scan is started from the library screen.
 | 21 | Play a queue of a few songs to the middle of the third song. Force stop the app in the settings of the phone. Open the app | The same queue, the third song and the position, at most 5 seconds back. Nothing plays and no media notification shows until play is pressed |
 | 22 | Play a song, pause it, and swipe the app away. Press play on a Bluetooth headset or in the car | The song goes on from where it was |
 | 23 | Put three songs in the queue and play the first. Delete the file of the second song with a file manager. Let the first song end | The third song plays |
+| 24 | Force stop the app. From a computer, send a media play key to the app's `MediaButtonReceiver` with `adb shell am broadcast` | The app does not crash. If it starts, it plays only the last queue |
 
 ## Results
 

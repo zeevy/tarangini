@@ -32,26 +32,10 @@ internal abstract class QueueDao {
     protected abstract suspend fun insertItems(items: List<QueueItemEntity>)
 
     /**
-     * The saved queue in order, without songs whose file is gone. The resume
-     * state names a song by [QueueSongRow.position], not by its place in
-     * this list.
-     */
-    @Query(
-        """
-            SELECT q.position, s.*, ar.name AS artist_name, al.title AS album_title
-            FROM queue_items q
-            JOIN songs s ON s.id = q.song_id
-            JOIN artists ar ON ar.id = s.artist_id
-            JOIN albums al ON al.id = s.album_id
-            WHERE s.missing_since IS NULL
-            ORDER BY q.position
-        """,
-    )
-    abstract suspend fun queue(): List<QueueSongRow>
-
-    /**
      * The saved queue in order as file ids, without songs whose file is
      * gone. It reads two columns only, so a very long queue stays cheap.
+     * The resume state names a song by [QueueFileRow.position], not by its
+     * place in this list.
      */
     @Query(
         """
@@ -74,6 +58,14 @@ internal abstract class QueueDao {
         replaceQueue(songIds)
         saveResumeState(state)
     }
+
+    /**
+     * Runs [block] in one transaction. The block holds the one write
+     * connection of the database until it ends. Call only functions of this
+     * DAO in it, and no wait.
+     */
+    @Transaction
+    open suspend fun <T> inOneTransaction(block: suspend () -> T): T = block()
 
     @Upsert
     abstract suspend fun saveResumeState(state: ResumeStateEntity)

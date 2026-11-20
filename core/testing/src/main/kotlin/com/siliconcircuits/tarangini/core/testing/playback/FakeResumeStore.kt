@@ -12,20 +12,27 @@ import com.siliconcircuits.tarangini.core.domain.playback.SavedPlayback
 
 /**
  * A [ResumeStore] for tests. It keeps what was saved in [saved] and counts
- * the saves of a whole queue in [queueSaves].
+ * the saves of a whole queue in [queueSaves]. While [failure] is set, every
+ * call throws it.
  */
 class FakeResumeStore(var saved: SavedPlayback? = null) : ResumeStore {
     var queueSaves = 0
         private set
+    var failure: Exception? = null
 
     override suspend fun saveQueue(playback: SavedPlayback) {
+        failure?.let { throw it }
         queueSaves++
         saved = playback
     }
 
     override suspend fun savePlace(place: ResumePlace) {
+        failure?.let { throw it }
         saved = saved?.copy(place = place)
     }
 
-    override suspend fun load(): SavedPlayback? = saved
+    override suspend fun load(): SavedPlayback? {
+        failure?.let { throw it }
+        return saved
+    }
 }

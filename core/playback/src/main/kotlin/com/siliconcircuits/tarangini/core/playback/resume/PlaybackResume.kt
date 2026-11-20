@@ -10,14 +10,12 @@ import androidx.annotation.OptIn
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
-import com.siliconcircuits.tarangini.core.domain.playback.ResumePlace
 import com.siliconcircuits.tarangini.core.domain.playback.ResumeStore
 import com.siliconcircuits.tarangini.core.domain.playback.SavedPlayback
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -32,6 +30,9 @@ import kotlinx.coroutines.launch
  * parts. Saves run one after the other, so an old save never lands on a
  * newer one.
  *
+ * A read or a save that the database refuses is left out: the music must
+ * not stop because the place could not be stored.
+ *
  * Everything here runs on the main thread, like the player.
  *
  * @param scope lives longer than the service, so the last save is not lost when the service ends
@@ -43,12 +44,17 @@ internal class PlaybackResume(
 ) : Player.Listener {
     /** Wakes the one coroutine that saves. A wake that comes while it works is kept, more of them count as one. */
     private val wake = Channel<Unit>(Channel.CONFLATED)
-    private var saved: Deferred<SavedPlayback?>? = null
-    private var queueChanged = false
-    private var latestPlace: ResumePlace? = null
+
+    /** Counts the changes of the queue. The queue is stored when [savedChange] is the same number. */
+    private var queueChange = 0
+    private var savedChange = 0
 
     /** The ids of the queue that is stored, to leave out a save of the same queue. */
     private var storedIds: List<String>? = null
+
+    /** What [end] read from the player, for the last save after the player is released. */
+    private var atEnd: SavedPlayback? = null
+    private var ticker: Job? = null
     private var ended = false
 
     /**
@@ -58,46 +64,47 @@ internal class PlaybackResume(
      * new service never wipes the stored queue.
      */
     fun start() {
-        val load = scope.async(start = CoroutineStart.LAZY) { store.load() }
-        saved = load
         scope.launch {
-            val playback = load.await()
+            val playback = store.loadOrNull()
             if (ended) return@launch
-            storedIds = playback?.mediaIds
-            if (playback != null && player.mediaItemCount == 0) player.fill(playback)
+            if (player.mediaItemCount == 0) {
+                storedIds = playback?.mediaIds
+                playback?.let(player::fill)
+            } else {
+                // Somebody filled the player during the read. That queue is the one to store.
+                queueChange++
+                wake.trySend(Unit)
+            }
             player.addListener(this@PlaybackResume)
             launch { saveWhenWoken() }
-            launch { wakeWhilePlaying() }
+            ticker = launch { wakeWhilePlaying() }
         }
     }
 
     /**
      * What the session plays when the system, a Bluetooth device or the car
      * asks to go on and the player is empty, or null when nothing was saved.
+     * It is read again each time, so a queue that was emptied since the
+     * service started does not come back.
      */
     // The answer class is API that Media3 may still change.
     @OptIn(UnstableApi::class)
-    suspend fun resumption(): MediaItemsWithStartPosition? = saved?.await()?.toResumption()
+    suspend fun resumption(): MediaItemsWithStartPosition? = store.loadOrNull()?.toResumption()
 
-    /** Saves the place a last time and stops. Call it before the player is released. */
+    /** Saves the queue and the place a last time and stops. Call it before the player is released. */
     fun end() {
         if (ended) return
         ended = true
         player.removeListener(this)
-        if (storedIds != null) {
-            latestPlace = player.place()
-            wake.trySend(Unit)
-        }
-        // The saving coroutine takes what is waiting and ends by itself.
+        ticker?.cancel()
+        if (queueChange != savedChange || storedIds != null) atEnd = player.playback()
+        // The saving coroutine ends its work, saves what was read here and ends by itself.
         wake.close()
     }
 
     override fun onEvents(player: Player, events: Player.Events) {
-        if (events.contains(Player.EVENT_TIMELINE_CHANGED)) queueChanged = true
-        if (events.movesThePlace()) {
-            latestPlace = player.place()
-            wake.trySend(Unit)
-        }
+        if (events.contains(Player.EVENT_TIMELINE_CHANGED)) queueChange++
+        if (events.movesThePlace()) wake.trySend(Unit)
     }
 
     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
@@ -106,39 +113,43 @@ internal class PlaybackResume(
     }
 
     private suspend fun saveWhenWoken() {
-        // The loop ends when the channel is closed and what waited in it is saved.
+        // The loop ends when the channel is closed.
         while (wake.receiveCatching().isSuccess) {
-            if (queueChanged && !ended) {
-                // More parts of a long list may follow at once.
-                delay(QUEUE_STILL)
+            if (queueChange != savedChange) {
+                saveQueueWhenStill()
+            } else if (!ended) {
+                val place = player.place()
+                store.writing { savePlace(place) }
             }
-            if (queueChanged && !ended) {
-                queueChanged = false
-                saveQueue()
-            } else {
-                latestPlace?.let { store.savePlace(it) }
-            }
+        }
+        atEnd?.let { save(it) }
+    }
+
+    private suspend fun saveQueueWhenStill() {
+        while (!ended && queueChange != savedChange) {
+            val seen = queueChange
+            // More parts of a long list may follow at once.
+            delay(QUEUE_STILL)
+            if (ended || seen != queueChange) continue
+            // A save that failed is tried again with the next wake.
+            if (!save(player.playback())) return
+            savedChange = seen
         }
     }
 
-    private suspend fun saveQueue() {
-        val ids = List(player.mediaItemCount) { player.getMediaItemAt(it).mediaId }
-        val place = player.place()
-        if (ids == storedIds) {
-            store.savePlace(place)
+    private suspend fun save(playback: SavedPlayback): Boolean = store.writing {
+        if (playback.mediaIds == storedIds) {
+            savePlace(playback.place)
         } else {
-            store.saveQueue(SavedPlayback(ids, place))
-            storedIds = ids
+            saveQueue(playback)
+            storedIds = playback.mediaIds
         }
     }
 
     private suspend fun wakeWhilePlaying() {
-        while (!ended) {
+        while (true) {
             delay(SAVE_EVERY)
-            if (!ended && player.isPlaying) {
-                latestPlace = player.place()
-                wake.trySend(Unit)
-            }
+            if (player.isPlaying) wake.trySend(Unit)
         }
     }
 
@@ -147,3 +158,11 @@ internal class PlaybackResume(
         val QUEUE_STILL = 1.seconds
     }
 }
+
+/** What was saved, or null when nothing was saved or the database cannot be read. */
+private suspend fun ResumeStore.loadOrNull(): SavedPlayback? =
+    runCatching { load() }.onFailure { if (it is CancellationException) throw it }.getOrNull()
+
+/** Runs [write] and says whether it worked. A database that refuses a write must not end the app. */
+private suspend fun ResumeStore.writing(write: suspend ResumeStore.() -> Unit): Boolean =
+    runCatching { write() }.onFailure { if (it is CancellationException) throw it }.isSuccess

@@ -41,8 +41,12 @@ class PlaybackSessionCallbackTest {
     private val controller = Robolectric.buildService(PlaybackService::class.java)
     private val service = controller.create().get()
     private var saved: MediaItemsWithStartPosition? = null
+    private var readFailure: Exception? = null
     private val callback =
-        PlaybackSessionCallback(CallerPolicy(service.packageName, Process.myUid()), MainScope()) { saved }
+        PlaybackSessionCallback(CallerPolicy(service.packageName, Process.myUid()), MainScope()) {
+            readFailure?.let { throw it }
+                ?: saved
+        }
 
     private val thisApp = caller(service.packageName, Process.myUid(), trusted = false)
     private val session = requireNotNull(service.onGetSession(thisApp))
@@ -133,6 +137,17 @@ class PlaybackSessionCallbackTest {
         shadowOf(Looper.getMainLooper()).idle()
 
         assertTrue(runCatching { answer.get() }.exceptionOrNull()?.cause is UnsupportedOperationException)
+    }
+
+    @Test
+    fun `a request to go on gets an answer when the read of the saved queue fails`() {
+        readFailure = IllegalStateException("read failed")
+
+        val answer = callback.onPlaybackResumption(session, thisApp, true)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertTrue(answer.isDone)
+        assertTrue(runCatching { answer.get() }.isFailure)
     }
 
     private fun caller(packageName: String, uid: Int, trusted: Boolean): MediaSession.ControllerInfo =

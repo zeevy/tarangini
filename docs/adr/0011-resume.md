@@ -13,11 +13,15 @@ The app must come back with the same queue, item and position after it was close
 |---|---|---|
 | The playback service saves and restores, through `ResumeStore` from `core:domain`. `RoomResumeStore` in `core:data` keeps it in Room | Save from the screens; save in DataStore | The service plays also when no screen is open, and it is the only place that sees every change. Playback and data do not depend on each other, so the interface is in the domain |
 | The place (item, position, shuffle, repeat) is saved on a pause or a start, a change of item, a seek and every 5 seconds while something plays | Only on a pause; every second | A killed app loses at most 5 seconds. One small row is written |
-| The queue is saved when it changed and has been still for 1 second. The queue and the place go in one transaction | Save on every change | A long list comes into the player in parts (ADR 0006). Each part would write the whole queue again |
+| The queue is saved when it changed and has been still for 1 second. A change that still waits when the service ends is saved at once. The queue and the place go in one transaction | Save on every change | A long list comes into the player in parts (ADR 0006). Each part would write the whole queue again |
 | A queue that came back is not written again while it is the same | Write it on every start | A start writes nothing, also with 100,000 songs |
 | Saves run one after the other in one coroutine | A new coroutine for each save | A slow save of the queue can never land on a newer place |
 | On start the service puts the saved queue into the empty player, paused and not prepared | Prepare it too | A prepared player shows the media notification. Opening the app must show and sound nothing new. A play request prepares the player |
 | Saving starts only after the read of the saved queue ended | Save from the start | The empty player of a new service must never wipe what is stored |
+| A player that was filled while the saved queue was read keeps its queue, and that queue is saved | Put the saved queue over it | What somebody just asked to play is newer than what was saved |
+| A read or a save that the database refuses is left out. A save is tried again with the next one | Let the error end the app | The music must not stop because the place could not be stored |
+| The current item is not a song of the library: the next stored song is saved as current, from its start | Save its position for the next song | A position belongs to one item only |
+| `MediaButtonReceiver` is exported, as Media3 asks, and the request to go on has no caller check of its own | Not exported; a permission on it; the check of `CallerPolicy` | Any app may already send a media key through `AudioManager`, so the receiver opens nothing new. A caller cannot name an item and reads nothing: it can only start the last queue. Media3 hands the key over as a caller of its own, which a check could refuse on a real phone |
 | A request to go on with an empty player (`onPlaybackResumption`) gets the saved queue from the database. `MediaButtonReceiver` is in the manifest, so a media button starts the service when the app is not running | Take the items the caller names | Nothing a caller sends decides what plays (ADR 0004). The items come only from our own database |
 | The saved queue goes into the player in one call | In parts, like a list from a screen | Media3 takes the items of a resumption only as one list. Nothing waits to sound when the app opens, and the list is made in the same process. ADR 0006 is about lists from a screen, where the first sound must not wait |
 | The player knows a song by its MediaStore address; the database stores the song row | Store the address | A song that is removed takes its queue rows with it, and a song whose file is gone is left out by the same read as everywhere |
@@ -29,6 +33,9 @@ The app must come back with the same queue, item and position after it was close
 - An item that is not a song of the library is not saved. A station is not saved yet, because the app cannot play one. It goes into `resume_state.station_id` together with radio playback.
 - The order that shuffle made is not saved, only that shuffle was on. After a restart the same queue is shuffled in a new order.
 - The system media controls after a reboot are not part of this.
+- A read or a save that fails is not reported anywhere yet. It goes to the crash reporter when that exists (issue #45).
+- Another app can start the last queue with a media key, also when the app is not running. It cannot choose what plays.
+- A song that was skipped because its file is gone leaves the saved queue with the next save.
 
 ## Open points
 

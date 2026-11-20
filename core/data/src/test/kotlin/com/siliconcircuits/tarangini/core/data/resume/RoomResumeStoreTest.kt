@@ -90,16 +90,18 @@ class RoomResumeStoreTest {
     }
 
     @Test
-    fun `an item that is not a song of the library is left out, and the place moves to the next song`() = runTest {
-        addSongs(1, 2)
-        val ids = listOf(song(1), "https://example.com/stream", song(99), song(2))
+    fun `an item that is not a song of the library is left out, and the next song is current, from its start`() =
+        runTest {
+            addSongs(1, 2)
+            val ids = listOf(song(1), "https://example.com/stream", song(99), song(2))
 
-        store().saveQueue(SavedPlayback(ids, place(index = 2, positionMs = 9_000)))
-        val loaded = requireNotNull(store().load())
+            store().saveQueue(SavedPlayback(ids, place(index = 2, positionMs = 9_000)))
+            val loaded = requireNotNull(store().load())
 
-        assertEquals(listOf(song(1), song(2)), loaded.mediaIds)
-        assertEquals(place(1, 9_000), loaded.place)
-    }
+            assertEquals(listOf(song(1), song(2)), loaded.mediaIds)
+            // The position belonged to the item that was left out, so the next song starts from its beginning.
+            assertEquals(place(1, 0), loaded.place)
+        }
 
     @Test
     fun `when the file of the current song is gone, the next song is current, from its start`() = runTest {

@@ -41,21 +41,26 @@ internal class RoomResumeStore @Inject constructor(
 ) : ResumeStore {
     /**
      * For each place in the player's queue, the place of that item in the
-     * stored queue, or the place of the next stored item when it was not
-     * saved. Null until a queue was saved since the app started.
+     * stored queue. An item that was not saved has the place of the next
+     * stored item, written as `-place - 1`. Null until a queue was saved or
+     * read since the app started.
      */
     @Volatile
     private var storedPlaces: IntArray? = null
 
     override suspend fun saveQueue(playback: SavedPlayback) = withContext(io) {
-        val songIds = queue.localSongIds(SongSource.LOCAL).associate { it.sourceId to it.id }
         val places = IntArray(playback.mediaIds.size)
-        val kept = ArrayList<Long>(playback.mediaIds.size)
-        playback.mediaIds.forEachIndexed { index, mediaId ->
-            places[index] = kept.size
-            sourceIdOf(mediaId)?.let(songIds::get)?.let(kept::add)
+        // One transaction: a library scan cannot remove a song between the read of the ids and the save.
+        queue.inOneTransaction {
+            val songIds = queue.localSongIds(SongSource.LOCAL).associate { it.sourceId to it.id }
+            val kept = ArrayList<Long>(playback.mediaIds.size)
+            playback.mediaIds.forEachIndexed { index, mediaId ->
+                val songId = sourceIdOf(mediaId)?.let(songIds::get)
+                places[index] = if (songId == null) -kept.size - 1 else kept.size
+                songId?.let(kept::add)
+            }
+            queue.saveQueue(kept, playback.place.toEntity(places))
         }
-        queue.saveQueue(kept, playback.place.toEntity(places))
         storedPlaces = places
     }
 
@@ -88,13 +93,18 @@ internal class RoomResumeStore @Inject constructor(
         )
     }
 
-    private fun ResumePlace.toEntity(places: IntArray) = ResumeStateEntity(
-        queuePosition = places.getOrElse(index) { 0 },
-        positionMs = positionMs.coerceAtLeast(0),
-        stationId = null,
-        shuffle = shuffle,
-        repeatMode = StoredRepeatMode.valueOf(repeat.name),
-    )
+    private fun ResumePlace.toEntity(places: IntArray): ResumeStateEntity {
+        val place = places.getOrElse(index) { 0 }
+        // The current item is not stored: the next stored item takes its place, from its start.
+        val notStored = place < 0
+        return ResumeStateEntity(
+            queuePosition = if (notStored) -place - 1 else place,
+            positionMs = if (notStored) 0 else positionMs.coerceAtLeast(0),
+            stationId = null,
+            shuffle = shuffle,
+            repeatMode = StoredRepeatMode.valueOf(repeat.name),
+        )
+    }
 
     private companion object {
         /** The id MediaStore gave the file: the number at the end of `content://media/<volume>/audio/media/<n>`. */

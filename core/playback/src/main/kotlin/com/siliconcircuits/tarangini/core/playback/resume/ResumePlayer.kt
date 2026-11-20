@@ -11,32 +11,28 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
-import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
 import com.siliconcircuits.tarangini.core.domain.playback.ResumePlace
 import com.siliconcircuits.tarangini.core.domain.playback.SavedPlayback
+import com.siliconcircuits.tarangini.core.playback.controller.toPlayerMode
+import com.siliconcircuits.tarangini.core.playback.controller.toRepeatMode
 
 /** Puts a saved queue into the player at its place. It does not prepare and does not play. */
 internal fun Player.fill(playback: SavedPlayback) {
     // One call: the list comes from the database of this app, in the same process, and nothing waits to sound.
     setMediaItems(playback.mediaIds.map(::toMediaItem), playback.place.index, playback.place.positionMs)
     shuffleModeEnabled = playback.place.shuffle
-    repeatMode = when (playback.place.repeat) {
-        RepeatMode.OFF -> Player.REPEAT_MODE_OFF
-        RepeatMode.ONE -> Player.REPEAT_MODE_ONE
-        RepeatMode.ALL -> Player.REPEAT_MODE_ALL
-    }
+    repeatMode = playback.place.repeat.toPlayerMode()
 }
+
+/** The queue of the player and where it is now, in the form that is saved. */
+internal fun Player.playback() = SavedPlayback(List(mediaItemCount) { getMediaItemAt(it).mediaId }, place())
 
 /** Where the player is now, in the form that is saved. */
 internal fun Player.place() = ResumePlace(
     index = currentMediaItemIndex,
     positionMs = currentPosition,
     shuffle = shuffleModeEnabled,
-    repeat = when (repeatMode) {
-        Player.REPEAT_MODE_ONE -> RepeatMode.ONE
-        Player.REPEAT_MODE_ALL -> RepeatMode.ALL
-        else -> RepeatMode.OFF
-    },
+    repeat = repeatMode.toRepeatMode(),
 )
 
 /** True for what moves the place: a pause or a start, another item, a seek, a new queue, shuffle and repeat. */

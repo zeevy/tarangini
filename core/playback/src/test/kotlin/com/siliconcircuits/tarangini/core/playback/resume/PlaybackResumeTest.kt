@@ -6,6 +6,7 @@
 
 package com.siliconcircuits.tarangini.core.playback.resume
 
+import android.database.SQLException
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
@@ -159,5 +160,60 @@ class PlaybackResumeTest {
     @Test
     fun `a request to go on gets nothing when nothing was saved`() = runTest {
         assertNull(started().resumption())
+    }
+
+    @Test
+    fun `a request to go on does not bring back a queue that was emptied since the start`() = runTest {
+        store.saved = threeSongs
+        val resume = started()
+
+        store.saved = null
+
+        assertNull(resume.resumption())
+    }
+
+    @Test
+    fun `a change of the queue just before the service ends is saved`() = runTest {
+        store.saved = threeSongs
+        val resume = started()
+
+        player.addMediaItems(items("d"))
+        player.report()
+        resume.end()
+        runCurrent()
+
+        assertEquals(listOf("a", "b", "c", "d"), store.saved?.mediaIds)
+    }
+
+    @Test
+    fun `a player that was filled before the saved queue was read keeps its queue, and that queue is saved`() =
+        runTest {
+            store.saved = threeSongs
+            player.setMediaItems(items("x", "y"), 1, 0)
+
+            started()
+            advanceTimeBy(2.seconds)
+
+            assertEquals(listOf("x", "y"), queue())
+            assertEquals(listOf("x", "y"), store.saved?.mediaIds)
+            assertEquals(1, store.saved?.place?.index)
+        }
+
+    @Test
+    fun `a database that fails does not stop the service, and the next save works`() = runTest {
+        store.failure = SQLException("disk")
+        val resume = started()
+        assertNull(resume.resumption())
+        player.setMediaItems(items("a"), 0, 0)
+        player.report()
+        advanceTimeBy(2.seconds)
+        assertNull(store.saved)
+
+        store.failure = null
+        player.addMediaItems(items("b"))
+        player.report()
+        advanceTimeBy(2.seconds)
+
+        assertEquals(listOf("a", "b"), store.saved?.mediaIds)
     }
 }

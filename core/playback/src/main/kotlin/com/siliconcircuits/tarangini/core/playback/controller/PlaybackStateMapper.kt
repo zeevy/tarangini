@@ -53,10 +53,18 @@ private fun MediaMetadata.toPlaybackItem(id: String, tags: MediaMetadata?): Play
     artworkUri = (tags?.artworkUri ?: artworkUri)?.toString(),
 )
 
-private fun Int.toRepeatMode(): RepeatMode = when (this) {
+/** The repeat mode of the player as the app names it. */
+internal fun Int.toRepeatMode(): RepeatMode = when (this) {
     Player.REPEAT_MODE_ONE -> RepeatMode.ONE
     Player.REPEAT_MODE_ALL -> RepeatMode.ALL
     else -> RepeatMode.OFF
+}
+
+/** The repeat mode as the player takes it. */
+internal fun RepeatMode.toPlayerMode(): Int = when (this) {
+    RepeatMode.OFF -> Player.REPEAT_MODE_OFF
+    RepeatMode.ONE -> Player.REPEAT_MODE_ONE
+    RepeatMode.ALL -> Player.REPEAT_MODE_ALL
 }
 
 private fun PlaybackException.toPlaybackError(): PlaybackError = when (errorCode) {

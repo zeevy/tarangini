@@ -75,7 +75,8 @@ internal class PlaybackSessionCallback(
     ): ListenableFuture<MediaItemsWithStartPosition> {
         val answer = SettableFuture.create<MediaItemsWithStartPosition>()
         scope.launch {
-            val saved = resumption()
+            // The caller always gets an answer, also when the read fails.
+            val saved = runCatching { resumption() }.getOrNull()
             if (saved == null) {
                 answer.setException(UnsupportedOperationException("Nothing was playing before"))
             } else {
