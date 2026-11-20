@@ -22,16 +22,13 @@ import org.robolectric.annotation.GraphicsMode
 @Config(qualifiers = PHONE)
 class AudioPermissionScreenshotTest {
     @Test
-    fun `not asked, light`() = capture("permission_not_asked_light", AudioPermissionState.NOT_ASKED)
+    fun `not asked`() = capture("permission_not_asked", AudioPermissionState.NOT_ASKED)
 
     @Test
-    fun `denied, light`() = capture("permission_denied_light", AudioPermissionState.DENIED)
+    fun `denied`() = capture("permission_denied", AudioPermissionState.DENIED)
 
     @Test
-    fun `denied for good, light`() = capture("permission_blocked_light", AudioPermissionState.DENIED_FOR_GOOD)
-
-    @Test
-    fun `not asked, dark`() = capture("permission_not_asked_dark", AudioPermissionState.NOT_ASKED, darkTheme = true)
+    fun `denied for good`() = capture("permission_blocked", AudioPermissionState.DENIED_FOR_GOOD)
 
     @Test
     @Config(qualifiers = SMALL_PHONE)
@@ -40,12 +37,12 @@ class AudioPermissionScreenshotTest {
         capture("permission_blocked_narrow_largest_font", AudioPermissionState.DENIED_FOR_GOOD)
     }
 
-    private fun capture(name: String, state: AudioPermissionState, darkTheme: Boolean = false) {
+    private fun capture(name: String, state: AudioPermissionState) {
         val picture = File("src/test/screenshots/$name.png")
         // Without this, a test with no saved picture passes: there is nothing to compare with.
         assertTrue("No saved picture $picture. Run the tests with -PrecordScreenshots.", recording || picture.exists())
         captureRoboImage(picture.path) {
-            TaranginiTheme(darkTheme = darkTheme, dynamicColor = false) {
+            TaranginiTheme {
                 AudioPermissionScreen(state = state, onAllow = {}, onOpenSettings = {})
             }
         }

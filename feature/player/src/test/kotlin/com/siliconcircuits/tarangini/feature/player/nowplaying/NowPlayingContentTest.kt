@@ -73,7 +73,7 @@ class NowPlayingContentTest {
 
     private fun show(state: NowPlayingUiState?) {
         composeRule.setContent {
-            TaranginiTheme(dynamicColor = false) {
+            TaranginiTheme {
                 NowPlayingContent(state, actions, { done += "back" }, { done += "queue" })
             }
         }

@@ -8,15 +8,19 @@ package com.siliconcircuits.tarangini.feature.library.permission
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.siliconcircuits.tarangini.core.ui.R as UiR
 import com.siliconcircuits.tarangini.core.ui.component.MessageState
+import com.siliconcircuits.tarangini.core.ui.theme.glassBackground
+import com.siliconcircuits.tarangini.core.ui.theme.glassTopBarColors
 import com.siliconcircuits.tarangini.feature.library.R
 
 /**
@@ -32,8 +36,15 @@ internal fun AudioPermissionScreen(
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
-        modifier = modifier,
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.library_title)) }) },
+        modifier = modifier.glassBackground(),
+        containerColor = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onBackground,
+        topBar = {
+            TopAppBar(
+                colors = glassTopBarColors(),
+                title = { Text(stringResource(R.string.library_title)) },
+            )
+        },
     ) { innerPadding ->
         val blocked = state == AudioPermissionState.DENIED_FOR_GOOD
         MessageState(

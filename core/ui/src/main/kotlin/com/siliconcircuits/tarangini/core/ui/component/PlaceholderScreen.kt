@@ -18,10 +18,13 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import com.siliconcircuits.tarangini.core.ui.R
 import com.siliconcircuits.tarangini.core.ui.theme.Spacing
+import com.siliconcircuits.tarangini.core.ui.theme.glassBackground
+import com.siliconcircuits.tarangini.core.ui.theme.glassTopBarColors
 
 /**
  * Stands in for a screen that is not built yet: a top bar with the screen
@@ -37,8 +40,17 @@ fun PlaceholderScreen(
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     Scaffold(
-        modifier = modifier,
-        topBar = { TopAppBar(title = { Text(title) }, navigationIcon = navigationIcon, actions = actions) },
+        modifier = modifier.glassBackground(),
+        containerColor = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onBackground,
+        topBar = {
+            TopAppBar(
+                colors = glassTopBarColors(),
+                title = { Text(title) },
+                navigationIcon = navigationIcon,
+                actions = actions,
+            )
+        },
     ) { innerPadding ->
         Box(
             modifier = Modifier.fillMaxSize().padding(innerPadding).padding(Spacing.large),

@@ -219,7 +219,7 @@ Entities, DAOs and DTOs are `internal` to `core:data`. Mappers turn them into do
 | ViewModels | JVM tests with Turbine and the coroutine test dispatcher | `feature:*` `src/test` |
 | DAOs and migrations | Robolectric or instrumented tests on an in-memory database | `core:data` |
 | Radio Browser client | Recorded responses on a mock web server | `core:data` |
-| Screens | Screenshot tests of the stateless content composable, light and dark, 320dp wide | `feature:*` `src/test` |
+| Screens | Screenshot tests of the stateless content composable, 320dp wide | `feature:*` `src/test` |
 | Playback and the browse tree | Media3 test utilities and fake repositories | `core:playback` |
 | Main flows end to end | Instrumented test on an emulator in CI | `app` `src/androidTest` |
 

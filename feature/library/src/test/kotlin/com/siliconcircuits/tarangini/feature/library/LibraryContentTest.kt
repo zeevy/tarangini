@@ -67,7 +67,7 @@ class LibraryContentTest {
 
     private fun show(lists: LibraryState = this.lists, actions: LibraryActions = LibraryActions()) {
         composeRule.setContent {
-            TaranginiTheme(dynamicColor = false) { LibraryContent(lists, songActions, actions) }
+            TaranginiTheme { LibraryContent(lists, songActions, actions) }
         }
     }
 

@@ -9,10 +9,12 @@ package com.siliconcircuits.tarangini.feature.player.miniplayer
 import android.app.Application
 import android.content.ComponentName
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onRoot
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
+import com.siliconcircuits.tarangini.core.ui.theme.glassBackground
 import java.io.File
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -27,7 +29,7 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
-/** The mini player at the narrowest width, in light and dark. */
+/** The mini player at the narrowest width. */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(qualifiers = "w320dp-h640dp-xhdpi")
@@ -59,24 +61,15 @@ class MiniPlayerScreenshotTest {
         MiniPlayerUiState("Radio Mirchi", null, null, showPause = true, isBuffering = true, progress = null)
 
     @Test
-    fun `playing, light`() = capture("mini_player_playing_light", song, dark = false)
+    fun `playing`() = capture("mini_player_playing", song)
 
     @Test
-    fun `playing, dark`() = capture("mini_player_playing_dark", song, dark = true)
+    fun `paused`() = capture("mini_player_paused", paused)
 
     @Test
-    fun `paused, light`() = capture("mini_player_paused_light", paused, dark = false)
+    fun `buffering`() = capture("mini_player_buffering", buffering)
 
-    @Test
-    fun `paused, dark`() = capture("mini_player_paused_dark", paused, dark = true)
-
-    @Test
-    fun `buffering, light`() = capture("mini_player_buffering_light", buffering, dark = false)
-
-    @Test
-    fun `buffering, dark`() = capture("mini_player_buffering_dark", buffering, dark = true)
-
-    private fun capture(name: String, state: MiniPlayerUiState, dark: Boolean) {
+    private fun capture(name: String, state: MiniPlayerUiState) {
         val picture = File("src/test/screenshots/$name.png")
         // Without this, a test with no saved picture passes: there is nothing to compare with.
         assertTrue("No saved picture $picture. Run the tests with -PrecordScreenshots.", recording || picture.exists())
@@ -84,7 +77,7 @@ class MiniPlayerScreenshotTest {
         // one fixed moment and the test does not wait for the line to stop.
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
-            TaranginiTheme(darkTheme = dark, dynamicColor = false) { MiniPlayerBar(state, {}, {}, {}) }
+            TaranginiTheme { MiniPlayerBar(state, {}, {}, {}, Modifier.glassBackground()) }
         }
         composeRule.mainClock.advanceTimeByFrame()
         composeRule.onRoot().captureRoboImage(picture.path)

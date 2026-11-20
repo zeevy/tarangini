@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -46,6 +47,11 @@ internal fun PlayerButtons(state: NowPlayingUiState, actions: NowPlayingActions,
         FilledIconButton(
             onClick = actions.onTogglePlay,
             modifier = Modifier.size(Spacing.extraLarge + Spacing.medium),
+            // The main button of a screen is white with a dark icon.
+            colors = IconButtonDefaults.filledIconButtonColors(
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onSecondary,
+            ),
         ) {
             Icon(
                 painter = painterResource(if (state.showPause) CoreUiR.drawable.ic_pause else CoreUiR.drawable.ic_play),

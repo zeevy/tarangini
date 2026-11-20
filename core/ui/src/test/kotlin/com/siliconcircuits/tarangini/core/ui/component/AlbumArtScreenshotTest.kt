@@ -56,17 +56,14 @@ class AlbumArtScreenshotTest {
     fun forgetTheLoader() = SingletonImageLoader.reset()
 
     @Test
-    fun `a picture, no picture and no address, light`() = capture("album_art_light", darkTheme = false)
+    fun `a picture, no picture and no address`() = capture("album_art")
 
-    @Test
-    fun `a picture, no picture and no address, dark`() = capture("album_art_dark", darkTheme = true)
-
-    private fun capture(name: String, darkTheme: Boolean) {
+    private fun capture(name: String) {
         val picture = File("src/test/screenshots/$name.png")
         // Without this, a test with no saved picture passes: there is nothing to compare with.
         assertTrue("No saved picture $picture. Run the tests with -PrecordScreenshots.", recording || picture.exists())
         captureRoboImage(picture.path) {
-            TaranginiTheme(darkTheme = darkTheme, dynamicColor = false) {
+            TaranginiTheme {
                 Surface {
                     Row(Modifier.padding(Spacing.medium), Arrangement.spacedBy(Spacing.medium)) {
                         AlbumArt(WITH_PICTURE)
