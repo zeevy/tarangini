@@ -67,9 +67,9 @@ internal class SessionPlaybackController @Inject constructor(
     // request spoken on the phone and one spoken in the car are answered by the same code.
     override fun playSpoken(words: String) = send { player ->
         val request = MediaItem.RequestMetadata.Builder().setSearchQuery(words).build()
+        // The session starts to play when the words found something. A "play" from here would also
+        // start the old queue when they found nothing.
         player.setMediaItem(MediaItem.Builder().setRequestMetadata(request).build())
-        player.prepare()
-        player.play()
     }
 
     override fun resume() = send { player ->

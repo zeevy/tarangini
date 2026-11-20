@@ -39,6 +39,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        setIntent(intent)
         playSpokenRequest(intent)
     }
 
@@ -48,7 +49,12 @@ class MainActivity : ComponentActivity() {
      */
     private fun playSpokenRequest(intent: Intent?) {
         if (intent?.action == MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH) {
-            playback.playSpoken(intent.getStringExtra(SearchManager.QUERY).orEmpty())
+            // Extras of another app can fail to read. Then the request counts as one with no words.
+            val words = runCatching { intent.getStringExtra(SearchManager.QUERY) }.getOrNull().orEmpty()
+            playback.playSpoken(words.take(MOST_WORDS))
         }
     }
 }
+
+// A spoken request is a few words. The rest of a longer text is dropped.
+private const val MOST_WORDS = 200

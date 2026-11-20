@@ -83,9 +83,10 @@ class PlaybackSessionCallbackTest {
         val items = BrowseItems(labels)
         val tree = BrowseTree(library, FakeLibraryLetters(this.library), items)
         val carSearch = CarSearch(search, library, items)
-        val carPlay = CarPlay(MainScope(), tree, carSearch, library, resumption) { }
+        val carPlay = CarPlay(MainScope(), tree, carSearch, library, resumption)
         val callers = CallerPolicy(service.packageName, Process.myUid(), car)
-        return PlaybackSessionCallback(callers, MainScope(), CarLibrary(tree, carSearch, carPlay), texts, resumption)
+        return PlaybackSessionCallback(callers, MainScope(), CarLibrary(tree, carSearch, carPlay), texts, { _, _, _ ->
+        }, resumption)
     }
     private val theCar = caller(CAR, Process.myUid() + CAR_UID_STEP, trusted = true)
 

@@ -31,6 +31,7 @@ import kotlinx.coroutines.launch
  * @param scope runs the reads of the library and of the saved queue, on the main thread
  * @param car what the car reads and plays: its list, its search, and its requests with no address
  * @param texts gives the items of the queue their title, artist and album
+ * @param spokenDone is told how a spoken request of a caller ended: null when its queue was found
  * @param resumption gives what to play when a caller asks to go on and the player is empty, or null for nothing
  */
 // Media3 marks parts of the session API as API that may still change: the "trusted by the system" flag,
@@ -41,6 +42,7 @@ internal class PlaybackSessionCallback(
     private val scope: CoroutineScope,
     private val car: CarLibrary,
     private val texts: suspend (List<MediaItem>) -> List<MediaItem>,
+    private val spokenDone: (MediaSession, MediaSession.ControllerInfo, NothingToPlay?) -> Unit,
     private val resumption: suspend () -> MediaItemsWithStartPosition?,
 ) : MediaLibrarySession.Callback {
     /** How many tabs the car that asked last shows. */
@@ -155,9 +157,9 @@ internal class PlaybackSessionCallback(
         mediaItems: List<MediaItem>,
         startIndex: Int,
         startPositionMs: Long,
-    ): ListenableFuture<MediaItemsWithStartPosition> =
-        mediaItems.singleOrNull()?.let { item -> car.play.queueFor(item) }
-            ?: super.onSetMediaItems(mediaSession, controller, mediaItems, startIndex, startPositionMs)
+    ): ListenableFuture<MediaItemsWithStartPosition> = mediaItems.singleOrNull()
+        ?.let { item -> car.play.queueFor(item) { missing -> spokenDone(mediaSession, controller, missing) } }
+        ?: super.onSetMediaItems(mediaSession, controller, mediaItems, startIndex, startPositionMs)
 
     override fun onAddMediaItems(
         mediaSession: MediaSession,

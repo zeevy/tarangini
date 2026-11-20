@@ -16,7 +16,7 @@ import com.siliconcircuits.tarangini.core.domain.repository.SearchRepository
 import java.util.Locale
 
 /** What the person who spoke asked for first, when the voice assistant says so. */
-internal enum class SpokenFocus { ANY, ARTIST, ALBUM }
+internal enum class SpokenFocus { ANY, SONG, ARTIST, ALBUM }
 
 /**
  * A spoken "play ..." as the voice assistant hands it over.
@@ -36,8 +36,8 @@ internal data class SpokenRequest(val text: String, val focus: SpokenFocus = Spo
 /**
  * The spoken request an item stands for, or null when the item is not one.
  * The voice assistant sends an item with a search text and no address. It
- * can add what it understood: that the person named an artist or an album,
- * and that name. The text comes from another app, so it is only ever used
+ * can add what it understood: that the person named a song, an artist or an
+ * album, and that name. The text comes from another app, so it is only ever used
  * as text to search for.
  */
 internal fun MediaItem.spokenRequest(): SpokenRequest? {
@@ -46,11 +46,13 @@ internal fun MediaItem.spokenRequest(): SpokenRequest? {
     if (query == null || hasAddress) return null
     val extras = requestMetadata.extras
     val focus = when (extras?.getString(MediaStore.EXTRA_MEDIA_FOCUS)) {
+        MediaStore.Audio.Media.ENTRY_CONTENT_TYPE -> SpokenFocus.SONG
         MediaStore.Audio.Artists.ENTRY_CONTENT_TYPE -> SpokenFocus.ARTIST
         MediaStore.Audio.Albums.ENTRY_CONTENT_TYPE -> SpokenFocus.ALBUM
         else -> SpokenFocus.ANY
     }
     val named = when (focus) {
+        SpokenFocus.SONG -> extras?.getString(MediaStore.EXTRA_MEDIA_TITLE)
         SpokenFocus.ARTIST -> extras?.getString(MediaStore.EXTRA_MEDIA_ARTIST)
         SpokenFocus.ALBUM -> extras?.getString(MediaStore.EXTRA_MEDIA_ALBUM)
         SpokenFocus.ANY -> null
@@ -92,7 +94,7 @@ internal class CarSearch(
     suspend fun queue(request: SpokenRequest): PickedQueue? {
         val found = find(request)
         val kinds = when (request.focus) {
-            SpokenFocus.ANY -> listOf(Kind.SONG, Kind.ARTIST, Kind.ALBUM)
+            SpokenFocus.ANY, SpokenFocus.SONG -> listOf(Kind.SONG, Kind.ARTIST, Kind.ALBUM)
             SpokenFocus.ARTIST -> listOf(Kind.ARTIST, Kind.SONG, Kind.ALBUM)
             SpokenFocus.ALBUM -> listOf(Kind.ALBUM, Kind.SONG, Kind.ARTIST)
         }
@@ -121,7 +123,8 @@ internal class CarSearch(
     private enum class Kind { SONG, ARTIST, ALBUM }
 }
 
-private val notLetterOrDigit = Regex("[^\\p{L}\\p{N}]+")
+// Marks belong to a word: the vowel signs of Telugu and Hindi are marks, not letters.
+private val notLetterOrDigit = Regex("[^\\p{L}\\p{N}\\p{M}]+")
 
 private fun String.words(): List<String> = lowercase(Locale.ROOT).split(notLetterOrDigit).filter { it.isNotEmpty() }
 
