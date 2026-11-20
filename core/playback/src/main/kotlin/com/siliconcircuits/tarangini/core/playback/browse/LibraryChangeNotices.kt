@@ -8,6 +8,7 @@ package com.siliconcircuits.tarangini.core.playback.browse
 
 import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
+import com.siliconcircuits.tarangini.core.domain.repository.PlayHistory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -25,6 +26,7 @@ import kotlinx.coroutines.launch
 internal class LibraryChangeNotices(
     private val library: LibraryRepository,
     private val favourites: FavouriteRepository,
+    private val history: PlayHistory,
     private val scope: CoroutineScope,
     private val opened: () -> Collection<String>,
     private val notify: (String) -> Unit,
@@ -37,8 +39,10 @@ internal class LibraryChangeNotices(
         jobs = listOf(
             // A scan of many files changes the library many times. The car is told once, after the last change.
             scope.launch { library.changes().drop(1).collectLatest { tellAfterQuiet { true } } },
-            // A new mark changes one list only. The list the driver looks at is not read again for it.
-            scope.launch { favourites.songIds().drop(1).collectLatest { tellAfterQuiet { it == FAVOURITES } } },
+            // A new mark or a counted play changes one list only. The list the driver looks at is
+            // not read again for it.
+            scope.launch { favourites.songIds().drop(1).collectLatest { tellAfterQuiet(FAVOURITES::equals) } },
+            scope.launch { history.changes().drop(1).collectLatest { tellAfterQuiet(RECENT::equals) } },
         )
     }
 
@@ -56,5 +60,6 @@ internal class LibraryChangeNotices(
     private companion object {
         const val QUIET_MS = 1_000L
         val FAVOURITES = MediaId.Favourites.encode()
+        val RECENT = MediaId.Recent.encode()
     }
 }

@@ -24,6 +24,7 @@ import com.siliconcircuits.tarangini.core.playback.mapper.toMediaItem
  *
  * @property libraryIcon the white icon of the Library tab, as an address the car can read
  * @property favouritesIcon the white icon of the Favourites tab, as an address the car can read
+ * @property recentIcon the white icon of the Recent tab, as an address the car can read
  */
 internal data class BrowseLabels(
     val library: String,
@@ -36,6 +37,8 @@ internal data class BrowseLabels(
     val libraryIcon: Uri?,
     val favourites: String,
     val favouritesIcon: Uri?,
+    val recent: String,
+    val recentIcon: Uri?,
 )
 
 /** The labels from the string resources of the app. */
@@ -50,6 +53,8 @@ internal fun browseLabels(context: Context) = BrowseLabels(
     libraryIcon = context.iconAddress(R.drawable.ic_car_library),
     favourites = context.getString(R.string.car_favourites),
     favouritesIcon = context.iconAddress(R.drawable.ic_car_favourites),
+    recent = context.getString(R.string.car_recent),
+    recentIcon = context.iconAddress(R.drawable.ic_car_recent),
 )
 
 /** The address of a drawable of this app. The car loads the icon of a tab from it. */
@@ -75,6 +80,7 @@ internal class BrowseItems(private val labels: BrowseLabels) {
             MediaMetadata.MEDIA_TYPE_FOLDER_MIXED,
             icon = labels.favouritesIcon,
         ),
+        node(MediaId.Recent, labels.recent, MediaMetadata.MEDIA_TYPE_FOLDER_MIXED, icon = labels.recentIcon),
     )
 
     /** The lists under the Library tab. */

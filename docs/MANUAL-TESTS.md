@@ -146,6 +146,8 @@ These need the Desktop Head Unit or a car. The steps are in [ANDROID-AUTO.md](AN
 | 89 | Play a song and press the heart on the now playing screen, then look at the notification and the lock screen | The heart is filled in all three places. A press on the heart of the notification takes the mark away again |
 | 90 | Open Favourites in the car and tap a song | The tab lists the favourites, the one marked last first, and the song plays with the favourites as the queue |
 | 91 | Play a song in the car and press the heart on the player screen of the car | The heart changes, and the song shows in the Favourites tab of the car and of the phone |
+| 92 | Play three songs for more than 10 seconds each and skip a fourth after 3 seconds, then open Recent in the car | The tab lists the three songs, the one heard last first. The skipped song is not there |
+| 93 | Tap a song in Recent in the car | The song plays with the recent songs as the queue |
 
 ## Results
 

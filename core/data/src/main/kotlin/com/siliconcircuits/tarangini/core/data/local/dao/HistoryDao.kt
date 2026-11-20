@@ -9,14 +9,19 @@ package com.siliconcircuits.tarangini.core.data.local.dao
 import androidx.room3.Dao
 import androidx.room3.Query
 import com.siliconcircuits.tarangini.core.data.local.entity.StationEntity
+import kotlinx.coroutines.flow.Flow
 
 /** Reads and writes play counts and last played times of songs and stations. */
 @Dao
 internal interface HistoryDao {
-    /** Counts one play of a song. One statement, so two plays at once are both counted. */
+    /**
+     * Counts one play of a song the library knows. One statement, so two plays at once are both
+     * counted and a song that was removed in the meantime is left alone.
+     */
     @Query(
         """
-            INSERT INTO song_plays(song_id, play_count, last_played_at) VALUES(:songId, 1, :at)
+            INSERT INTO song_plays(song_id, play_count, last_played_at)
+            SELECT id, 1, :at FROM songs WHERE id = :songId
             ON CONFLICT(song_id) DO UPDATE SET play_count = play_count + 1, last_played_at = excluded.last_played_at
         """,
     )
@@ -49,6 +54,10 @@ internal interface HistoryDao {
         """,
     )
     suspend fun mostPlayedSongs(limit: Int): List<SongRow>
+
+    /** The time of the last play. A new value comes after every change of the history. */
+    @Query("SELECT MAX(last_played_at) FROM song_plays")
+    fun lastSongPlay(): Flow<Long?>
 
     @Query("DELETE FROM song_plays")
     suspend fun clearSongPlays()

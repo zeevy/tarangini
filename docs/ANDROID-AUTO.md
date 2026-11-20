@@ -28,7 +28,7 @@ When the window stays black, stop the head unit server on the phone, start it ag
 
 ## What to check
 
-The checks are rows 65 to 91 of [MANUAL-TESTS.md](MANUAL-TESTS.md). Run them after every change to the player, the session or the browse tree, and write the run in the results table there.
+The checks are rows 65 to 93 of [MANUAL-TESTS.md](MANUAL-TESTS.md). Run them after every change to the player, the session or the browse tree, and write the run in the results table there.
 
 ## Check that other apps are refused
 
