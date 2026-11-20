@@ -6,6 +6,7 @@
 
 package com.siliconcircuits.tarangini.core.testing.settings
 
+import com.siliconcircuits.tarangini.core.domain.model.ScanSettings
 import com.siliconcircuits.tarangini.core.domain.model.SongSort
 import com.siliconcircuits.tarangini.core.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.Flow
@@ -20,4 +21,23 @@ class FakeSettingsRepository : SettingsRepository {
     override suspend fun setSongSort(sort: SongSort) {
         this.sort.value = sort
     }
+
+    /** What is left out now. A test can read and set it. */
+    val scan = MutableStateFlow(ScanSettings())
+
+    /** The folders [audioFolders] gives. */
+    var folders: List<String> = emptyList()
+
+    override fun scanSettings(): Flow<ScanSettings> = scan
+
+    override suspend fun setMinTrackSeconds(seconds: Int) {
+        scan.value = scan.value.copy(minTrackSeconds = seconds)
+    }
+
+    override suspend fun setFolderHidden(path: String, hidden: Boolean) {
+        val before = scan.value.hiddenFolders
+        scan.value = scan.value.copy(hiddenFolders = if (hidden) before + path else before - path)
+    }
+
+    override suspend fun audioFolders(): List<String> = folders
 }

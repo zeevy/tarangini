@@ -11,6 +11,7 @@ import androidx.room3.Room
 import androidx.sqlite.driver.AndroidSQLiteDriver
 import com.siliconcircuits.tarangini.core.data.local.TaranginiDatabase
 import com.siliconcircuits.tarangini.core.data.local.dao.FavouriteDao
+import com.siliconcircuits.tarangini.core.data.local.dao.FolderDao
 import com.siliconcircuits.tarangini.core.data.local.dao.HistoryDao
 import com.siliconcircuits.tarangini.core.data.local.dao.LetterDao
 import com.siliconcircuits.tarangini.core.data.local.dao.LibraryDao
@@ -37,6 +38,9 @@ internal object DatabaseModule {
 
     @Provides
     fun favouriteDao(database: TaranginiDatabase): FavouriteDao = database.favouriteDao()
+
+    @Provides
+    fun folderDao(database: TaranginiDatabase): FolderDao = database.folderDao()
 
     @Provides
     fun historyDao(database: TaranginiDatabase): HistoryDao = database.historyDao()

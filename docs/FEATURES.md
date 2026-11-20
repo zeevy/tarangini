@@ -164,7 +164,7 @@ The calls the app needs: `/json/stations/search` (`name`, `countrycode`, `langua
 
 | Feature | Description | Priority | Phone | Auto |
 |---|---|---|---|---|
-| Include and exclude folders | Skip WhatsApp voice notes, call recordings and similar | [MVP] | Yes | - |
+| Hide folders | Skip WhatsApp voice notes, call recordings and similar | [MVP] | Yes | - |
 | Minimum track length | Hide files shorter than N seconds | [MVP] | Yes | - |
 | Stream quality | Prefer low, normal or high bitrate stream when a station has more than one | [v1.1] | Yes | - |
 | Data saver on mobile data | Pick the lowest bitrate, smaller buffer, no artwork download on mobile data | [v1.1] | Yes | Applies |
@@ -428,6 +428,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D55 | A song is written into the play history once it was heard for 10 seconds; time in pause does not count, and a song on repeat counts each time it starts. The history is one row per song (last time and count), so it needs no trim. The car has a Recent tab with the 50 songs heard last. The phone shows recent songs on Home when Home is built | 21 Nov 2026 | A skip in the first seconds is not a play. One row per song gives "recent with no repeats" and "most played" and cannot grow past the library. See `docs/adr/0031-play-history.md` |
 | D56 | Playlists are a fifth list of the Library tab. A playlist can be made, named again and deleted (the delete asks first); a song is added from the menu of its row or from now playing, and a place is moved or removed from its menu. A song whose file is gone keeps its place and is left out until the file is back. The car shows the playlists under Library and only plays them | 21 Nov 2026 | A playlist is a part of the library like an album. A memory card that is put back brings a playlist back whole. The driver only plays. See `docs/adr/0032-playlists.md` |
 | D57 | Home has three sections: "Continue listening" (the loaded item while it does not play), "Recently played" (10 songs) and "Playlists" (10). An empty section is not shown. A new install shows a welcome text with a button to the Library | 21 Nov 2026 | Home is a way back to what was heard last. While music plays the mini player shows the item. The station sections come back with radio. See `docs/adr/0033-home.md` |
+| D58 | Settings has hidden folders, the shortest track (Off, 15 s, 30 s, 1 min, 2 min), "Rescan now", "Clear history" (asks first), the version and a link to the source code. A change of what is left out scans at once. There is no theme choice and no "scan only these folders" list | 21 Nov 2026 | The app has one look. One list of hidden folders is enough to keep voice notes and call recordings out. See `docs/adr/0034-settings.md` |
 
 ## 9. Checks before building
 

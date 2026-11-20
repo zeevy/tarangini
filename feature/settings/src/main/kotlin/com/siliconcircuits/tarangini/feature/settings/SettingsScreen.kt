@@ -6,23 +6,78 @@
 
 package com.siliconcircuits.tarangini.feature.settings
 
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
-import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.siliconcircuits.tarangini.core.ui.component.BackButton
-import com.siliconcircuits.tarangini.core.ui.component.PlaceholderScreen
+import com.siliconcircuits.tarangini.core.ui.theme.glassBackground
+import com.siliconcircuits.tarangini.core.ui.theme.glassTopBarColors
+
+/**
+ * The frame of Settings: the title and the way back. What is under the bar is given by the
+ * caller, so the frame can be shown where the settings store is not there, as in a test of the app
+ * shell.
+ */
+@OptIn(ExperimentalMaterial3Api::class) // TopAppBar is still marked experimental in Material 3.
+@Composable
+internal fun SettingsScreen(onBackClick: () -> Unit, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    Scaffold(
+        modifier = modifier.glassBackground(),
+        containerColor = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onBackground,
+        topBar = {
+            TopAppBar(
+                colors = glassTopBarColors(),
+                title = { Text(stringResource(R.string.settings_title)) },
+                navigationIcon = { BackButton(onClick = onBackClick) },
+            )
+        },
+    ) { innerPadding ->
+        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) { content() }
+    }
+}
+
+/** What Settings lists. The app puts it into the frame of Settings. */
+@Composable
+fun SettingsSections(modifier: Modifier = Modifier) {
+    LoadedSettings(modifier)
+}
 
 @Composable
-internal fun SettingsScreen(onBackClick: () -> Unit, modifier: Modifier = Modifier) {
-    PlaceholderScreen(
-        title = stringResource(R.string.settings_title),
-        modifier = modifier,
-        navigationIcon = {
-            BackButton(onClick = onBackClick)
-        },
-    )
+private fun LoadedSettings(modifier: Modifier = Modifier, viewModel: SettingsViewModel = hiltViewModel()) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val links = LocalUriHandler.current
+    val version = remember(context) {
+        runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull().orEmpty()
+    }
+    val actions = remember(viewModel, links) {
+        SettingsActions(
+            onSetMinTrackSeconds = viewModel::setMinTrackSeconds,
+            onSetFolderHidden = viewModel::setFolderHidden,
+            onRescan = viewModel::rescan,
+            onClearHistory = viewModel::clearHistory,
+            // A phone with no browser cannot open the page. The address is on the row, so nothing else is said.
+            onOpenSource = { runCatching { links.openUri(SOURCE_CODE) } },
+        )
+    }
+    SettingsContent(state, version, actions, modifier)
 }
+
+/** Where the source code of the app is. */
+private const val SOURCE_CODE = "https://github.com/zeevy/tarangini"
