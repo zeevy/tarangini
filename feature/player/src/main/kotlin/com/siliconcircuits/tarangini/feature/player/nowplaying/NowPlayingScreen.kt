@@ -233,7 +233,8 @@ private const val LARGEST_COVER = 7
 /** Opens the question which playlist the song that plays goes into. */
 @Composable
 private fun AddToPlaylistButton(pick: PlaylistPick, songId: Long) {
-    var asking by rememberSaveable { mutableStateOf(false) }
+    // The question is about one song. It closes when another song starts.
+    var asking by rememberSaveable(songId) { mutableStateOf(false) }
     IconButton(onClick = { asking = true }) {
         Icon(
             painter = painterResource(CoreUiR.drawable.ic_add),

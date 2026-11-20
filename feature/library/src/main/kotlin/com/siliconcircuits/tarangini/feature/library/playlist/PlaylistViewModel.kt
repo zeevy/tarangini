@@ -71,15 +71,23 @@ internal class PlaylistViewModel @Inject constructor(
 
     /** Moves a place among the rows that are on screen. */
     fun move(place: PlaylistSong, to: PlaylistMove) {
-        val rows = songs.state.value.items
+        val shown = songs.state.value
+        val rows = shown.items
         val at = rows.indexOfFirst { it.itemId == place.itemId }
+        // Past the rows read so far the next place is not known, so nothing moves there.
+        val canGoDown = at < rows.lastIndex && (at + 2 <= rows.lastIndex || !shown.hasMore)
+        val allowed = when (to) {
+            PlaylistMove.UP -> at > 0
+            PlaylistMove.DOWN -> at >= 0 && canGoDown
+            PlaylistMove.TOP, PlaylistMove.END -> at >= 0
+        }
         val before = when (to) {
-            PlaylistMove.UP -> rows.getOrNull(at - 1) ?: return
-            PlaylistMove.DOWN -> rows.getOrNull(at + 2).also { if (at == rows.lastIndex) return }
+            PlaylistMove.UP -> rows.getOrNull(at - 1)
+            PlaylistMove.DOWN -> rows.getOrNull(at + 2)
             PlaylistMove.TOP -> rows.firstOrNull()
             PlaylistMove.END -> null
         }
-        change { playlists.move(playlistId, place.itemId, before?.itemId) }
+        if (allowed) change { playlists.move(playlistId, place.itemId, before?.itemId) }
     }
 
     /** Plays the playlist in its order from [from] on, or from its start. */

@@ -8,6 +8,7 @@ package com.siliconcircuits.tarangini.core.ui.component
 
 import com.siliconcircuits.tarangini.core.domain.model.Playlist
 import com.siliconcircuits.tarangini.core.domain.repository.PlaylistRepository
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -34,10 +35,14 @@ class PlaylistPick(
  */
 fun PlaylistRepository.pickIn(scope: CoroutineScope): PlaylistPick = PlaylistPick(
     playlists = changes()
-        .map { runCatching { playlists() }.getOrDefault(emptyList()) }
+        .map { attempt { playlists() } ?: emptyList() }
         .stateIn(scope, SharingStarted.WhileSubscribed(STOP_AFTER_MS), emptyList()),
-    onAdd = { songId, playlistId -> scope.launch { runCatching { add(playlistId, songId) } } },
-    onCreate = { songId, name -> scope.launch { runCatching { create(name)?.let { made -> add(made, songId) } } } },
+    onAdd = { songId, playlistId -> scope.launch { attempt { add(playlistId, songId) } } },
+    onCreate = { songId, name -> scope.launch { attempt { create(name)?.let { made -> add(made, songId) } } } },
 )
+
+/** The result, or null after a failure. A cancelled coroutine stays cancelled. */
+private suspend fun <T> attempt(block: suspend () -> T): T? =
+    runCatching { block() }.onFailure { if (it is CancellationException) throw it }.getOrNull()
 
 private const val STOP_AFTER_MS = 5_000L

@@ -34,8 +34,14 @@ import com.siliconcircuits.tarangini.feature.library.component.ListBody
 /** The Playlists page of the Library tab. */
 @Composable
 internal fun PlaylistsTab(onOpenPlaylist: (Playlist) -> Unit, viewModel: PlaylistsViewModel = hiltViewModel()) {
-    val playlists by viewModel.state.collectAsStateWithLifecycle()
-    PlaylistsContent(playlists, onOpenPlaylist, viewModel::create)
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    PlaylistsContent(
+        playlists = state.items.takeUnless { state.isLoading },
+        onOpenPlaylist = onOpenPlaylist,
+        onCreate = viewModel::create,
+        failed = state.failed && state.items.isEmpty(),
+        onRetry = viewModel::retry,
+    )
 }
 
 /** "New playlist" first, then every playlist by name. */
@@ -45,6 +51,8 @@ internal fun PlaylistsContent(
     onOpenPlaylist: (Playlist) -> Unit,
     onCreate: (String) -> Unit,
     modifier: Modifier = Modifier,
+    failed: Boolean = false,
+    onRetry: () -> Unit = {},
 ) {
     var naming by rememberSaveable { mutableStateOf(false) }
     if (naming) {
@@ -55,7 +63,7 @@ internal fun PlaylistsContent(
             onDismiss = { naming = false },
         )
     }
-    ListBody(isLoading = playlists == null, failed = false, onRetry = {}) {
+    ListBody(isLoading = playlists == null, failed = failed, onRetry = onRetry) {
         LazyColumn(modifier = modifier.fillMaxSize()) {
             item(key = "new") {
                 ListItem(

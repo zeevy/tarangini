@@ -46,7 +46,7 @@ class PlaylistViewModelsTest {
         viewModel.create("   ")
         advanceUntilIdle()
 
-        assertEquals(listOf("Morning"), viewModel.state.value?.map { it.name })
+        assertEquals(listOf("Morning"), viewModel.state.value.items.map { it.name })
     }
 
     @Test
@@ -63,6 +63,25 @@ class PlaylistViewModelsTest {
             playback.commands,
         )
     }
+
+    @Test
+    fun `move down does nothing at the end of the rows read so far when the playlist goes on`() =
+        runTest(mainDispatcher.dispatcher) {
+            val many = (1L..150L).map { testSong(it, "Song $it") }
+            playlists.known = many
+            val id = requireNotNull(playlists.create("Long"))
+            many.forEach { playlists.add(id, it.id) }
+            val saved = SavedStateHandle(mapOf("playlistId" to id, "name" to "Long"))
+            val viewModel = PlaylistViewModel(saved, playlists, library, playback).also { advanceUntilIdle() }
+            val rows = viewModel.songs.state.value.items
+            val before = playlists.places.getValue(id)
+
+            viewModel.move(rows[rows.lastIndex - 1], PlaylistMove.DOWN)
+            advanceUntilIdle()
+
+            assertTrue(rows.size < many.size)
+            assertEquals(before, playlists.places.getValue(id))
+        }
 
     @Test
     fun `shuffle plays every song of the playlist`() = runTest(mainDispatcher.dispatcher) {

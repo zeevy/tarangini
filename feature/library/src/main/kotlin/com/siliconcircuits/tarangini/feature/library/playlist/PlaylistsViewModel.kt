@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.siliconcircuits.tarangini.core.domain.model.Playlist
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
 import com.siliconcircuits.tarangini.core.domain.repository.PlaylistRepository
+import com.siliconcircuits.tarangini.feature.library.list.PagedItems
 import com.siliconcircuits.tarangini.feature.library.list.attempt
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -26,18 +27,26 @@ internal class PlaylistsViewModel @Inject constructor(
     private val playlists: PlaylistRepository,
     library: LibraryRepository,
 ) : ViewModel() {
-    private val list = MutableStateFlow<List<Playlist>?>(null)
+    private val list = MutableStateFlow(PagedItems<Playlist>())
 
-    /** Every playlist by name. Null until the first read is done. */
-    val state: StateFlow<List<Playlist>?> = list.asStateFlow()
+    /** Every playlist by name. It says "failed" only while there is nothing to show. */
+    val state: StateFlow<PagedItems<Playlist>> = list.asStateFlow()
 
     init {
         // A rescan changes how many songs of a playlist can be played.
         viewModelScope.launch {
-            merge(playlists.changes(), library.changes()).collect {
-                list.value = attempt { playlists.playlists() }.getOrDefault(list.value.orEmpty())
-            }
+            merge(playlists.changes(), library.changes()).collect { read() }
         }
+    }
+
+    /** Reads the playlists again after a read that failed. */
+    fun retry() {
+        viewModelScope.launch { read() }
+    }
+
+    private suspend fun read() {
+        val now = attempt { playlists.playlists() }.getOrNull()
+        list.value = PagedItems(now ?: list.value.items, isLoading = false, failed = now == null)
     }
 
     /** Makes an empty playlist. A name that is not allowed makes nothing. */

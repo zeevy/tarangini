@@ -21,7 +21,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.onSubscription
 
 /** The playlists from the database of the app. One object for the app, so every screen hears a change. */
 @Singleton
@@ -34,7 +34,8 @@ internal class DefaultPlaylistRepository @Inject constructor(
 
     override suspend fun playlists(): List<Playlist> = playlists.playlists().map { it.toPlaylist() }
 
-    override fun changes(): Flow<Unit> = changed.onStart { emit(Unit) }
+    // The first value is sent once the reader listens, so a change during its first read is not lost.
+    override fun changes(): Flow<Unit> = changed.onSubscription { emit(Unit) }
 
     override suspend fun create(name: String): Long? = checkPlaylistName(name)?.let { checked ->
         val now = time.nowMs()
