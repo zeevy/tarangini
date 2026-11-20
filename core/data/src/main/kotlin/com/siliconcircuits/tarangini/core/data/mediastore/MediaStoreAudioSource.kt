@@ -9,11 +9,16 @@ package com.siliconcircuits.tarangini.core.data.mediastore
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.database.ContentObserver
 import android.database.Cursor
 import android.os.Build
 import android.provider.MediaStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.conflate
 
 /**
  * Reads the audio files from MediaStore, the media index of the phone. This
@@ -31,6 +36,18 @@ internal class MediaStoreAudioSource @Inject constructor(@ApplicationContext pri
         }
         return context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
     }
+
+    override fun changes(): Flow<Unit> = callbackFlow {
+        // No handler: the phone calls on one of its own threads, and sending into the flow is safe from any thread.
+        val observer = object : ContentObserver(null) {
+            override fun onChange(selfChange: Boolean) {
+                trySend(Unit)
+            }
+        }
+        val resolver = context.contentResolver
+        resolver.registerContentObserver(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, true, observer)
+        awaitClose { resolver.unregisterContentObserver(observer) }
+    }.conflate()
 
     override fun files(): List<AudioFile>? {
         val cursor = try {

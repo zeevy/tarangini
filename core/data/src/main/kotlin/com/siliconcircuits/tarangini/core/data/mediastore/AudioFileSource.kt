@@ -6,6 +6,8 @@
 
 package com.siliconcircuits.tarangini.core.data.mediastore
 
+import kotlinx.coroutines.flow.Flow
+
 /**
  * Where the scanner gets the list of audio files from. The app has one, the
  * media index of the phone. Tests use a list they make themselves.
@@ -20,4 +22,11 @@ internal interface AudioFileSource {
      * main thread.
      */
     fun files(): List<AudioFile>?
+
+    /**
+     * Gives a value each time the phone says that its audio files changed.
+     * It says only that something changed, not what, and it can say so many
+     * times for one copied file.
+     */
+    fun changes(): Flow<Unit>
 }

@@ -8,9 +8,13 @@ package com.siliconcircuits.tarangini.core.data.di
 
 import com.siliconcircuits.tarangini.core.data.mediastore.AudioFileSource
 import com.siliconcircuits.tarangini.core.data.mediastore.DefaultLibraryScanner
+import com.siliconcircuits.tarangini.core.data.mediastore.DefaultLibraryWatcher
 import com.siliconcircuits.tarangini.core.data.mediastore.MediaStoreAudioSource
 import com.siliconcircuits.tarangini.core.data.mediastore.TimeSource
+import com.siliconcircuits.tarangini.core.data.work.RescanSchedule
+import com.siliconcircuits.tarangini.core.data.work.WorkManagerRescanSchedule
 import com.siliconcircuits.tarangini.core.domain.library.LibraryScanner
+import com.siliconcircuits.tarangini.core.domain.library.LibraryWatcher
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -25,6 +29,12 @@ internal abstract class LibraryModule {
 
     @Binds
     abstract fun audioFileSource(source: MediaStoreAudioSource): AudioFileSource
+
+    @Binds
+    abstract fun libraryWatcher(watcher: DefaultLibraryWatcher): LibraryWatcher
+
+    @Binds
+    abstract fun rescanSchedule(schedule: WorkManagerRescanSchedule): RescanSchedule
 
     companion object {
         @Provides

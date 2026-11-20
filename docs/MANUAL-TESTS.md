@@ -51,6 +51,8 @@ Run on a mid range phone. A scan is started from the library screen.
 |---|---|---|
 | 19 | Put 10,000 songs on the phone. Install the app new, allow access and time the first scan. Scroll a list while it runs | The scan ends in under 10 seconds and the list scrolls with no stutter |
 | 20 | Mark a song on a memory card as a favourite. Take the card out, scan, put the card back and scan | The song leaves the lists and comes back, and it is still a favourite. It is in the lists once |
+| 25 | Open the app with the library showing. Copy a song to the phone from a computer | The song is in the library within a few seconds, with no tap |
+| 26 | Swipe the app away. Copy a song to the phone and delete another one. Wait 10 minutes and open the app | The new song is there and the deleted one is gone when the library shows |
 
 ## Playback: resume
 
@@ -70,3 +72,4 @@ Write each run here: the date, the phone and Android version, the app version, t
 | 19 Nov 2026 | Emulator, Android 17 (API 37) | Build of the audio focus change | None of the ones tried. Tried: 1 with a simulated call (kept playing while it rang, paused on answer, went on after the call). Not tried in this build: 8 and 9 (play, pause, next and previous worked as media keys sent by the system in the builds before it, with the screen on). Not possible on the emulator: 2 to 7, 10, 11 | dev |
 | 19 Nov 2026 | Emulator, Android 17 (API 37) | Trial build of the queue change, 20,000 items made from 2 files | None of the ones tried. Tried: 12 (first sound after 670 ms, whole list loaded after 4.6 s; on a slow emulator, not a phone), 13 (a move, a remove, shuffle and repeat while playing: the song went on). Not tried: 14, 15 | dev |
 | 19 Nov 2026 | Emulator, Android 17 (API 37) | Trial build of the gapless change that writes the sound of the player to a file | None by ear: the emulator has no sound device. Measured for 16 and 17: no silence at the track changes and the wave goes on in step. Not tried: 18 | dev |
+| 20 Nov 2026 | Emulator, Android 17 (API 37) | Build of the automatic rescan change | None of the ones tried. Tried: 25 without a screen for the library, read from the database of the app (a copied song was in the library within 6 seconds with the app on screen, a deleted one was marked as gone). Partly tried: 26 (the rescan job is registered with the trigger for audio files and "battery not low", ran after a file was copied while the app was in the background, and asked for the next job). Not tried: 26 with the app process gone | dev |

@@ -6,6 +6,9 @@
 
 package com.siliconcircuits.tarangini.core.data.mediastore
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+
 /** An audio file with tags, in the folder `external_primary/Music`. A test sets only what it is about. */
 @Suppress("LongParameterList") // Each test sets only the values it is about.
 internal fun audioFile(
@@ -43,7 +46,12 @@ internal class FakeAudioFileSource(var files: List<AudioFile>? = emptyList(), va
     /** When set, reading the files throws this, the way a broken read on a phone does. */
     var failure: RuntimeException? = null
 
+    /** A test sends into this to say that the files changed. */
+    val changed = MutableSharedFlow<Unit>(extraBufferCapacity = 64)
+
     override fun hasPermission() = permission
+
+    override fun changes(): Flow<Unit> = changed
 
     override fun files(): List<AudioFile>? {
         failure?.let { throw it }
