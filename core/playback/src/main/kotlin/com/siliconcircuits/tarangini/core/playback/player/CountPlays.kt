@@ -6,7 +6,6 @@
 
 package com.siliconcircuits.tarangini.core.playback.player
 
-import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -50,8 +49,9 @@ internal class CountPlays(private val scope: CoroutineScope, private val played:
                 heardMs += STEP_MS
             }
             counted = true
+            // The write is its own job: a pause or a skip right now ends the watch, but not the write.
             // A play that cannot be saved is lost. The music goes on.
-            runCatching { played(heard) }.onFailure { if (it is CancellationException) throw it }
+            scope.launch { runCatching { played(heard) } }
         }
     }
 

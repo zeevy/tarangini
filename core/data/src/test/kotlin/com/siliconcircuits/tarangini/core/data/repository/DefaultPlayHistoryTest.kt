@@ -50,4 +50,16 @@ class DefaultPlayHistoryTest {
         assertEquals(listOf("Song"), before)
         assertEquals(emptyList<String>(), history.recentSongs().map { it.title })
     }
+
+    @Test
+    fun `a play is told also when the clock stood still`() = runTest {
+        val song = database.addSong("Song", sourceId = "4")
+        val still = DefaultPlayHistory(database.historyDao()) { 5_000L }
+        still.songPlayed(song)
+        val before = database.historyDao().songPlaysCounted().first()
+
+        still.songPlayed(song)
+
+        assertEquals(1L to 2L, before to database.historyDao().songPlaysCounted().first())
+    }
 }

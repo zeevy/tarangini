@@ -21,6 +21,8 @@ The app shows a quick way back to what was heard last, and later a "most played"
 
 ## What follows
 
+- The time heard is counted in steps of one second, so a pause can cost a part of a second. A file shorter than 10 seconds never counts.
+- While the driver looks at Recent, the list is read again about 11 seconds into each new song, because its order changed.
 - The phone shows recent songs on the Home screen, which is its own piece of work.
 - Recent stations (the last 20) come back with radio.
 - "Clear history" gets its button with the Settings screen.

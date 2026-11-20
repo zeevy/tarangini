@@ -55,9 +55,12 @@ internal interface HistoryDao {
     )
     suspend fun mostPlayedSongs(limit: Int): List<SongRow>
 
-    /** The time of the last play. A new value comes after every change of the history. */
-    @Query("SELECT MAX(last_played_at) FROM song_plays")
-    fun lastSongPlay(): Flow<Long?>
+    /**
+     * How many plays were counted in all. It goes up with every play and back to 0 after a clear,
+     * so a new value comes after every change of the history, also when the clock stood still.
+     */
+    @Query("SELECT COALESCE(SUM(play_count), 0) FROM song_plays")
+    fun songPlaysCounted(): Flow<Long>
 
     @Query("DELETE FROM song_plays")
     suspend fun clearSongPlays()

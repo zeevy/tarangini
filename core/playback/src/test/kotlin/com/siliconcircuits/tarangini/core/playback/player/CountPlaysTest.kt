@@ -7,6 +7,7 @@
 package com.siliconcircuits.tarangini.core.playback.player
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
@@ -84,5 +85,21 @@ class CountPlaysTest {
         hear(60_000)
 
         assertEquals(listOf("one", "one"), counted)
+    }
+
+    @Test
+    fun `a pause in the moment a song counts does not lose the play`() = runTest {
+        lateinit var counter: CountPlays
+        counter = CountPlays(backgroundScope) {
+            counter.playing(false)
+            delay(50)
+            counted += it
+        }
+        counter.itemStarted("one")
+        counter.playing(true)
+
+        hear(11_000)
+
+        assertEquals(listOf("one"), counted)
     }
 }
