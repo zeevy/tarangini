@@ -11,6 +11,7 @@ import com.siliconcircuits.tarangini.core.data.local.testDatabase
 import com.siliconcircuits.tarangini.core.domain.model.Album
 import com.siliconcircuits.tarangini.core.domain.model.Artist
 import com.siliconcircuits.tarangini.core.domain.model.Folder
+import com.siliconcircuits.tarangini.core.domain.model.LetterCount
 import com.siliconcircuits.tarangini.core.domain.model.Page
 import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.domain.model.SongSort
@@ -175,6 +176,45 @@ class DefaultLibraryRepositoryTest {
         assertTrue(repository.albums(Page()).isEmpty())
         assertTrue(repository.artists(Page()).isEmpty())
         assertEquals("Gone", repository.song(gone)?.title)
+    }
+
+    @Test
+    fun `the first letters come in the order of the list, and their counts give the place of a letter`() = runTest {
+        song("banana", artist = "Zed", album = "Second")
+        song("Apple", artist = "amy", album = "First")
+        song("  avocado", artist = "Amy", album = "first")
+        song("9 to 5", artist = "Zed", album = "Second")
+        song("\u0C05\u0C2E\u0C4D\u0C2E", artist = "Zed", album = "")
+        // A sign that sorts after the Latin letters, and a first character that takes two UTF-16 units.
+        song("~ tilde", artist = "Zed", album = "Second")
+        song("\uD83C\uDFB5 tune", artist = "Zed", album = "Second")
+        val gone = song("Cherry", artist = "Carl", album = "Third")
+        library.markMissing(listOf(gone), at = 1)
+        val repository = repository()
+
+        val firstLetters = DefaultLibraryLetters(database.letterDao())
+
+        val letters = firstLetters.ofSongs()
+
+        val counts = listOf("9" to 1, "a" to 2, "b" to 1, "~" to 1, "\u0C05" to 1, "\uD83C\uDFB5" to 1)
+        val expected = counts.map { (letter, count) ->
+            LetterCount(letter, count)
+        }
+        assertEquals(expected, letters)
+        // The songs of "b" start after the songs of the letters before it.
+        val before = letters.takeWhile { it.letter != "b" }.sumOf { it.count }
+        assertEquals(
+            listOf("banana"),
+            repository.songs(SongSort.TITLE, Page(limit = 1, offset = before)).map {
+                it.title
+            },
+        )
+        // The counts before the last letter give its place too, so every group is where the list has it.
+        val last = repository.songs(SongSort.TITLE, Page(limit = 1, offset = letters.dropLast(1).sumOf { it.count }))
+        assertEquals(listOf("\uD83C\uDFB5 tune"), last.map { it.title })
+        // An album or an artist with no song that can be played is not counted. An empty name has an empty letter.
+        assertEquals(listOf(LetterCount("", 1), LetterCount("f", 1), LetterCount("s", 1)), firstLetters.ofAlbums())
+        assertEquals(listOf(LetterCount("a", 1), LetterCount("z", 1)), firstLetters.ofArtists())
     }
 
     @Test

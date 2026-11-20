@@ -123,6 +123,14 @@ These need the Desktop Head Unit or a car. The steps are in [ANDROID-AUTO.md](AN
 | 66 | Play a song on the phone, then open Tarangini in the head unit | The car shows the song with its title, artist and cover |
 | 67 | Press pause, play, next and previous in the head unit | The phone does the same, and the car shows the new state |
 | 68 | Install the Media Controller Test app and pick Tarangini in it | The test app lists Tarangini and cannot connect |
+| 69 | Open Tarangini in the head unit and open Library, then Songs, Albums, Artists and Folders, down to a song in each | Every list opens within 2 seconds and shows the same names as the phone. No list is empty that has rows on the phone |
+| 70 | With more than 100 songs on the phone, open Songs | The car shows letters, with "#" first when a title starts with a digit or a sign. Each letter opens its songs |
+| 71 | Tap a song in an album, then press next in the car | The song plays, and next plays the song after it in that album |
+| 72 | With a list open in the car, copy a new song onto the phone and wait a few seconds | The song shows in the car after leaving and opening the list again, without a restart of the app or the car |
+| 73 | In the settings of the phone take away the audio permission of Tarangini, then open Library in the car | The lists show what the library last held or are empty. The app does not crash and the car shows no endless loading |
+| 74 | Press next, previous and play or pause on the steering wheel, once over Android Auto and once over Bluetooth alone | The phone does the same. The volume buttons change the volume of the car |
+| 75 | Play a song in Tarangini, disconnect the phone from the car, then connect it again | Tarangini is still the player the car shows, with the same song at the same place. It does not start to play by itself unless the car is set to resume |
+| 76 | With nothing playing, press play on the steering wheel after Tarangini was the last player | The last queue goes on from where it stopped |
 
 ## Results
 

@@ -16,12 +16,24 @@ import androidx.media3.common.MediaLibraryInfo
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.MediaConstants
+import androidx.media3.session.MediaLibraryService.LibraryParams
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
 import androidx.media3.session.SessionCommand
+import androidx.media3.session.SessionError
+import com.siliconcircuits.tarangini.core.domain.model.Folder
+import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
 import com.siliconcircuits.tarangini.core.playback.TestPlaybackApp
+import com.siliconcircuits.tarangini.core.playback.browse.BrowseItems
+import com.siliconcircuits.tarangini.core.playback.browse.BrowseLabels
+import com.siliconcircuits.tarangini.core.playback.browse.BrowseTree
+import com.siliconcircuits.tarangini.core.playback.browse.LibraryList
+import com.siliconcircuits.tarangini.core.playback.browse.MediaId
 import com.siliconcircuits.tarangini.core.playback.mapper.LibraryTexts
 import com.siliconcircuits.tarangini.core.playback.service.PlaybackService
+import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryLetters
+import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeSongLookup
 import com.siliconcircuits.tarangini.core.testing.library.testSong
 import com.siliconcircuits.tarangini.core.testing.station.FakeStationStreams
@@ -51,11 +63,18 @@ class PlaybackSessionCallbackTest {
     private var readFailure: Exception? = null
     private var texts: suspend (List<MediaItem>) -> List<MediaItem> = { it }
     private val car = KnownCallers { packageName, uid -> packageName == CAR && uid == Process.myUid() + CAR_UID_STEP }
-    private val callback =
-        PlaybackSessionCallback(CallerPolicy(service.packageName, Process.myUid(), car), MainScope(), { texts(it) }) {
-            readFailure?.let { throw it }
-                ?: saved
-        }
+    private val library = FakeLibraryRepository()
+    private val labels = BrowseLabels("Library", "Songs", "Albums", "Artists", "Folders", "No album", "No artist", null)
+    private val callback = PlaybackSessionCallback(
+        CallerPolicy(service.packageName, Process.myUid(), car),
+        MainScope(),
+        BrowseTree(library, FakeLibraryLetters(library), BrowseItems(labels)),
+        { texts(it) },
+    ) {
+        readFailure?.let { throw it }
+            ?: saved
+    }
+    private val theCar = caller(CAR, Process.myUid() + CAR_UID_STEP, trusted = true)
 
     private val thisApp = caller(service.packageName, Process.myUid(), trusted = false)
     private val session = requireNotNull(service.onGetSession(thisApp))
@@ -96,12 +115,18 @@ class PlaybackSessionCallbackTest {
         ).forEach { command -> assertTrue(result.availablePlayerCommands.contains(command)) }
         assertFalse(result.availablePlayerCommands.contains(Player.COMMAND_SET_MEDIA_ITEM))
         assertFalse(result.availablePlayerCommands.contains(Player.COMMAND_CHANGE_MEDIA_ITEMS))
+        // It cannot read the library either: the lists are for this app and the car.
+        listOf(
+            SessionCommand.COMMAND_CODE_LIBRARY_GET_LIBRARY_ROOT,
+            SessionCommand.COMMAND_CODE_LIBRARY_GET_CHILDREN,
+            SessionCommand.COMMAND_CODE_LIBRARY_GET_ITEM,
+            SessionCommand.COMMAND_CODE_LIBRARY_SUBSCRIBE,
+            SessionCommand.COMMAND_CODE_LIBRARY_SEARCH,
+        ).forEach { command -> assertFalse(result.availableSessionCommands.contains(command)) }
     }
 
     @Test
     fun `the car may browse the library and play from it`() {
-        val theCar = caller(CAR, Process.myUid() + CAR_UID_STEP, trusted = true)
-
         val result = callback.onConnect(session, theCar)
 
         assertTrue(result.isAccepted)
@@ -110,16 +135,150 @@ class PlaybackSessionCallbackTest {
     }
 
     @Test
-    fun `the car gets the top of the library, and an empty list under it for now`() {
-        val theCar = caller(CAR, Process.myUid() + CAR_UID_STEP, trusted = true)
-
+    fun `the car gets the top of the library, and the Library tab with its lists under it`() {
         val root = callback.onGetLibraryRoot(session, theCar, null).get()
-        val children = callback.onGetChildren(session, theCar, LIBRARY_ROOT_ID, 0, 100, null).get()
+        val tabs = children(MediaId.Root.encode())
+        val lists = children(tabs.single().mediaId)
 
-        assertEquals(LIBRARY_ROOT_ID, root.value?.mediaId)
+        assertEquals(MediaId.Root.encode(), root.value?.mediaId)
         assertEquals(true, root.value?.mediaMetadata?.isBrowsable)
-        assertEquals(emptyList<MediaItem>(), children.value?.toList())
+        assertEquals(listOf("Library"), tabs.map { it.mediaMetadata.title })
+        assertEquals(listOf("Songs", "Albums", "Artists", "Folders"), lists.map { it.mediaMetadata.title })
     }
+
+    @Test
+    fun `a car that shows fewer tabs gets fewer, and a car that asks for none still gets one`() {
+        val none = LibraryParams.Builder()
+            .setExtras(Bundle().apply { putInt(MediaConstants.EXTRAS_KEY_ROOT_CHILDREN_LIMIT, 0) })
+            .build()
+
+        callback.onGetLibraryRoot(session, theCar, none).get()
+
+        assertEquals(1, children(MediaId.Root.encode()).size)
+    }
+
+    @Test
+    fun `an id this app did not make gives an error and no crash`() {
+        listOf("", "radio", "album.x", "song.1@root", "../..", "a".repeat(10_000)).forEach { badId ->
+            val list = callback.onGetChildren(session, theCar, badId, 0, 100, null).get()
+            val item = callback.onGetItem(session, theCar, badId).get()
+
+            assertEquals(SessionError.ERROR_BAD_VALUE, list.resultCode)
+            assertEquals(SessionError.ERROR_BAD_VALUE, item.resultCode)
+        }
+        // A song has nothing under it, and a song the library does not have is not an item.
+        library.songs = listOf(testSong(1))
+        val song = MediaId.SongIn(1, MediaId.Album(1)).encode()
+        assertEquals(
+            SessionError.ERROR_BAD_VALUE,
+            callback.onGetChildren(session, theCar, song, 0, 100, null).get().resultCode,
+        )
+        val gone = MediaId.SongIn(404, MediaId.Album(1)).encode()
+        assertEquals(SessionError.ERROR_BAD_VALUE, callback.onGetItem(session, theCar, gone).get().resultCode)
+    }
+
+    @Test
+    fun `the car gets an error and no crash when the library cannot be read`() {
+        val broken = PlaybackSessionCallback(
+            CallerPolicy(service.packageName, Process.myUid(), car),
+            MainScope(),
+            BrowseTree(BrokenLibrary(library), FakeLibraryLetters(library), BrowseItems(labels)),
+            { it },
+        ) { null }
+
+        val list = broken.onGetChildren(session, theCar, MediaId.Folders.encode(), 0, 100, null).get()
+
+        assertEquals(SessionError.ERROR_UNKNOWN, list.resultCode)
+    }
+
+    @Test
+    fun `the car gets the whole list at once, and a caller that asks for a page gets that page`() {
+        library.songs = (1L..30L).map { testSong(it, title = "Song %02d".format(it)) }
+        val songs = MediaId.Section(LibraryList.SONGS).encode()
+
+        fun page(page: Int, size: Int) =
+            requireNotNull(callback.onGetChildren(session, theCar, songs, page, size, null).get().value)
+
+        // The car asks with the largest page size there is.
+        assertEquals(30, page(0, Int.MAX_VALUE).size)
+        assertEquals(
+            listOf("Song 16", "Song 17", "Song 18", "Song 19", "Song 20"),
+            page(3, 5).map {
+                it.mediaMetadata.title
+            },
+        )
+        // Media3 refuses an answer with more rows than the page, so no page is ever longer than asked.
+        assertEquals(7, page(0, 7).size)
+        assertTrue(page(9, 5).isEmpty())
+        assertTrue(page(Int.MAX_VALUE, Int.MAX_VALUE).isEmpty())
+        assertTrue(page(1, Int.MAX_VALUE).isEmpty())
+    }
+
+    @Test
+    fun `a tap on a song in the car plays its list from that song on`() {
+        library.songs = listOf(testSong(1, albumId = 7), testSong(2, albumId = 7), testSong(3, albumId = 8))
+        val tapped = children(MediaId.Album(7).encode())[1]
+
+        val queue = callback.onSetMediaItems(session, theCar, listOf(tapped), 0, 0).get()
+
+        assertEquals(listOf("test:1", "test:2"), queue.mediaItems.map { it.localConfiguration?.uri.toString() })
+        assertEquals(listOf("test:1", "test:2"), queue.mediaItems.map { it.mediaId })
+        assertEquals(1, queue.startIndex)
+        assertEquals("Song 2", queue.mediaItems[1].mediaMetadata.title)
+    }
+
+    @Test
+    fun `a tap on a song the library no longer has plays nothing`() {
+        val gone = MediaItem.Builder().setMediaId(MediaId.SongIn(404, MediaId.Album(7)).encode()).build()
+
+        val answer = callback.onSetMediaItems(session, theCar, listOf(gone), 0, 0)
+
+        assertTrue(answer.isDone)
+        assertThrows(ExecutionException::class.java) { answer.get() }
+    }
+
+    @Test
+    fun `a song is not added to the queue by its car id, only by its address`() {
+        library.songs = listOf(testSong(1, albumId = 7))
+        val picked = MediaItem.Builder().setMediaId(MediaId.SongIn(1, MediaId.Album(7)).encode()).build()
+        val file = MediaItem.fromUri("content://media/external/audio/media/7")
+
+        val added = callback.onAddMediaItems(session, theCar, listOf(picked, file))
+
+        assertThrows(ExecutionException::class.java) { added.get() }
+    }
+
+    @Test
+    fun `an item with an address is checked as an address, whatever its id says`() {
+        library.songs = listOf(testSong(1, albumId = 7))
+        val sly = MediaItem.Builder()
+            .setMediaId(MediaId.SongIn(1, MediaId.Album(7)).encode())
+            .setUri("file:///data/data/other.app/secret.mp3")
+            .build()
+
+        val set = callback.onSetMediaItems(session, theCar, listOf(sly), 0, 0)
+        val added = callback.onAddMediaItems(session, theCar, listOf(sly))
+
+        assertThrows(ExecutionException::class.java) { set.get() }
+        assertThrows(ExecutionException::class.java) { added.get() }
+    }
+
+    @Test
+    fun `the lists a caller has read are remembered, the newest last, and not without end`() {
+        children(MediaId.Root.encode())
+        children(MediaId.Library.encode())
+        children(MediaId.Root.encode())
+
+        assertEquals(listOf(MediaId.Library.encode(), MediaId.Root.encode()), callback.opened.all())
+
+        (1L..200L).forEach { children(MediaId.Album(it).encode()) }
+        assertEquals(MAX_OPENED, callback.opened.all().size)
+        assertEquals(MediaId.Album(200).encode(), callback.opened.all().last())
+    }
+
+    /** What the car gets under a node. The car asks with the largest page size there is. */
+    private fun children(parentId: String): List<MediaItem> =
+        requireNotNull(callback.onGetChildren(session, theCar, parentId, 0, Int.MAX_VALUE, null).get().value)
 
     @Test
     fun `an app that only claims the package name of the car is refused`() {
@@ -296,3 +455,9 @@ class PlaybackSessionCallbackTest {
 
 private const val CAR = "com.google.android.projection.gearhead"
 private const val CAR_UID_STEP = 7
+private const val MAX_OPENED = 50
+
+/** A library whose folders cannot be read, as when the database fails. */
+private class BrokenLibrary(library: LibraryRepository) : LibraryRepository by library {
+    override suspend fun folders(parentId: Long?): List<Folder> = error("The database is closed")
+}

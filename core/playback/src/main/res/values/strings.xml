@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (C) Silicon Circuits and the Tarangini contributors. This file
+  is part of Tarangini, free software under the GNU General Public License,
+  version 3 only. See the LICENSE file. SPDX-License-Identifier: GPL-3.0-only
+-->
+<resources>
+    <string name="car_library">Library</string>
+    <string name="car_songs">Songs</string>
+    <string name="car_albums">Albums</string>
+    <string name="car_artists">Artists</string>
+    <string name="car_folders">Folders</string>
+    <string name="car_unknown_album">Unknown album</string>
+    <string name="car_unknown_artist">Unknown artist</string>
+</resources>

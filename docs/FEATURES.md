@@ -106,7 +106,7 @@ The calls the app needs: `/json/stations/search` (`name`, `countrycode`, `langua
 
 | Feature | Description | Priority | Phone | Auto |
 |---|---|---|---|---|
-| Browsable media tree | Root tabs: Library, Radio, Favourites, Recent | [MVP] | - | Yes |
+| Browsable media tree | Root tabs: Library, Favourites, Recent. Radio is a tab when radio comes back (D48) | [MVP] | - | Yes |
 | Artwork | Album art in lists and now playing. Stations show a letter tile, not a logo | [MVP] | - | Yes |
 | Voice play | "Hey Google, play Vividh Bharati on Tarangini", "play songs by Ilaiyaraaja on Tarangini" | [MVP] | Yes | Yes |
 | In-car search | Search results through the media library search callback | [MVP] | - | Yes |
@@ -270,10 +270,10 @@ Checked against Google's pages on 19 Nov 2026 (check C3). Each row names its sou
 
 | Topic | What Google says | What we do | Source |
 |---|---|---|---|
-| Root tabs | The car gives the limit in the root hints. "In most cases, expect this number to be four". More tabs may be dropped. With no hint, assume at most four | 4 tabs: Library, Radio, Favourites, Recent. Read the limit from the root hints and drop from the end if it is lower | [Hierarchy] |
+| Root tabs | The car gives the limit in the root hints. "In most cases, expect this number to be four". More tabs may be dropped. With no hint, assume at most four | Tabs: Library, then Favourites and Recent when they are built, and Radio when radio comes back (D48). Read the limit from the root hints and drop from the end if it is lower | [Hierarchy] |
 | Tab icons and labels | Monochrome icons, white preferred. Short labels | White vector icons, one word labels | [Hierarchy] |
 | Tree depth | Not stated | Our choice: about 3 levels below the root | [Hierarchy] |
-| List size | "Strict limits on how many media items can be displayed at each level". No number is given, and it differs by car | Most useful items first. Long lists (all songs) are split by letter or shown as "recent" and "most played", never as one list of thousands | [Hierarchy] |
+| List size | "Strict limits on how many media items can be displayed at each level". No number is given, and it differs by car | A list by name with more than 100 rows is split by first letter, and no node gives more than 500 rows (D50) | [Hierarchy] |
 | Paging | Android Auto does not support paging. Do not rely on `page` and `pageSize` | Each node returns its whole, short list | [Hierarchy] |
 | Browsable and playable | An item can be browsable, playable, or both. An item that is both works like a playlist | Our choice: each item is one or the other. Simpler to test | [Media] |
 | Artwork | A local URI only: `content://` or `android.resource://`, pointing to a bitmap or a vector drawable. No bitmaps in the item itself (1 MB binder limit). No size is stated | A content provider serves album art and letter tiles. Our choice of size: 320 px, checked in the Desktop Head Unit | [Artwork] |
@@ -420,6 +420,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D47 | The seek bar on now playing has no handle. The end of the filled part shows the place, and the whole bar can be dragged | 20 Nov 2026 | The tall handle of Material 3 looked too heavy next to the cover and the buttons, and a dot on the bar did not look right either. The area that takes a touch stays 48 dp |
 | D48 | Radio is out of the first release. The first release is the player for local files, on the phone and in Android Auto. The Radio tab is not shown and the radio screens are not part of the app; the radio code (streams, song titles, reconnect, stations of the user) stays in the repo for later | 20 Nov 2026 | The bottom bar has three tabs: Home, Library, Favourites. Favourites, recently played and Home cover songs only. The open radio issues are closed until radio work starts again |
 | D49 | The app shows in Android Auto. Android Auto and the Google app may browse and play; they are known by package name, the user id the system gives and the SHA-256 of their signing certificate. See [ADR 0025](adr/0025-android-auto-setup.md) | 20 Nov 2026 | The steps for the Desktop Head Unit are in [ANDROID-AUTO.md](ANDROID-AUTO.md). A new signing key of Google needs a new value in the list |
+| D50 | The car shows one tab, Library, with Songs, Albums, Artists and Folders. A list by name with more than 100 rows is shown by first letter, and no node gives more than 500 rows. A tap on a song plays the list it was shown in, from that song on. Favourites and Recent become tabs when they are built. See [ADR 0026](adr/0026-car-browse-tree.md) | 20 Nov 2026 | The car has no paging and a driver cannot scroll a long list |
 
 ## 9. Checks before building
 

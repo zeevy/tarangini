@@ -33,6 +33,7 @@ Every list and search has an index behind it (D2). Tables under 1,000 rows need 
 | Read or write | How often | Served by |
 |---|---|---|
 | Songs by title, in pages | Hot | `songs(title_key)` |
+| The first letters of the songs, the albums and the artists, each with its number of rows (the car shows a long list by letter) | Warm | One pass over `songs`, `albums` or `artists`. For songs each row is read, to leave out the ones whose file is gone; for albums and artists the key index is read, with one look into `songs` per row. About 0.1 s for 50,000 songs by estimate, once per list the car opens |
 | Songs by artist, in pages | Hot | `artists(name_key)`, then `songs(artist_id, title_key)` |
 | Songs by album, in pages | Hot | `albums(title_key)`, then `songs(album_id, disc_number, track_number)` |
 | Songs by date added, by duration | Warm | `songs(date_added)`, `songs(duration_ms)` |
