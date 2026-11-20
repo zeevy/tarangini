@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -82,7 +83,7 @@ internal class HomeViewModel @Inject constructor(
     init {
         // A counted play, a changed playlist and a rescan each change what Home lists.
         viewModelScope.launch {
-            merge(history.changes(), playlists.changes(), library.changes()).collect { read() }
+            merge(history.changes(), playlists.changes(), library.changes()).conflate().collect { read() }
         }
     }
 
@@ -95,13 +96,15 @@ internal class HomeViewModel @Inject constructor(
         if (index >= 0) playback.play(uris, index) else playback.play(listOf(song.mediaUri))
     }
 
-    /** A list that cannot be read is shown as it was before, or empty. Home never shows an error for it. */
+    /**
+     * A list that cannot be read is shown as it was before. While nothing could be read yet Home
+     * stays empty: the welcome text is only for a library that was read and has nothing.
+     */
     private suspend fun read() {
         val before = lists.value
-        lists.value = Lists(
-            recent = attempt { history.recentSongs(RECENT_SONGS) } ?: before?.recent.orEmpty(),
-            playlists = attempt { playlists.playlists().take(PLAYLISTS) } ?: before?.playlists.orEmpty(),
-        )
+        val recent = attempt { history.recentSongs(RECENT_SONGS) } ?: before?.recent
+        val made = attempt { playlists.playlists().take(PLAYLISTS) } ?: before?.playlists
+        if (recent != null && made != null) lists.value = Lists(recent, made)
     }
 
     private data class Lists(val recent: List<Song>, val playlists: List<Playlist>)

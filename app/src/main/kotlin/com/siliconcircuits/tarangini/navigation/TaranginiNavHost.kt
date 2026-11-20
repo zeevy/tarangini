@@ -9,6 +9,7 @@ package com.siliconcircuits.tarangini.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.siliconcircuits.tarangini.core.domain.model.Playlist
@@ -33,9 +34,17 @@ internal fun TaranginiNavHost(
     home: @Composable (HomeTargets) -> Unit = {},
 ) {
     val targets = remember(navController) {
+        // A second tap that comes while the screen already changes is dropped.
+        val onHome = { navController.currentDestination?.hasRoute<HomeRoute>() == true }
         HomeTargets(
-            onOpenLibrary = { navController.navigateToTopLevel(TopLevelDestination.LIBRARY) },
-            onOpenPlaylist = navController::navigateToPlaylist,
+            onOpenLibrary = { if (onHome()) navController.navigateToTopLevel(TopLevelDestination.LIBRARY) },
+            // The playlist opens on top of the Library tab, so Back and the tab lead to the lists.
+            onOpenPlaylist = { playlist ->
+                if (onHome()) {
+                    navController.navigateToTopLevel(TopLevelDestination.LIBRARY)
+                    navController.navigateToPlaylist(playlist)
+                }
+            },
         )
     }
     NavHost(navController = navController, startDestination = HomeRoute, modifier = modifier) {
