@@ -38,6 +38,7 @@ internal data class MiniPlayerUiState(
     val showPause: Boolean,
     val isBuffering: Boolean,
     val progress: Float?,
+    val isStream: Boolean = false,
 )
 
 /** The mini player: the current item with play or pause and next, on every screen. */
@@ -72,6 +73,7 @@ private fun PlaybackState.toUiState(): MiniPlayerUiState? {
         title = item.title,
         artist = item.artist,
         artworkUri = item.artworkUri,
+        isStream = item.isStream,
         showPause = showsPause,
         // A paused stream that still fills its buffer is at rest for the person.
         isBuffering = isBuffering && showsPause,

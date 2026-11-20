@@ -81,7 +81,12 @@ internal fun MiniPlayerBar(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 AlbumArt(state.artworkUri)
-                ItemTexts(state.title, state.artist, Modifier.weight(1f).padding(horizontal = Spacing.medium))
+                ItemTexts(
+                    state.title,
+                    state.artist,
+                    Modifier.weight(1f).padding(horizontal = Spacing.medium),
+                    state.isStream,
+                )
                 IconButton(onClick = onTogglePlay) {
                     Icon(
                         painter = painterResource(

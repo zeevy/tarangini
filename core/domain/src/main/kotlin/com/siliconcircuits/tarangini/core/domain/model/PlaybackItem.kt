@@ -11,6 +11,8 @@ package com.siliconcircuits.tarangini.core.domain.model
  *
  * @property id the id the item was loaded with
  * @property artworkUri the address of the cover picture
+ * @property isStream true for a radio stream. Its title is the song on air or the name of the station,
+ *   and it may have no artist
  */
 data class PlaybackItem(
     val id: String,
@@ -18,4 +20,5 @@ data class PlaybackItem(
     val artist: String? = null,
     val album: String? = null,
     val artworkUri: String? = null,
+    val isStream: Boolean = false,
 )

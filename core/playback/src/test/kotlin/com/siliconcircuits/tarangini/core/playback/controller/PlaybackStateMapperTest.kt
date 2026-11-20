@@ -133,6 +133,19 @@ class PlaybackStateMapperTest {
     }
 
     @Test
+    fun `an item with an http or https address is a stream, a file of the phone is not`() {
+        val items = listOf(
+            "http://radio.example/stream",
+            "HTTPS://radio.example/live.m3u8",
+            "content://media/external/audio/media/1",
+        )
+            .map { MediaItem.Builder().setMediaId(it).setUri(it).build() }
+        player.report { setPlaylist(items.map { FakePlayer.queued(it) }) }
+
+        assertEquals(listOf(true, true, false), player.toPlaybackState().queue.map { it.isStream })
+    }
+
+    @Test
     fun `shuffle and each repeat mode are shown`() {
         player.report { setShuffleModeEnabled(true).setRepeatMode(Player.REPEAT_MODE_ONE) }
         assertTrue(player.toPlaybackState().shuffle)

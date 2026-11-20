@@ -14,6 +14,7 @@ import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackItem
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
+import com.siliconcircuits.tarangini.core.playback.stream.STREAM_SCHEMES
 
 private const val FIRST_PARSING_ERROR = 3000
 private const val LAST_DECODING_ERROR = 4999
@@ -29,7 +30,8 @@ internal fun Player.toPlaybackState(knownQueue: List<PlaybackItem>? = null): Pla
     val queue = knownQueue ?: List(mediaItemCount) { index ->
         val item = getMediaItemAt(index)
         // The player knows the tags of the current item only: it has read that file.
-        item.mediaMetadata.toPlaybackItem(item.mediaId, tags = mediaMetadata.takeIf { index == current })
+        val isStream = item.localConfiguration?.uri?.scheme?.lowercase() in STREAM_SCHEMES
+        item.mediaMetadata.toPlaybackItem(item.mediaId, tags = mediaMetadata.takeIf { index == current }, isStream)
     }
     return PlaybackState(
         queue = queue,
@@ -53,13 +55,15 @@ internal fun Player.toPlaybackState(knownQueue: List<PlaybackItem>? = null): Pla
     )
 }
 
-private fun MediaMetadata.toPlaybackItem(id: String, tags: MediaMetadata?): PlaybackItem = PlaybackItem(
-    id = id,
-    title = (tags?.title ?: title)?.toString(),
-    artist = (tags?.artist ?: artist)?.toString(),
-    album = (tags?.albumTitle ?: albumTitle)?.toString(),
-    artworkUri = (tags?.artworkUri ?: artworkUri)?.toString(),
-)
+private fun MediaMetadata.toPlaybackItem(id: String, tags: MediaMetadata?, isStream: Boolean): PlaybackItem =
+    PlaybackItem(
+        id = id,
+        title = (tags?.title ?: title)?.toString(),
+        artist = (tags?.artist ?: artist)?.toString(),
+        album = (tags?.albumTitle ?: albumTitle)?.toString(),
+        artworkUri = (tags?.artworkUri ?: artworkUri)?.toString(),
+        isStream = isStream,
+    )
 
 /** The repeat mode of the player as the app names it. */
 internal fun Int.toRepeatMode(): RepeatMode = when (this) {

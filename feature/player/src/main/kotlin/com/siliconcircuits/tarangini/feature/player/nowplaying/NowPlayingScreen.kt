@@ -154,7 +154,12 @@ private fun Controls(
             maxLines = titleLines,
             overflow = TextOverflow.Ellipsis,
         )
-        OneLine(state.artist ?: stringResource(CoreUiR.string.unknown_artist))
+        // A station that sends no song title has no line here. The line below says that it is live.
+        if (state.artist != null ||
+            !state.isLive
+        ) {
+            OneLine(state.artist ?: stringResource(CoreUiR.string.unknown_artist))
+        }
         // A station has no album. An empty line would only push the buttons down.
         state.album?.let { OneLine(it) }
         if (state.isLive) LiveLine(state.isBuffering) else SeekBar(state, actions.onSeek)

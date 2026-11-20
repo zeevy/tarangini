@@ -15,9 +15,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
 
-/** The title of an item with its artist under it, one line each. A text that is not known gets a stand-in. */
+/**
+ * The title of an item with its artist under it, one line each. A text that is not known gets a
+ * stand-in. For a stream the second line is the station while a song title is known, else "Live".
+ */
 @Composable
-internal fun ItemTexts(title: String?, artist: String?, modifier: Modifier = Modifier) {
+internal fun ItemTexts(title: String?, artist: String?, modifier: Modifier = Modifier, isStream: Boolean = false) {
     Column(modifier = modifier) {
         Text(
             text = title ?: stringResource(CoreUiR.string.unknown_title),
@@ -26,7 +29,8 @@ internal fun ItemTexts(title: String?, artist: String?, modifier: Modifier = Mod
             style = MaterialTheme.typography.bodyLarge,
         )
         Text(
-            text = artist ?: stringResource(CoreUiR.string.unknown_artist),
+            // A station that sends no song title has no second text. "Unknown artist" would be wrong for it.
+            text = artist ?: stringResource(if (isStream) R.string.now_playing_live else CoreUiR.string.unknown_artist),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.bodyMedium,

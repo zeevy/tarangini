@@ -128,7 +128,7 @@ private fun RowBody(item: PlaybackItem, isCurrent: Boolean, drag: RowDrag, actio
         verticalAlignment = Alignment.CenterVertically,
     ) {
         AlbumArt(item.artworkUri)
-        ItemTexts(item.title, item.artist, Modifier.weight(1f).padding(horizontal = Spacing.medium))
+        ItemTexts(item.title, item.artist, Modifier.weight(1f).padding(horizontal = Spacing.medium), item.isStream)
         DragHandle(drag)
     }
 }

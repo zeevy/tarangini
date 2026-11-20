@@ -92,6 +92,8 @@ Run with about 10,000 songs on a mid range phone.
 | 51 | Play a song, then a station, then a song again | Each change works with one tap. The notification follows, and the song has its seek bar again |
 | 52 | Play a station that has only an `http` address, on mobile data and on Wi-Fi | It plays on both |
 | 53 | Play a station for 10 minutes with the screen off, on Wi-Fi | The sound does not stop |
+| 54 | Needs a station added in the app. Play a station that sends song titles and wait for the next song | The mini player, now playing, the notification and the lock screen show the new title within a few seconds, with the station under it |
+| 55 | Play a station that sends no titles | Its name is the title, and the line under it says "Live" in the mini player. Nothing says "Unknown artist" |
 
 ## Playback: resume
 
