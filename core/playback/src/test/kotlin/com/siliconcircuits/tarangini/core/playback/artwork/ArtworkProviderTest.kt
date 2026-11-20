@@ -19,6 +19,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowBinder
 
 @RunWith(RobolectricTestRunner::class)
@@ -98,6 +100,18 @@ class ArtworkProviderTest {
 
         refused("/song/1")
         assertEquals(emptyList<Uri>(), asked)
+    }
+
+    @Test
+    fun `the media panel of the system gets a picture`() {
+        val systemUi = Process.myUid() + 1
+        ShadowBinder.setCallingUid(systemUi)
+        // The test environment keeps granted permissions per process, and the caller is in this process.
+        shadowOf(RuntimeEnvironment.getApplication()).grantPermissions("android.permission.MEDIA_CONTENT_CONTROL")
+
+        provider.openFile(ArtworkAddress.ofAlbum(7), "r").close()
+
+        assertEquals(1, asked.size)
     }
 
     @Test

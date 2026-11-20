@@ -9,6 +9,7 @@ package com.siliconcircuits.tarangini.core.playback.artwork
 import android.content.ContentProvider
 import android.content.ContentUris
 import android.content.ContentValues
+import android.content.pm.PackageManager
 import android.database.Cursor
 import android.graphics.Bitmap
 import android.net.Uri
@@ -30,8 +31,9 @@ import java.io.FileNotFoundException
  * It does one thing: a read of `/song/<id>` or `/album/<id>` gives a JPEG of
  * [SIDE] pixels at most. Every other path, every write and every other call
  * is refused. The id is a number and is never used as a path, so no address
- * can reach a file. Only this app, Android Auto and the Google app may read:
- * a cover says what music a person has, which is nothing for other apps.
+ * can reach a file. Only this app, Android Auto, the Google app and the
+ * media panel of the system may read: a cover says what music a person has,
+ * which is nothing for other apps.
  */
 internal class ArtworkProvider : ContentProvider() {
     /** Who may read besides this app. A test puts its own in. */
@@ -79,8 +81,12 @@ internal class ArtworkProvider : ContentProvider() {
         val uid = Binder.getCallingUid()
         // The system refuses to name the package when the caller lies about it.
         val name = runCatching { callingPackage }.getOrNull()
-        val known = callers ?: CertificateCallers(requireNotNull(context).packageManager)
-        return uid == Process.myUid() || (name != null && known.isKnown(name, uid))
+        val app = requireNotNull(context)
+        val known = callers ?: CertificateCallers(app.packageManager)
+        // The media panel and the lock screen of the phone hold this permission. Only apps that are
+        // part of the system can hold it.
+        val ofTheSystem = app.checkCallingPermission(MEDIA_CONTROL) == PackageManager.PERMISSION_GRANTED
+        return uid == Process.myUid() || ofTheSystem || (name != null && known.isKnown(name, uid))
     }
 
     // Nothing but a read of a picture is offered.
@@ -104,5 +110,6 @@ internal class ArtworkProvider : ContentProvider() {
         const val QUALITY = 85
         const val JPEG = "image/jpeg"
         const val MOST_DIGITS = 18
+        const val MEDIA_CONTROL = "android.permission.MEDIA_CONTENT_CONTROL"
     }
 }
