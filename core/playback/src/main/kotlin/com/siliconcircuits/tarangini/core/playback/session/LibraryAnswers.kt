@@ -6,7 +6,9 @@
 
 package com.siliconcircuits.tarangini.core.playback.session
 
+import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaLibraryService.LibraryParams
 import androidx.media3.session.SessionError
@@ -51,3 +53,9 @@ internal fun List<MediaItem>.asPage(
     val skipped = (page.coerceAtLeast(0).toLong() * size).coerceAtMost(this.size.toLong()).toInt()
     return LibraryResult.ofItemList(drop(skipped).take(size), params)
 }
+
+/** The error as the answer to a read of the library. */
+// An answer made from a session error is API of Media3 that may still change.
+@OptIn(UnstableApi::class)
+internal fun <T : Any> SessionError.asResult(params: LibraryParams?): LibraryResult<T> =
+    params?.let { LibraryResult.ofError(this, it) } ?: LibraryResult.ofError(this)

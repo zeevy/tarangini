@@ -14,6 +14,7 @@ import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackItem
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
+import com.siliconcircuits.tarangini.core.domain.model.artworkUriOf
 import com.siliconcircuits.tarangini.core.playback.stream.STREAM_SCHEMES
 
 private const val FIRST_PARSING_ERROR = 3000
@@ -61,7 +62,9 @@ private fun MediaMetadata.toPlaybackItem(id: String, tags: MediaMetadata?, isStr
         title = (tags?.title ?: title)?.toString(),
         artist = (tags?.artist ?: artist)?.toString(),
         album = (tags?.albumTitle ?: albumTitle)?.toString(),
-        artworkUri = (tags?.artworkUri ?: artworkUri)?.toString(),
+        // The screens of the phone read the cover of a song from the phone itself, in full size. The
+        // address in the item is the small picture this app serves to the car.
+        artworkUri = artworkUriOf(id) ?: (tags?.artworkUri ?: artworkUri)?.toString(),
         isStream = isStream,
     )
 

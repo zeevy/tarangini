@@ -89,7 +89,11 @@ internal class PlaybackSessionCallback(
         return Futures.immediateFuture(LibraryResult.ofItem(car.tree.root, params))
     }
 
-    /** What is under a node of the list. */
+    /**
+     * What is under a node of the list. While the audio permission is not given on the phone, every
+     * list is an error with a text that says so; Media3 shows such an error in the car. An empty
+     * library gives an empty Library tab and a note that says why.
+     */
     override fun onGetChildren(
         session: MediaLibrarySession,
         browser: MediaSession.ControllerInfo,
@@ -98,9 +102,17 @@ internal class PlaybackSessionCallback(
         pageSize: Int,
         params: MediaLibraryService.LibraryParams?,
     ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = scope.fromLibrary {
-        MediaId.parse(parentId)?.let { parent -> car.tree.children(parent, tabLimit) }?.let { children ->
-            opened.add(parentId)
-            children.asPage(page, pageSize, params)
+        val parent = MediaId.parse(parentId)
+        val refused = car.problems.noAccess()
+        val empty = if (parent == MediaId.Library && refused == null) car.problems.noSongs() else null
+        // A list that was asked for is told when the library changes, also when it could not be shown now.
+        if (parent != null) opened.add(parentId)
+        empty?.let { note -> session.sendError(browser, note) }
+        when {
+            parent == null -> null
+            refused != null -> refused.asResult(params)
+            empty != null -> emptyList<MediaItem>().asPage(page, pageSize, params)
+            else -> car.tree.children(parent, tabLimit)?.asPage(page, pageSize, params)
         }
     }
 
@@ -140,7 +152,9 @@ internal class PlaybackSessionCallback(
         pageSize: Int,
         params: MediaLibraryService.LibraryParams?,
     ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = scope.fromLibrary {
-        car.search.results(query).asPage(page, pageSize, params)
+        // Without the audio permission nothing found could play, so the search says what to do, as a list does.
+        car.problems.noAccess()?.let { refused -> refused.asResult(params) }
+            ?: car.search.results(query).asPage(page, pageSize, params)
     }
 
     /**

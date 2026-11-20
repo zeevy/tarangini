@@ -70,6 +70,7 @@ class PlaybackSessionCallbackTest {
     private val library = FakeLibraryRepository()
     private val labels = BrowseLabels("Library", "Songs", "Albums", "Artists", "Folders", "No album", "No artist", null)
     private val search = FakeSearchRepository()
+    private var allowed = true
     private val callback = callbackOn(library, { texts(it) }) {
         readFailure?.let { throw it }
             ?: saved
@@ -84,8 +85,18 @@ class PlaybackSessionCallbackTest {
         val tree = BrowseTree(library, FakeLibraryLetters(this.library), items)
         val carSearch = CarSearch(search, library, items)
         val carPlay = CarPlay(MainScope(), tree, carSearch, library, resumption)
+        val problems = CarProblems(
+            noAccess = {
+                SessionError(SessionError.ERROR_SESSION_AUTHENTICATION_EXPIRED, "Allow").takeUnless { allowed }
+            },
+            noSongs = { SessionError(SessionError.INFO_CANCELLED, "No songs").takeIf { this.library.songs.isEmpty() } },
+        )
         val callers = CallerPolicy(service.packageName, Process.myUid(), car)
-        return PlaybackSessionCallback(callers, MainScope(), CarLibrary(tree, carSearch, carPlay), texts, { _, _, _ ->
+        return PlaybackSessionCallback(callers, MainScope(), CarLibrary(tree, carSearch, carPlay, problems), texts, {
+                _,
+                _,
+                _,
+            ->
         }, resumption)
     }
     private val theCar = caller(CAR, Process.myUid() + CAR_UID_STEP, trusted = true)
@@ -150,6 +161,7 @@ class PlaybackSessionCallbackTest {
 
     @Test
     fun `the car gets the top of the library, and the Library tab with its lists under it`() {
+        library.songs = listOf(testSong(1))
         val root = callback.onGetLibraryRoot(session, theCar, null).get()
         val tabs = children(MediaId.Root.encode())
         val lists = children(tabs.single().mediaId)
@@ -484,6 +496,58 @@ class PlaybackSessionCallbackTest {
 
         assertEquals(listOf(testSong(2).mediaUri), queue.mediaItems.map { it.mediaId })
         assertThrows(ExecutionException::class.java) { added.get() }
+    }
+
+    @Test
+    fun `without the audio permission every list of the car is an error that says what to do`() {
+        library.songs = listOf(testSong(1))
+        allowed = false
+
+        val tabs = callback.onGetChildren(session, theCar, MediaId.Root.encode(), 0, 100, null).get()
+        val songs = callback.onGetChildren(
+            session,
+            theCar,
+            MediaId.Section(LibraryList.SONGS).encode(),
+            0,
+            100,
+            null,
+        ).get()
+
+        val found = callback.onGetSearchResult(session, theCar, "song", 0, 100, null).get()
+
+        assertEquals(SessionError.ERROR_SESSION_AUTHENTICATION_EXPIRED, tabs.resultCode)
+        assertEquals(SessionError.ERROR_SESSION_AUTHENTICATION_EXPIRED, found.resultCode)
+        assertEquals("Allow", songs.sessionError?.message)
+        // The car is told when the library changes, so the lists come back after the permission is given.
+        assertEquals(
+            listOf(MediaId.Root.encode(), MediaId.Section(LibraryList.SONGS).encode()),
+            callback.opened.all().toList(),
+        )
+    }
+
+    @Test
+    fun `the lists come back when the audio permission is given`() {
+        library.songs = listOf(testSong(1))
+        allowed = false
+        callback.onGetChildren(session, theCar, MediaId.Library.encode(), 0, 100, null).get()
+        allowed = true
+
+        val sections = callback.onGetChildren(session, theCar, MediaId.Library.encode(), 0, 100, null).get()
+
+        assertEquals(LibraryResult.RESULT_SUCCESS, sections.resultCode)
+        assertEquals(4, sections.value?.size)
+    }
+
+    @Test
+    fun `an empty library gives an empty Library tab and no error`() {
+        library.songs = emptyList()
+
+        val sections = callback.onGetChildren(session, theCar, MediaId.Library.encode(), 0, 100, null).get()
+        val tabs = callback.onGetChildren(session, theCar, MediaId.Root.encode(), 0, 100, null).get()
+
+        assertEquals(LibraryResult.RESULT_SUCCESS, sections.resultCode)
+        assertEquals(0, sections.value?.size)
+        assertEquals(1, tabs.value?.size)
     }
 }
 

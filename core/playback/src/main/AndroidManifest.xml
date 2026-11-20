@@ -44,6 +44,17 @@
         </service>
 
         <!--
+          Serves cover pictures to the car, which can load a picture only from an address of the app. It is
+          exported because the car is another app, and no permission can guard it, as the car holds none of
+          ours. The provider checks the caller itself, serves two kinds of path and refuses everything else.
+        -->
+        <provider
+            android:name=".artwork.ArtworkProvider"
+            android:authorities="${applicationId}.artwork"
+            android:exported="true"
+            tools:ignore="ExportedContentProvider" />
+
+        <!--
           Starts the playback service when a headset or a car sends "play" while the app is not running.
           The service then plays what was saved last.
         -->

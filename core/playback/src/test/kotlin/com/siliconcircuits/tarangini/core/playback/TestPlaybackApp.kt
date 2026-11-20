@@ -8,6 +8,7 @@ package com.siliconcircuits.tarangini.core.playback
 
 import android.app.Application
 import com.siliconcircuits.tarangini.core.domain.playback.ResumeStore
+import com.siliconcircuits.tarangini.core.domain.repository.AudioAccess
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryLetters
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SearchRepository
@@ -38,6 +39,7 @@ internal class TestPlaybackApp :
     val songs = FakeSongLookup()
     val library = FakeLibraryRepository()
     val search = FakeSearchRepository()
+    var audioAllowed = true
     private val scope = MainScope()
 
     override fun generatedComponent(): Any = object : PlaybackService.Dependencies, GeneratedComponent {
@@ -50,6 +52,8 @@ internal class TestPlaybackApp :
         override fun libraryLetters(): LibraryLetters = FakeLibraryLetters(library)
 
         override fun searchRepository(): SearchRepository = search
+
+        override fun audioAccess(): AudioAccess = AudioAccess { audioAllowed }
 
         override fun httpClient(): OkHttpClient = OkHttpClient()
 

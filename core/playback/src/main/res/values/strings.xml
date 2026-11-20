@@ -14,4 +14,5 @@
     <string name="car_unknown_artist">Unknown artist</string>
     <string name="car_nothing_found">Nothing in your library matches that</string>
     <string name="car_no_songs">There are no songs in your library yet</string>
+    <string name="car_allow_audio">Allow access to audio files on your phone, when it is safe</string>
 </resources>

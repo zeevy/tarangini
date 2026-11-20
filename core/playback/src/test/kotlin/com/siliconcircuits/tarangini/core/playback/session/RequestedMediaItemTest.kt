@@ -10,6 +10,7 @@ import android.net.Uri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.MimeTypes
+import com.siliconcircuits.tarangini.core.playback.artwork.ArtworkAddress
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
@@ -132,7 +133,7 @@ class RequestedMediaItemTest {
         val playable = loaded.toPlayable()
 
         // The only picture address is the one this app makes from the checked address of the song.
-        val ownArtwork = MediaMetadata.Builder().setArtworkUri(Uri.parse("$song/albumart")).build()
+        val ownArtwork = MediaMetadata.Builder().setArtworkUri(ArtworkAddress.ofSong(song)).build()
         assertEquals(MediaItem.Builder().setMediaId("id").setUri(song).setMediaMetadata(ownArtwork).build(), playable)
         assertTrue(requireNotNull(playable.localConfiguration).subtitleConfigurations.isEmpty())
         assertNull(playable.localConfiguration?.adsConfiguration)

@@ -9,7 +9,7 @@ package com.siliconcircuits.tarangini.core.playback.mapper
 import android.net.Uri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import com.siliconcircuits.tarangini.core.domain.model.artworkUriOf
+import com.siliconcircuits.tarangini.core.playback.artwork.ArtworkAddress
 
 /**
  * The item the player gets for one address: the id, the address and where
@@ -20,5 +20,5 @@ import com.siliconcircuits.tarangini.core.domain.model.artworkUriOf
 internal fun playableItem(mediaId: String, uri: Uri = Uri.parse(mediaId)): MediaItem = MediaItem.Builder()
     .setMediaId(mediaId)
     .setUri(uri)
-    .setMediaMetadata(MediaMetadata.Builder().setArtworkUri(artworkUriOf(uri.toString())?.let(Uri::parse)).build())
+    .setMediaMetadata(MediaMetadata.Builder().setArtworkUri(ArtworkAddress.ofSong(uri.toString())).build())
     .build()
