@@ -13,6 +13,7 @@ import com.siliconcircuits.tarangini.core.domain.model.SongSort
 import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryLetters
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
+import com.siliconcircuits.tarangini.core.domain.repository.PlayHistory
 
 /** The songs a tap in the car plays, and which of them was tapped. */
 internal data class PickedQueue(val songs: List<Song>, val index: Int)
@@ -30,6 +31,7 @@ internal class BrowseTree(
     private val letters: LibraryLetters,
     private val items: BrowseItems,
     private val favourites: FavouriteRepository,
+    private val history: PlayHistory,
 ) {
     /** The top node. The car asks for it first, before any list. */
     val root: MediaItem = items.list(MediaId.Root)
@@ -46,7 +48,7 @@ internal class BrowseTree(
         is MediaId.Letter -> rows(parent.list, parent, group(parent))
         MediaId.Folders -> library.folders(null).map(items::folder)
         is MediaId.Folder -> library.folders(parent.id).map(items::folder) + songItems(parent)
-        is MediaId.Album, is MediaId.Artist, MediaId.Favourites -> songItems(parent)
+        is MediaId.Album, is MediaId.Artist, MediaId.Favourites, MediaId.Recent -> songItems(parent)
         is MediaId.SongIn -> null
     }
 
@@ -104,6 +106,7 @@ internal class BrowseTree(
         is MediaId.Artist -> library.songsOfArtist(list.id, Page(Page.MAX_LIMIT))
         is MediaId.Folder -> library.songsInFolder(list.id, Page(Page.MAX_LIMIT))
         MediaId.Favourites -> favourites.songs(Page(Page.MAX_LIMIT))
+        MediaId.Recent -> history.recentSongs()
         MediaId.Root, MediaId.Library, MediaId.Folders, is MediaId.SongIn -> emptyList()
     }
 

@@ -11,6 +11,7 @@
     <string name="car_artists">Artists</string>
     <string name="car_folders">Folders</string>
     <string name="car_favourites">Favourites</string>
+    <string name="car_recent">Recent</string>
     <string name="car_add_favourite">Add to favourites</string>
     <string name="car_remove_favourite">Remove from favourites</string>
     <string name="car_unknown_album">Unknown album</string>

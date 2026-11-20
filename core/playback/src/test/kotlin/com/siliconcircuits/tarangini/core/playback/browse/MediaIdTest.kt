@@ -16,6 +16,7 @@ class MediaIdTest {
         MediaId.Library,
         MediaId.Folders,
         MediaId.Favourites,
+        MediaId.Recent,
         MediaId.Section(LibraryList.SONGS),
         MediaId.Section(LibraryList.ALBUMS),
         MediaId.Section(LibraryList.ARTISTS),

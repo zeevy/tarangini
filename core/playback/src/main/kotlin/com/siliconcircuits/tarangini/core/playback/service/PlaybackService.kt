@@ -23,6 +23,7 @@ import com.siliconcircuits.tarangini.core.domain.repository.AudioAccess
 import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryLetters
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
+import com.siliconcircuits.tarangini.core.domain.repository.PlayHistory
 import com.siliconcircuits.tarangini.core.domain.repository.SearchRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SongLookup
 import com.siliconcircuits.tarangini.core.domain.repository.StationStreams
@@ -34,6 +35,7 @@ import com.siliconcircuits.tarangini.core.playback.browse.LibraryChangeNotices
 import com.siliconcircuits.tarangini.core.playback.browse.browseLabels
 import com.siliconcircuits.tarangini.core.playback.di.PlaybackCoroutineScope
 import com.siliconcircuits.tarangini.core.playback.mapper.LibraryTexts
+import com.siliconcircuits.tarangini.core.playback.player.CountPlays
 import com.siliconcircuits.tarangini.core.playback.player.LastSound
 import com.siliconcircuits.tarangini.core.playback.player.SkipSilentEnd
 import com.siliconcircuits.tarangini.core.playback.player.createPlayer
@@ -68,16 +70,8 @@ internal class PlaybackService : MediaLibraryService() {
     private var notices: LibraryChangeNotices? = null
     private var scope: CoroutineScope? = null
 
-    /** What the service takes from the app. The system makes a service, so nothing can be handed to its constructor. */
-    @EntryPoint
-    @InstallIn(SingletonComponent::class)
-    interface Dependencies {
-        fun resumeStore(): ResumeStore
-
-        fun songLookup(): SongLookup
-
-        fun libraryRepository(): LibraryRepository
-
+    /** What the service needs for the lists the car shows. */
+    interface CarDependencies {
         fun libraryLetters(): LibraryLetters
 
         fun searchRepository(): SearchRepository
@@ -85,6 +79,19 @@ internal class PlaybackService : MediaLibraryService() {
         fun audioAccess(): AudioAccess
 
         fun favouriteRepository(): FavouriteRepository
+
+        fun playHistory(): PlayHistory
+    }
+
+    /** What the service takes from the app. The system makes a service, so nothing can be handed to its constructor. */
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface Dependencies : CarDependencies {
+        fun resumeStore(): ResumeStore
+
+        fun songLookup(): SongLookup
+
+        fun libraryRepository(): LibraryRepository
 
         fun httpClient(): OkHttpClient
 
@@ -101,11 +108,12 @@ internal class PlaybackService : MediaLibraryService() {
         val player = createPlayer(this, sound, app::httpClient)
         player.addListener(StreamFailover(player, app.stationStreams(), app.playbackScope()))
         player.addListener(SkipSilentEnd(player, sound, app.playbackScope()))
+        player.addListener(playCounter(app))
         val texts = LibraryTexts(app.songLookup(), app.stationStreams())
         val resume = PlaybackResume(player, app.resumeStore(), app.playbackScope(), texts::addTo)
         scope = app.playbackScope()
         val items = BrowseItems(browseLabels(this))
-        val tree = BrowseTree(app.libraryRepository(), app.libraryLetters(), items, app.favouriteRepository())
+        val tree = carTree(app, items)
         val search = CarSearch(app.searchRepository(), app.libraryRepository(), items)
         val callback = PlaybackSessionCallback(
             callers = CallerPolicy(packageName, Process.myUid(), CertificateCallers(packageManager)),
@@ -131,11 +139,33 @@ internal class PlaybackService : MediaLibraryService() {
         notices = LibraryChangeNotices(
             app.libraryRepository(),
             app.favouriteRepository(),
+            app.playHistory(),
             app.playbackScope(),
             callback.opened::all,
         ) { listId ->
             session.notifyChildrenChanged(listId, Int.MAX_VALUE, null)
         }.also(LibraryChangeNotices::start)
+    }
+
+    private fun carTree(app: Dependencies, items: BrowseItems) = BrowseTree(
+        app.libraryRepository(),
+        app.libraryLetters(),
+        items,
+        app.favouriteRepository(),
+        app.playHistory(),
+    )
+
+    /** Writes a song into the play history once it was heard for some seconds. A stream is no song and is left out. */
+    private fun playCounter(app: Dependencies): Player.Listener {
+        val counter = CountPlays(app.playbackScope()) { mediaId ->
+            app.songLookup().byMediaUri(listOf(mediaId))[mediaId]?.let { song -> app.playHistory().songPlayed(song.id) }
+        }
+        return object : Player.Listener {
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) =
+                counter.itemStarted(mediaItem?.mediaId)
+
+            override fun onIsPlayingChanged(isPlaying: Boolean) = counter.playing(isPlaying)
+        }
     }
 
     /**

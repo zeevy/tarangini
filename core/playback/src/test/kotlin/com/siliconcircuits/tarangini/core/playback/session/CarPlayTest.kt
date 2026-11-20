@@ -20,6 +20,7 @@ import com.siliconcircuits.tarangini.core.playback.mapper.playableItem
 import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryLetters
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
+import com.siliconcircuits.tarangini.core.testing.library.FakePlayHistory
 import com.siliconcircuits.tarangini.core.testing.library.FakeSearchRepository
 import com.siliconcircuits.tarangini.core.testing.library.testAlbum
 import com.siliconcircuits.tarangini.core.testing.library.testArtist
@@ -39,6 +40,7 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class CarPlayTest {
     private val favourites = FakeFavouriteRepository()
+    private val history = FakePlayHistory()
     private val library = FakeLibraryRepository()
     private val found = FakeSearchRepository()
     private val told = mutableListOf<NothingToPlay?>()
@@ -49,10 +51,12 @@ class CarPlayTest {
                 "Library", "Songs", "Albums", "Artists", "Folders", "?", "?", null,
                 favourites = "Favourites",
                 favouritesIcon = null,
+                recent = "Recent",
+                recentIcon = null,
             ),
         )
     private val search = CarSearch(found, library, items)
-    private val tree = BrowseTree(library, FakeLibraryLetters(library), items, favourites)
+    private val tree = BrowseTree(library, FakeLibraryLetters(library), items, favourites, history)
     private val carPlay = CarPlay(MainScope(), tree, search, library) { saved }
 
     private fun queueFor(item: MediaItem) = carPlay.queueFor(item) { told += it }

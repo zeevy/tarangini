@@ -8,6 +8,7 @@ package com.siliconcircuits.tarangini.core.playback.browse
 
 import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
+import com.siliconcircuits.tarangini.core.testing.library.FakePlayHistory
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
@@ -22,12 +23,15 @@ import org.junit.Test
 class LibraryChangeNoticesTest {
     private val library = FakeLibraryRepository()
     private val favourites = FakeFavouriteRepository()
+    private val history = FakePlayHistory()
     private val told = mutableListOf<String>()
 
     @Test
     fun `nothing is told at the start, and each open list is told once after the library changed`() = runTest {
         val notices =
-            LibraryChangeNotices(library, favourites, backgroundScope, { listOf("library", "songs") }, told::add)
+            LibraryChangeNotices(library, favourites, history, backgroundScope, {
+                listOf("library", "songs")
+            }, told::add)
         notices.start()
         pass()
         assertTrue(told.isEmpty())
@@ -40,7 +44,8 @@ class LibraryChangeNoticesTest {
 
     @Test
     fun `many changes in a short time are told once, after the last one`() = runTest {
-        val notices = LibraryChangeNotices(library, favourites, backgroundScope, { listOf("songs") }, told::add)
+        val notices =
+            LibraryChangeNotices(library, favourites, history, backgroundScope, { listOf("songs") }, told::add)
         notices.start()
         runCurrent()
 
@@ -56,7 +61,8 @@ class LibraryChangeNoticesTest {
 
     @Test
     fun `nothing is told after the end`() = runTest {
-        val notices = LibraryChangeNotices(library, favourites, backgroundScope, { listOf("songs") }, told::add)
+        val notices =
+            LibraryChangeNotices(library, favourites, history, backgroundScope, { listOf("songs") }, told::add)
         notices.start()
         runCurrent()
 
@@ -81,7 +87,7 @@ class LibraryChangeNoticesTest {
     @Test
     fun `only the favourites list is told after a favourite was marked`() = runTest {
         val open = { listOf("songs", "favourites") }
-        val notices = LibraryChangeNotices(library, favourites, backgroundScope, open, told::add)
+        val notices = LibraryChangeNotices(library, favourites, history, backgroundScope, open, told::add)
         notices.start()
         pass()
 
@@ -89,5 +95,18 @@ class LibraryChangeNoticesTest {
         pass()
 
         assertEquals(listOf("favourites"), told)
+    }
+
+    @Test
+    fun `only the recent list is told after a play was counted`() = runTest {
+        val open = { listOf("songs", "recent") }
+        val notices = LibraryChangeNotices(library, favourites, history, backgroundScope, open, told::add)
+        notices.start()
+        pass()
+
+        history.songPlayed(1)
+        pass()
+
+        assertEquals(listOf("recent"), told)
     }
 }
