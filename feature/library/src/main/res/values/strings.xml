@@ -7,6 +7,27 @@
 <resources>
     <string name="library_title">Library</string>
     <string name="favourites_title">Favourites</string>
+    <string name="library_tab_songs">Songs</string>
+    <string name="library_tab_albums">Albums</string>
+    <string name="library_tab_artists">Artists</string>
+    <string name="library_tab_folders">Folders</string>
+    <string name="library_sort">Sort songs</string>
+    <string name="library_sort_title">Title</string>
+    <string name="library_sort_artist">Artist</string>
+    <string name="library_sort_album">Album</string>
+    <string name="library_sort_date_added">Newest first</string>
+    <string name="library_sort_duration">Shortest first</string>
+    <string name="library_section_albums">Albums</string>
+    <string name="library_section_songs">Songs</string>
+    <string name="library_loading">Loading</string>
+    <string name="library_error_title">The library could not be read</string>
+    <string name="library_error_text">Something went wrong on the phone. Your music is not changed.</string>
+    <string name="library_error_retry">Try again</string>
+    <string name="library_empty_title">No music found</string>
+    <string name="library_empty_text">Copy MP3 or AAC files to your phone. They show here by themselves.</string>
+    <string name="library_empty_scan">Look again</string>
+    <string name="library_folder_empty_title">Nothing here</string>
+    <string name="library_folder_empty_text">This folder has no songs now.</string>
     <string name="library_permission_title">Allow access to your music</string>
     <string name="library_permission_reason">Tarangini needs this to find the MP3 and AAC files on your phone. It reads audio files only. Radio works without it.</string>
     <string name="library_permission_allow">Allow access</string>

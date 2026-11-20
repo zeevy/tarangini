@@ -408,6 +408,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D35 | The library is read through one `LibraryRepository`: long lists in pages of at most 500 rows, one signal when the library changed. The saved order of the songs list is in `SettingsRepository`. The phone screens and the playback service use the same interface. See [ADR 0013](adr/0013-library-repository.md) | 20 Nov 2026 | No list loads a whole table. The car and the phone always show the same data |
 | D36 | Search goes through one `SearchRepository` for the phone, the car and voice. It gives songs, albums and artists in three groups, a name that starts with the text first. See [ADR 0014](adr/0014-library-search.md) | 20 Nov 2026 | Every place that searches finds the same things |
 | D37 | Cover pictures come from the phone at the address of the song plus `/albumart`, loaded with Coil through `AlbumArt`; the same address goes to the player for the notification. See [ADR 0015](adr/0015-album-art.md) | 20 Nov 2026 | No picture is stored by the app, and every place shows the same one |
+| D38 | The Library tab is one screen with four lists (songs, albums, artists, folders) and opens an album, an artist or a folder as its own screen inside the tab. Lists are read 100 rows at a time. Only the songs list has a choice of order. See [ADR 0016](adr/0016-library-screens.md) | 20 Nov 2026 | A list of 10,000 songs opens at once and scrolls well, and the tab stays marked on every screen that belongs to it |
 
 ## 9. Checks before building
 

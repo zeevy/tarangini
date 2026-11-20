@@ -8,6 +8,14 @@ package com.siliconcircuits.tarangini.feature.library.navigation
 
 import kotlinx.serialization.Serializable
 
-/** The Library tab. */
+/**
+ * The Library tab. It is a group of screens: the lists, and the album,
+ * artist and folder screens that open from them. The bottom bar keeps the
+ * tab marked on all of them.
+ */
 @Serializable
 data object LibraryRoute
+
+/** The first screen of the tab: the four lists. */
+@Serializable
+internal data object LibraryListsRoute
