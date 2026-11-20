@@ -5,7 +5,6 @@
   version 3 only. See the LICENSE file. SPDX-License-Identifier: GPL-3.0-only
 -->
 <resources>
-    <string name="placeholder_message">This screen is not built yet.</string>
     <string name="action_back">Back</string>
     <string name="action_play">Play</string>
     <string name="action_pause">Pause</string>

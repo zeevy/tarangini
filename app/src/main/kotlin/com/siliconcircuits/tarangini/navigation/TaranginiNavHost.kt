@@ -32,6 +32,7 @@ internal fun TaranginiNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
     home: @Composable (HomeTargets) -> Unit = {},
+    settings: @Composable () -> Unit = {},
 ) {
     val targets = remember(navController) {
         // A second tap that comes while the screen already changes is dropped.
@@ -56,7 +57,7 @@ internal fun TaranginiNavHost(
             onOpenArtist = navController::navigateToArtist,
         )
         favouritesScreen()
-        settingsScreen(onBackClick = navController::popBackStack)
+        settingsScreen(onBackClick = navController::popBackStack, content = settings)
         playerScreens(navController)
     }
 }

@@ -9,6 +9,7 @@ package com.siliconcircuits.tarangini.core.data.local
 import androidx.room3.Database
 import androidx.room3.RoomDatabase
 import com.siliconcircuits.tarangini.core.data.local.dao.FavouriteDao
+import com.siliconcircuits.tarangini.core.data.local.dao.FolderDao
 import com.siliconcircuits.tarangini.core.data.local.dao.HistoryDao
 import com.siliconcircuits.tarangini.core.data.local.dao.LetterDao
 import com.siliconcircuits.tarangini.core.data.local.dao.LibraryDao
@@ -60,6 +61,8 @@ import com.siliconcircuits.tarangini.core.data.local.entity.StationStreamEntity
 )
 internal abstract class TaranginiDatabase : RoomDatabase() {
     abstract fun favouriteDao(): FavouriteDao
+
+    abstract fun folderDao(): FolderDao
 
     abstract fun historyDao(): HistoryDao
 

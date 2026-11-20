@@ -40,6 +40,7 @@ internal fun TaranginiShell(
     navController: NavHostController = rememberNavController(),
     miniPlayer: @Composable (onOpen: () -> Unit, modifier: Modifier) -> Unit = { _, _ -> },
     home: @Composable (HomeTargets) -> Unit = {},
+    settings: @Composable () -> Unit = {},
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val destination = backStackEntry?.destination
@@ -71,6 +72,7 @@ internal fun TaranginiShell(
             navController = navController,
             modifier = Modifier.padding(innerPadding).consumeWindowInsets(innerPadding),
             home = home,
+            settings = settings,
         )
     }
 }
