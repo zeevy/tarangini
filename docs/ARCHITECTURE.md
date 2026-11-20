@@ -199,7 +199,7 @@ flowchart TD
 | MediaStore | Finding audio files | Read only by the scanner, which writes to Room. Nothing else queries MediaStore |
 | Radio Browser API | Station directory | Called only from `core:data/remote`. Responses are untrusted input |
 | DataStore | Settings | One instance per file, typed keys, key names never change |
-| Disk cache | Artwork | Size limited |
+| Memory cache of the picture loader | Artwork | At most 15% of the memory of the app. Nothing on disk while every picture comes from the phone (ADR 0015) |
 
 Entities, DAOs and DTOs are `internal` to `core:data`. Mappers turn them into domain models at the repository edge.
 

@@ -6,6 +6,7 @@
 
 package com.siliconcircuits.tarangini.core.playback.mapper
 
+import android.net.Uri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import com.siliconcircuits.tarangini.core.domain.model.Song
@@ -26,6 +27,7 @@ internal fun Song.toMediaItem(): MediaItem = MediaItem.Builder()
             .setAlbumTitle(album.ifEmpty { null })
             .setTrackNumber(trackNumber)
             .setDiscNumber(discNumber)
+            .setArtworkUri(artworkUri?.let(Uri::parse))
             .setDurationMs(durationMs.takeIf { it > 0 })
             .setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC)
             .setIsBrowsable(false)

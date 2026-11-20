@@ -407,6 +407,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D34 | The library rescans by itself: at every start of the app, 2 seconds after the audio files changed while the app runs, and through one WorkManager job that the system starts only after a change while the app is closed. See [ADR 0012](adr/0012-auto-rescan.md) | 20 Nov 2026 | New and deleted songs show with no action of the user. No job runs on a timer |
 | D35 | The library is read through one `LibraryRepository`: long lists in pages of at most 500 rows, one signal when the library changed. The saved order of the songs list is in `SettingsRepository`. The phone screens and the playback service use the same interface. See [ADR 0013](adr/0013-library-repository.md) | 20 Nov 2026 | No list loads a whole table. The car and the phone always show the same data |
 | D36 | Search goes through one `SearchRepository` for the phone, the car and voice. It gives songs, albums and artists in three groups, a name that starts with the text first. See [ADR 0014](adr/0014-library-search.md) | 20 Nov 2026 | Every place that searches finds the same things |
+| D37 | Cover pictures come from the phone at the address of the song plus `/albumart`, loaded with Coil through `AlbumArt`; the same address goes to the player for the notification. See [ADR 0015](adr/0015-album-art.md) | 20 Nov 2026 | No picture is stored by the app, and every place shows the same one |
 
 ## 9. Checks before building
 
