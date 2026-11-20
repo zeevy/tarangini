@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -42,6 +43,8 @@ import com.siliconcircuits.tarangini.core.ui.component.AlbumArt
 import com.siliconcircuits.tarangini.core.ui.component.BackButton
 import com.siliconcircuits.tarangini.core.ui.component.MessageState
 import com.siliconcircuits.tarangini.core.ui.theme.Spacing
+import com.siliconcircuits.tarangini.core.ui.theme.glassBackground
+import com.siliconcircuits.tarangini.core.ui.theme.glassTopBarColors
 import com.siliconcircuits.tarangini.feature.player.R
 
 /** The now playing screen: the cover, the texts, the seek bar and the buttons of the player. */
@@ -74,9 +77,12 @@ internal fun NowPlayingContent(
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.glassBackground(),
+        containerColor = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onBackground,
         topBar = {
             TopAppBar(
+                colors = glassTopBarColors(),
                 title = { Text(stringResource(R.string.now_playing_title)) },
                 navigationIcon = { BackButton(onClick = onBackClick) },
                 actions = {

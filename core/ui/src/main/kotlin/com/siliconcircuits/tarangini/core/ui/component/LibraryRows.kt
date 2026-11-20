@@ -15,6 +15,8 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemColors
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
@@ -46,6 +49,7 @@ fun SongRow(song: Song, actions: SongRowActions, modifier: Modifier = Modifier) 
     val artist = song.artist.ifEmpty { stringResource(R.string.unknown_artist) }
     val length = formatDuration(song.durationMs)
     ListItem(
+        colors = clearRowColors(),
         headlineContent = { OneLine(song.title) },
         supportingContent = {
             OneLine(if (length.isEmpty()) artist else stringResource(R.string.row_two_parts, artist, length))
@@ -91,6 +95,7 @@ fun AlbumRow(album: Album, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val artist = album.artist.ifEmpty { stringResource(R.string.unknown_artist) }
     val count = pluralStringResource(R.plurals.song_count, album.songCount, album.songCount)
     ListItem(
+        colors = clearRowColors(),
         headlineContent = { OneLine(album.title.ifEmpty { stringResource(R.string.unknown_album) }) },
         supportingContent = { OneLine(stringResource(R.string.row_two_parts, artist, count)) },
         leadingContent = { AlbumArt(artworkUri = null) },
@@ -102,6 +107,7 @@ fun AlbumRow(album: Album, onClick: () -> Unit, modifier: Modifier = Modifier) {
 @Composable
 fun ArtistRow(artist: Artist, onClick: () -> Unit, modifier: Modifier = Modifier) {
     ListItem(
+        colors = clearRowColors(),
         headlineContent = { OneLine(artist.name.ifEmpty { stringResource(R.string.unknown_artist) }) },
         supportingContent = { OneLine(pluralStringResource(R.plurals.song_count, artist.songCount, artist.songCount)) },
         leadingContent = { IconTile(painterResource(R.drawable.ic_artist)) },
@@ -113,6 +119,7 @@ fun ArtistRow(artist: Artist, onClick: () -> Unit, modifier: Modifier = Modifier
 @Composable
 fun FolderRow(folder: Folder, onClick: () -> Unit, modifier: Modifier = Modifier) {
     ListItem(
+        colors = clearRowColors(),
         headlineContent = { OneLine(folder.name) },
         leadingContent = { IconTile(painterResource(R.drawable.ic_folder)) },
         modifier = modifier.opens(onClick),
@@ -143,3 +150,7 @@ internal fun IconTile(icon: Painter) {
         Icon(painter = icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
+
+/** A row with no colour of its own, so the background of the screen shows through the list. */
+@Composable
+internal fun clearRowColors(): ListItemColors = ListItemDefaults.colors(containerColor = Color.Transparent)

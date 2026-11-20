@@ -19,10 +19,10 @@ internal object SettingsKeys {
     /** The file the settings are saved in. */
     const val FILE_NAME = "settings"
 
-    /** "system", "light" or "dark". */
+    /** Not used: the app has one dark look. The key stays, as a key name never changes. */
     val THEME_MODE = stringPreferencesKey("theme_mode")
 
-    /** True for colours from the wallpaper, false for the brand colours. */
+    /** Not used: the app has one dark look. The key stays, as a key name never changes. */
     val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
 
     /** Files shorter than this many seconds are left out of the library. */

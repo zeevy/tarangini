@@ -27,7 +27,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
-/** Every screen of the Library tab at the narrowest width, in light and dark. */
+/** Every screen of the Library tab at the narrowest width. */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(qualifiers = "w320dp-h640dp-xhdpi")
@@ -58,42 +58,42 @@ class LibraryScreenshotTest {
     )
 
     @Test
-    fun songs() = both("library_songs") { LibraryContent(lists, songActions, LibraryActions()) }
+    fun songs() = shot("library_songs") { LibraryContent(lists, songActions, LibraryActions()) }
 
     @Test
-    fun albums() = both("library_albums") {
+    fun albums() = shot("library_albums") {
         LibraryContent(lists, songActions, LibraryActions(), firstTab = LibraryTab.ALBUMS)
     }
 
     @Test
-    fun artists() = both("library_artists") {
+    fun artists() = shot("library_artists") {
         LibraryContent(lists, songActions, LibraryActions(), firstTab = LibraryTab.ARTISTS)
     }
 
     @Test
-    fun folders() = both("library_folders") {
+    fun folders() = shot("library_folders") {
         LibraryContent(lists, songActions, LibraryActions(), firstTab = LibraryTab.FOLDERS)
     }
 
     @Test
-    fun `an empty library`() = both("library_empty") {
+    fun `an empty library`() = shot("library_empty") {
         val empty = LibraryState(songs = PagedItems(emptyList<Song>(), isLoading = false), folders = emptyList())
         LibraryContent(empty, songActions, LibraryActions())
     }
 
     @Test
-    fun album() = both("library_album") {
+    fun album() = shot("library_album") {
         AlbumContent("Morning Ragas", "Ravi Shankar", songs, songActions, onMoreSongs = {}, onRetry = {}, onBack = {})
     }
 
     @Test
-    fun artist() = both("library_artist") {
+    fun artist() = shot("library_artist") {
         ArtistContent("Ravi Shankar", albums, songs, songActions, onMoreSongs = {
         }, onRetry = {}, onOpenAlbum = {}, onBack = {})
     }
 
     @Test
-    fun folder() = both("library_folder") {
+    fun folder() = shot("library_folder") {
         FolderContent(
             name = "Music",
             folders = listOf(testFolder(3, "Ragas", parentId = 2)),
@@ -107,21 +107,19 @@ class LibraryScreenshotTest {
     }
 
     @Test
-    fun `a folder with nothing left`() = both("library_folder_empty") {
+    fun `a folder with nothing left`() = shot("library_folder_empty") {
         FolderContent("Old", emptyList(), PagedItems(isLoading = false), songActions, {}, {}, {}, {})
     }
 
-    private fun both(name: String, screen: @Composable () -> Unit) {
-        listOf("light" to false, "dark" to true).forEach { (theme, dark) ->
-            val picture = File("src/test/screenshots/${name}_$theme.png")
-            // Without this, a test with no saved picture passes: there is nothing to compare with.
-            assertTrue(
-                "No saved picture $picture. Run the tests with -PrecordScreenshots.",
-                recording || picture.exists(),
-            )
-            captureRoboImage(picture.path) {
-                TaranginiTheme(darkTheme = dark, dynamicColor = false) { screen() }
-            }
+    private fun shot(name: String, screen: @Composable () -> Unit) {
+        val picture = File("src/test/screenshots/$name.png")
+        // Without this, a test with no saved picture passes: there is nothing to compare with.
+        assertTrue(
+            "No saved picture $picture. Run the tests with -PrecordScreenshots.",
+            recording || picture.exists(),
+        )
+        captureRoboImage(picture.path) {
+            TaranginiTheme { screen() }
         }
     }
 }

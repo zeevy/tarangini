@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -23,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -34,6 +36,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
 import com.siliconcircuits.tarangini.core.ui.component.AlbumArt
+import com.siliconcircuits.tarangini.core.ui.theme.GlassEdge
+import com.siliconcircuits.tarangini.core.ui.theme.GlassPanel
 import com.siliconcircuits.tarangini.core.ui.theme.Spacing
 import com.siliconcircuits.tarangini.feature.player.ItemTexts
 import com.siliconcircuits.tarangini.feature.player.R
@@ -67,9 +71,15 @@ internal fun MiniPlayerBar(
     onOpen: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(modifier = modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.surfaceContainerHigh) {
+    // A glass pill with space around it.
+    Surface(
+        modifier = modifier.fillMaxWidth().padding(horizontal = Spacing.medium, vertical = Spacing.small),
+        shape = CircleShape,
+        color = GlassPanel,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        border = GlassEdge,
+    ) {
         Column {
-            ProgressLine(state)
             Row(
                 modifier = Modifier
                     .clickable(
@@ -104,27 +114,33 @@ internal fun MiniPlayerBar(
                     )
                 }
             }
+            ProgressLine(state)
         }
     }
 }
 
 /**
- * The thin line on top of the bar. It moves while the player waits for data,
+ * The thin line at the bottom of the bar. It moves while the player waits for data,
  * shows how far the item has played when its length is known, and is an
  * empty space of the same height otherwise, so the bar never changes height.
  */
 @Composable
 private fun ProgressLine(state: MiniPlayerUiState) {
-    val line = Modifier.fillMaxWidth().height(LINE_HEIGHT)
+    // The line stays inside the straight part of the pill, clear of its round ends.
+    val line = Modifier.fillMaxWidth().padding(horizontal = Spacing.large).height(LINE_HEIGHT)
     when {
         state.isBuffering -> {
             val loading = stringResource(R.string.player_loading)
-            LinearProgressIndicator(modifier = line.semantics { contentDescription = loading })
+            LinearProgressIndicator(
+                modifier = line.semantics { contentDescription = loading },
+                trackColor = Color.Transparent,
+            )
         }
 
         state.progress != null -> LinearProgressIndicator(
             progress = { state.progress },
             modifier = line,
+            trackColor = Color.Transparent,
             // The line has no gap and no dot at its end: it is a thin edge of the bar, not a control.
             gapSize = 0.dp,
             drawStopIndicator = {},

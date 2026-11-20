@@ -27,30 +27,21 @@ class TaranginiShellScreenshotTest {
     val noPlaybackService = NoPlaybackServiceRule()
 
     @Test
-    fun `brand theme, light`() = capture("shell_brand_light", darkTheme = false, dynamicColor = false)
-
-    @Test
-    fun `brand theme, dark`() = capture("shell_brand_dark", darkTheme = true, dynamicColor = false)
-
-    @Test
-    fun `wallpaper colours, light`() = capture("shell_dynamic_light", darkTheme = false, dynamicColor = true)
-
-    @Test
-    fun `wallpaper colours, dark`() = capture("shell_dynamic_dark", darkTheme = true, dynamicColor = true)
+    fun `the shell`() = capture("shell")
 
     @Test
     @Config(qualifiers = SMALL_PHONE)
     fun `narrow screen with the largest font`() {
         RuntimeEnvironment.setFontScale(LARGEST_FONT_SCALE)
-        capture("shell_narrow_largest_font", darkTheme = false, dynamicColor = false)
+        capture("shell_narrow_largest_font")
     }
 
-    private fun capture(name: String, darkTheme: Boolean, dynamicColor: Boolean) {
+    private fun capture(name: String) {
         val picture = File("src/test/screenshots/$name.png")
         // Without this, a test with no saved picture passes: there is nothing to compare with.
         assertTrue("No saved picture $picture. Run the tests with -PrecordScreenshots.", recording || picture.exists())
         captureRoboImage(picture.path) {
-            TaranginiTheme(darkTheme = darkTheme, dynamicColor = dynamicColor) { TaranginiShell() }
+            TaranginiTheme { TaranginiShell() }
         }
     }
 }

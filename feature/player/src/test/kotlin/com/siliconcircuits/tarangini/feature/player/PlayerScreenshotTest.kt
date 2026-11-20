@@ -26,7 +26,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
-/** The now playing screen and the queue at the narrowest width, in light and dark, and on a wide screen. */
+/** The now playing screen and the queue at the narrowest widthand on a wide screen. */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(qualifiers = "w320dp-h640dp-xhdpi")
@@ -55,38 +55,36 @@ class PlayerScreenshotTest {
     )
 
     @Test
-    fun `a song`() = both("now_playing_song") { NowPlayingContent(song, actions, {}, {}) }
+    fun `a song`() = shot("now_playing_song") { NowPlayingContent(song, actions, {}, {}) }
 
     @Test
     @Config(qualifiers = "w640dp-h320dp-xhdpi")
-    fun `a song on a wide screen`() = both("now_playing_song_wide") { NowPlayingContent(song, actions, {}, {}) }
+    fun `a song on a wide screen`() = shot("now_playing_song_wide") { NowPlayingContent(song, actions, {}, {}) }
 
     @Test
-    fun `a station`() = both("now_playing_station") { NowPlayingContent(station, actions, {}, {}) }
+    fun `a station`() = shot("now_playing_station") { NowPlayingContent(station, actions, {}, {}) }
 
     @Test
-    fun `a station with no connection`() = both("now_playing_station_error") {
+    fun `a station with no connection`() = shot("now_playing_station_error") {
         val failed = station.copy(artist = null, showPause = false, error = PlaybackError.NETWORK)
         NowPlayingContent(failed, actions, {}, {})
     }
 
     @Test
-    fun `nothing loaded`() = both("now_playing_empty") { NowPlayingContent(null, actions, {}, {}) }
+    fun `nothing loaded`() = shot("now_playing_empty") { NowPlayingContent(null, actions, {}, {}) }
 
     @Test
-    fun `the queue`() = both("queue") { QueueContent(queue, QueueActions({}, { _, _ -> }, {}), {}) }
+    fun `the queue`() = shot("queue") { QueueContent(queue, QueueActions({}, { _, _ -> }, {}), {}) }
 
-    private fun both(name: String, content: @Composable () -> Unit) {
-        listOf("light" to false, "dark" to true).forEach { (theme, dark) ->
-            val picture = File("src/test/screenshots/${name}_$theme.png")
-            // Without this, a test with no saved picture passes: there is nothing to compare with.
-            assertTrue(
-                "No saved picture $picture. Run the tests with -PrecordScreenshots.",
-                recording || picture.exists(),
-            )
-            captureRoboImage(picture.path) {
-                TaranginiTheme(darkTheme = dark, dynamicColor = false) { content() }
-            }
+    private fun shot(name: String, content: @Composable () -> Unit) {
+        val picture = File("src/test/screenshots/$name.png")
+        // Without this, a test with no saved picture passes: there is nothing to compare with.
+        assertTrue(
+            "No saved picture $picture. Run the tests with -PrecordScreenshots.",
+            recording || picture.exists(),
+        )
+        captureRoboImage(picture.path) {
+            TaranginiTheme { content() }
         }
     }
 }
