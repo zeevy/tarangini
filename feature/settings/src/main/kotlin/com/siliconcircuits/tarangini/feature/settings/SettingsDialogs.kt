@@ -44,14 +44,19 @@ internal fun FoldersDialog(
             } else {
                 LazyColumn(modifier = Modifier.heightIn(max = LIST_HEIGHT)) {
                     items(items = all, key = { it }) { path ->
-                        val isHidden = path in hidden
+                        // A folder inside a hidden folder is hidden with it, and only that folder can show it again.
+                        val insideHidden = hidden.any { path.startsWith("$it/") }
+                        val isHidden = path in hidden || insideHidden
                         ListItem(
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                             headlineContent = { Text(folderLabel(path)) },
                             // The whole row is the switch. The box only shows the state.
-                            trailingContent = { Checkbox(checked = isHidden, onCheckedChange = null) },
+                            trailingContent = {
+                                Checkbox(checked = isHidden, onCheckedChange = null, enabled = !insideHidden)
+                            },
                             modifier = Modifier.toggleable(
                                 value = isHidden,
+                                enabled = !insideHidden,
                                 role = Role.Checkbox,
                                 onValueChange = { onHide(path, it) },
                             ),

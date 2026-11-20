@@ -55,16 +55,11 @@ internal fun SettingsScreen(onBackClick: () -> Unit, modifier: Modifier = Modifi
 /** What Settings lists. The app puts it into the frame of Settings. */
 @Composable
 fun SettingsSections(modifier: Modifier = Modifier) {
-    SettingsSections(Unit, modifier)
+    LoadedSettings(modifier)
 }
 
-// The first parameter only tells this function apart from the public one, which cannot name the ViewModel.
 @Composable
-private fun SettingsSections(
-    @Suppress("UNUSED_PARAMETER") own: Unit,
-    modifier: Modifier = Modifier,
-    viewModel: SettingsViewModel = hiltViewModel(),
-) {
+private fun LoadedSettings(modifier: Modifier = Modifier, viewModel: SettingsViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val links = LocalUriHandler.current
