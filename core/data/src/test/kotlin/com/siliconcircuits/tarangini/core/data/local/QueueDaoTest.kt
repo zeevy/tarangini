@@ -7,6 +7,7 @@
 package com.siliconcircuits.tarangini.core.data.local
 
 import com.siliconcircuits.tarangini.core.data.local.entity.ResumeStateEntity
+import com.siliconcircuits.tarangini.core.data.local.entity.SongSource
 import com.siliconcircuits.tarangini.core.data.local.entity.StoredRepeatMode
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -30,13 +31,13 @@ class QueueDaoTest {
         val a = database.addSong("a")
         val b = database.addSong("b")
         queue.replaceQueue(listOf(b, a, b))
-        assertEquals(listOf(b, a, b), queue.queue().map { it.row.song.id })
+        assertEquals(listOf("b", "a", "b"), queue.queueFiles(SongSource.LOCAL).map { it.sourceId })
 
         queue.replaceQueue(listOf(a))
-        assertEquals(listOf(a), queue.queue().map { it.row.song.id })
+        assertEquals(listOf("a"), queue.queueFiles(SongSource.LOCAL).map { it.sourceId })
 
         queue.clearQueue()
-        assertTrue(queue.queue().isEmpty())
+        assertTrue(queue.queueFiles(SongSource.LOCAL).isEmpty())
     }
 
     @Test
@@ -48,7 +49,10 @@ class QueueDaoTest {
 
         database.libraryDao().markMissing(listOf(b), at = 1)
 
-        assertEquals(listOf(0 to a, 2 to c), queue.queue().map { it.position to it.row.song.id })
+        assertEquals(
+            listOf(0 to "a", 2 to "c"),
+            queue.queueFiles(SongSource.LOCAL).map { it.position to it.sourceId },
+        )
     }
 
     @Test

@@ -34,5 +34,6 @@ internal fun createPlayer(context: Context): ExoPlayer {
         .setWakeMode(wakeModeFor(null))
         .build()
     player.addListener(WakeModeSwitch(player))
+    player.addListener(SkipMissingFile(player))
     return player
 }

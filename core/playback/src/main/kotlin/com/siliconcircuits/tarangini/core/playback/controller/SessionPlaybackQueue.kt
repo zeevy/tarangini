@@ -52,11 +52,7 @@ internal class SessionPlaybackQueue @Inject constructor(
     override fun setShuffle(on: Boolean) = send { player -> player.shuffleModeEnabled = on }
 
     override fun setRepeat(mode: RepeatMode) = send { player ->
-        player.repeatMode = when (mode) {
-            RepeatMode.OFF -> Player.REPEAT_MODE_OFF
-            RepeatMode.ONE -> Player.REPEAT_MODE_ONE
-            RepeatMode.ALL -> Player.REPEAT_MODE_ALL
-        }
+        player.repeatMode = mode.toPlayerMode()
     }
 
     private fun load(mediaUris: List<String>, place: (Player) -> Int) {

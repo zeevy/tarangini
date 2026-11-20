@@ -8,6 +8,7 @@ package com.siliconcircuits.tarangini.core.playback.session
 
 import android.net.Uri
 import android.os.Bundle
+import android.os.Looper
 import android.os.Process
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
@@ -15,8 +16,11 @@ import androidx.media3.common.MediaLibraryInfo
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
+import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
+import com.siliconcircuits.tarangini.core.playback.TestPlaybackApp
 import com.siliconcircuits.tarangini.core.playback.service.PlaybackService
 import java.util.concurrent.ExecutionException
+import kotlinx.coroutines.MainScope
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -26,14 +30,23 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
+import org.robolectric.annotation.Config
 
 // The test only way to make a caller is an API that Media3 may still change.
 @OptIn(UnstableApi::class)
 @RunWith(RobolectricTestRunner::class)
+@Config(application = TestPlaybackApp::class)
 class PlaybackSessionCallbackTest {
     private val controller = Robolectric.buildService(PlaybackService::class.java)
     private val service = controller.create().get()
-    private val callback = PlaybackSessionCallback(CallerPolicy(service.packageName, Process.myUid()))
+    private var saved: MediaItemsWithStartPosition? = null
+    private var readFailure: Exception? = null
+    private val callback =
+        PlaybackSessionCallback(CallerPolicy(service.packageName, Process.myUid()), MainScope()) {
+            readFailure?.let { throw it }
+                ?: saved
+        }
 
     private val thisApp = caller(service.packageName, Process.myUid(), trusted = false)
     private val session = requireNotNull(service.onGetSession(thisApp))
@@ -105,6 +118,36 @@ class PlaybackSessionCallbackTest {
         val result = callback.onAddMediaItems(session, thisApp, items)
 
         assertThrows(ExecutionException::class.java) { result.get() }
+    }
+
+    @Test
+    fun `a request to go on with an empty player gets what was saved`() {
+        val song = MediaItem.Builder().setMediaId("song").build()
+        saved = MediaItemsWithStartPosition(listOf(song), 0, 12_000)
+
+        val answer = callback.onPlaybackResumption(session, thisApp, true)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertEquals(saved, answer.get())
+    }
+
+    @Test
+    fun `a request to go on fails when nothing was saved`() {
+        val answer = callback.onPlaybackResumption(session, thisApp, true)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertTrue(runCatching { answer.get() }.exceptionOrNull()?.cause is UnsupportedOperationException)
+    }
+
+    @Test
+    fun `a request to go on gets an answer when the read of the saved queue fails`() {
+        readFailure = IllegalStateException("read failed")
+
+        val answer = callback.onPlaybackResumption(session, thisApp, true)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertTrue(answer.isDone)
+        assertTrue(runCatching { answer.get() }.isFailure)
     }
 
     private fun caller(packageName: String, uid: Int, trusted: Boolean): MediaSession.ControllerInfo =

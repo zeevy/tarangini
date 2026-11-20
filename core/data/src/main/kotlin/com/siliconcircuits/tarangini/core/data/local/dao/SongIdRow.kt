@@ -6,7 +6,7 @@
 
 package com.siliconcircuits.tarangini.core.data.local.dao
 
-import androidx.room3.Embedded
+import androidx.room3.ColumnInfo
 
-/** A song of the saved queue with the queue position it was saved at. */
-internal data class QueueSongRow(val position: Int, @Embedded val row: SongRow)
+/** The id of a song row and the id its file has at its source. */
+internal data class SongIdRow(val id: Long, @ColumnInfo(name = "source_id") val sourceId: String)

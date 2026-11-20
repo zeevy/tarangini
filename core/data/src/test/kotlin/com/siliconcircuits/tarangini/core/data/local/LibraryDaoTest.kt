@@ -109,7 +109,7 @@ class LibraryDaoTest {
         assertEquals(listOf(id), database.favouriteDao().favouriteSongs(10, 0).map { it.song.id })
         assertEquals(listOf(id), database.playlistDao().items(playlist, 10, 0).map { it.row.song.id })
         assertEquals(listOf(id), database.historyDao().recentSongs(10).map { it.song.id })
-        assertEquals(listOf(id), database.queueDao().queue().map { it.row.song.id })
+        assertEquals(listOf("42"), database.queueDao().queueFiles(SongSource.LOCAL).map { it.sourceId })
     }
 
     @Test
@@ -213,7 +213,7 @@ class LibraryDaoTest {
         assertTrue(database.favouriteDao().favouriteSongs(10, 0).isEmpty())
         assertEquals(listOf(kept), database.playlistDao().items(playlist, 10, 0).map { it.row.song.id })
         assertTrue(database.historyDao().recentSongs(10).isEmpty())
-        assertEquals(listOf(kept), database.queueDao().queue().map { it.row.song.id })
+        assertEquals(listOf("Kept"), database.queueDao().queueFiles(SongSource.LOCAL).map { it.sourceId })
         assertTrue(library.searchSongs(requireNotNull(FtsQuery.prefix("gone")), 10).isEmpty())
         assertNull(library.song(id))
     }
