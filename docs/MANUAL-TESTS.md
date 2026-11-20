@@ -53,7 +53,7 @@ Run on a mid range phone. A scan is started from the library screen.
 | 20 | Mark a song on a memory card as a favourite. Take the card out, scan, put the card back and scan | The song leaves the lists and comes back, and it is still a favourite. It is in the lists once |
 | 25 | Open the app with the library showing. Copy a song to the phone from a computer | The song is in the library within a few seconds, with no tap |
 | 26 | Swipe the app away. Copy a song to the phone and delete another one. Wait 10 minutes and open the app | The new song is there and the deleted one is gone when the library shows |
-| 27 | When the search screen is there: with about 20,000 songs on the phone, type one letter, then a word, in the search field | The results change with no delay that is felt (under a tenth of a second) |
+| 27 | With about 20,000 songs on the phone, open the search from the Library tab. Type one letter, then a word | The results change with no delay that is felt (under a tenth of a second) |
 | 28 | Play a song that has a cover picture, then one that has none. Pull down the notifications and look at the lock screen | The first shows its picture in the notification and on the lock screen. The second shows none, and nothing crashes |
 | 29 | When the library lists are there: with about 5,000 songs, scroll the songs list fast up and down | The list scrolls with no stutter. Pictures come in after a moment, and a song with no picture shows the music note |
 
@@ -69,6 +69,14 @@ Run with about 10,000 songs on a mid range phone.
 | 33 | Open an artist, then one of its albums. Tap the Library tab in the bottom bar, go to Radio and come back | The Library tab is marked on all three screens. Coming back shows the screen that was open |
 | 34 | Switch TalkBack on. Swipe through the songs list, the menu of a song, the tabs and the sort menu | Every row says its title and artist, every button says what it does, and the sort menu says which order is on |
 | 35 | Install the app new. Open Library and allow the access | The songs show after a moment, with no restart of the app |
+
+## Search
+
+| No. | Steps | Expected |
+|---|---|---|
+| 36 | Open the search and type a word that finds many songs. Scroll the results | The keyboard closes when the scroll starts. The text stays in the field |
+| 37 | Tap an album in the results, go back, then tap an artist, go back | Each opens its screen. Back returns to the search with the same text and results, and the keyboard stays closed |
+| 38 | Tap the second song of the results. Press Next in the notification | The second song plays, then the third one of the results |
 
 ## Playback: resume
 

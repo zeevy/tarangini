@@ -86,6 +86,7 @@ internal class LibraryActions(
     val onOpenFolder: (Folder) -> Unit = {},
     val onRescan: () -> Unit = {},
     val onRetry: () -> Unit = {},
+    val onSearch: () -> Unit = {},
 )
 
 /** The Library tab. It shows the lists once the audio permission is there, and asks for it before. */
@@ -94,11 +95,12 @@ internal fun LibraryScreen(
     onOpenAlbum: (Album) -> Unit,
     onOpenArtist: (Artist) -> Unit,
     onOpenFolder: (Folder) -> Unit,
+    onSearch: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // The lists are their own function, so the ViewModel is made only once the permission is there.
     // Nothing is read or scanned before.
-    AudioPermissionGate(modifier = modifier) { LibraryLists(onOpenAlbum, onOpenArtist, onOpenFolder) }
+    AudioPermissionGate(modifier = modifier) { LibraryLists(onOpenAlbum, onOpenArtist, onOpenFolder, onSearch) }
 }
 
 @Composable
@@ -106,11 +108,12 @@ private fun LibraryLists(
     onOpenAlbum: (Album) -> Unit,
     onOpenArtist: (Artist) -> Unit,
     onOpenFolder: (Folder) -> Unit,
+    onSearch: () -> Unit,
     viewModel: LibraryViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     // The actions are kept, so a new page of rows does not draw every row on screen again.
-    val actions = remember(viewModel, onOpenAlbum, onOpenArtist, onOpenFolder) {
+    val actions = remember(viewModel, onOpenAlbum, onOpenArtist, onOpenFolder, onSearch) {
         LibraryActions(
             onSort = viewModel::setSort,
             onMoreSongs = viewModel.songs::loadMore,
@@ -121,6 +124,7 @@ private fun LibraryLists(
             onOpenFolder = onOpenFolder,
             onRescan = viewModel::rescan,
             onRetry = viewModel::retry,
+            onSearch = onSearch,
         )
     }
     LibraryContent(state, viewModel.songActions, actions)
@@ -146,7 +150,15 @@ internal fun LibraryContent(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.library_title)) },
-                actions = { if (tab == LibraryTab.SONGS) SortMenu(lists.sort, actions.onSort) },
+                actions = {
+                    IconButton(onClick = actions.onSearch) {
+                        Icon(
+                            painter = painterResource(CoreUiR.drawable.ic_search),
+                            contentDescription = stringResource(CoreUiR.string.action_search),
+                        )
+                    }
+                    if (tab == LibraryTab.SONGS) SortMenu(lists.sort, actions.onSort)
+                },
             )
         },
     ) { innerPadding ->

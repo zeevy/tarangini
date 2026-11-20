@@ -11,6 +11,10 @@ import com.siliconcircuits.tarangini.core.domain.library.ScanOutcome
 import com.siliconcircuits.tarangini.core.domain.model.SongSort
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryScanner
+import com.siliconcircuits.tarangini.core.testing.library.testAlbum
+import com.siliconcircuits.tarangini.core.testing.library.testArtist
+import com.siliconcircuits.tarangini.core.testing.library.testFolder
+import com.siliconcircuits.tarangini.core.testing.library.testSong
 import com.siliconcircuits.tarangini.core.testing.playback.FakePlaybackController
 import com.siliconcircuits.tarangini.core.testing.playback.FakePlaybackQueue
 import com.siliconcircuits.tarangini.core.testing.settings.FakeSettingsRepository
