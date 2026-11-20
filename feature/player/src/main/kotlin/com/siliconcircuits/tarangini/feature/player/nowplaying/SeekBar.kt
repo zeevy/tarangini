@@ -6,12 +6,19 @@
 
 package com.siliconcircuits.tarangini.feature.player.nowplaying
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,6 +30,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.unit.dp
 import com.siliconcircuits.tarangini.core.ui.component.formatDuration
 import com.siliconcircuits.tarangini.feature.player.R
 
@@ -32,6 +40,8 @@ import com.siliconcircuits.tarangini.feature.player.R
  * While the thumb is dragged the bar shows the place of the finger, and the player is told only
  * when the finger lifts. A seek for every step of a drag would make the sound stutter.
  */
+// A slider with its own dot and bar is API of Material 3 that may still change.
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun SeekBar(state: NowPlayingUiState, onSeek: (Long) -> Unit, modifier: Modifier = Modifier) {
     val length = state.durationMs ?: return
@@ -55,6 +65,15 @@ internal fun SeekBar(state: NowPlayingUiState, onSeek: (Long) -> Unit, modifier:
                 contentDescription = label
                 stateDescription = place
             },
+            thumb = { PlaceDot() },
+            track = { sliderState ->
+                SliderDefaults.Track(
+                    sliderState = sliderState,
+                    modifier = Modifier.height(BarHeight),
+                    drawStopIndicator = null,
+                    thumbTrackGapSize = NoGap,
+                )
+            },
         )
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Time(played)
@@ -63,10 +82,20 @@ internal fun SeekBar(state: NowPlayingUiState, onSeek: (Long) -> Unit, modifier:
     }
 }
 
+/** The place in the item: a dot as high as the bar, in a colour that stands out on both of its parts. */
+@Composable
+private fun PlaceDot() {
+    Box(modifier = Modifier.size(BarHeight).background(MaterialTheme.colorScheme.onSurface, CircleShape))
+}
+
 @Composable
 private fun Time(text: String) {
     Text(text = text, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
+
+// The height of the bar and of the dot on it. The area that takes a touch stays the 48 dp of the slider.
+private val BarHeight = 12.dp
+private val NoGap = 0.dp
 
 // The shared format leaves a zero out, which is right for a length that is not known. A place is never unknown.
 private const val ZERO = "0:00"
