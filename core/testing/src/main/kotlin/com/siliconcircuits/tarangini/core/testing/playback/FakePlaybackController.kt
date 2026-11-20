@@ -24,6 +24,10 @@ class FakePlaybackController : PlaybackController {
         commands += "play $mediaUris from $startIndex"
     }
 
+    override fun playSpoken(words: String) {
+        commands += "playSpoken $words"
+    }
+
     override fun resume() {
         commands += "resume"
     }

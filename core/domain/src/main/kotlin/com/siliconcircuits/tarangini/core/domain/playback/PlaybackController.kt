@@ -27,6 +27,12 @@ interface PlaybackController {
      */
     fun play(mediaUris: List<String>, startIndex: Int = 0)
 
+    /**
+     * Plays what a spoken request asks for: the song, artist or album of the library that fits [words] best.
+     * With no words it goes on with what was playing last, or plays songs of the library in a new order.
+     */
+    fun playSpoken(words: String)
+
     /** Goes on with the current item after a pause or an error. At the end of the queue the item starts again. */
     fun resume()
 
