@@ -71,8 +71,7 @@ Before we merge your first pull request, you agree to the contributor agreement 
 
 To agree, tick the agreement line in the pull request form. One time is enough for all your later pull requests.
 
-> [!NOTE]
-> The agreement text is a draft until a lawyer has reviewed it. If it changes, we ask you to agree again.
+The agreement has a version. If the text changes, the new version covers only what you send after you agreed to it.
 
 ## The pull request
 

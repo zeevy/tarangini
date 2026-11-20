@@ -87,7 +87,7 @@ Checked on 19 Nov 2026 (check C1) at the [API home](https://api.radio-browser.in
 |---|---|---|
 | Use in a paid app | "You may use it in free and non free software." No fee, key or sign up is named | Allowed for an app with a paid tier. Radio search stays in the free core in any case |
 | Credit | None is asked for | We give it anyway: "Station directory by Radio Browser (radio-browser.info)" on the About screen in Settings and under the radio search results |
-| Licence of the station data | Not stated on the pages read. The home page says "You may install it on your own server and mirror all its data" | We show search results and store only the stations a user saves or plays. We do not copy, bundle or host the list. The missing licence text goes to the lawyer with check C2 |
+| Licence of the station data | Not stated on the pages read. The home page says "You may install it on your own server and mirror all its data" | We show search results and store only the stations a user saves or plays. We do not copy, bundle or host the list. The missing licence text is part of check C2: ask the Radio Browser project before the paid tier |
 | Licence of the server software | GNU AGPL v3 | We only call the API. No code from the server is ever copied into the app |
 | Terms of use, privacy statement | None found | Our privacy text names Radio Browser as the one outside service of the core app, and says what is sent to it |
 | Promise of service | "Can be used freely but without guarantee to work". One person keeps it online; "downtimes are possible" | Saved stations, favourites and typed in stations work with no directory. A directory error shows a clear message and a retry |
@@ -176,7 +176,7 @@ The core app stays free with no ads. A paid subscription adds the features below
 
 | Feature | Description |
 |---|---|
-| Stream recording | Record radio to a file. Needs a legal check first |
+| Stream recording | Record radio to a file. Needs our own check of the copyright rules first (C2) |
 | Advanced equalizer | 10 band EQ, custom presets |
 | Cloud backup and sync | Favourites, playlists and settings saved as a file in the user's own connected storage (WebDAV, S3, OneDrive). No server of ours. Last change wins, with a simple merge for playlists |
 | Extra themes | Extra colour themes and now playing styles |
@@ -330,7 +330,7 @@ We do not need `MANAGE_EXTERNAL_STORAGE`. Play rejects it for media players.
 - **Target API level.** Play needs a recent target SDK for new apps and updates. Check the current required level at release time.
 - **Foreground service declaration.** For target SDK 34+, declare the `mediaPlayback` service type in Play Console with a short video of how it is used.
 - **Data safety form.** Declare crash logs (Firebase Crashlytics). No usage analytics and no personal data.
-- **Content and copyright.** We play streams that stations make public. We do not host or record content in the free app. Station names and logos belong to the stations. We show no logo without permission and publish no station list of our own. Recording needs a legal check before it ships.
+- **Content and copyright.** We play streams that stations make public. We do not host or record content in the free app. Station names and logos belong to the stations. We show no logo without permission and publish no station list of our own. Recording needs our own check of the copyright rules before it ships (C2).
 - **Families policy.** Do not target children, so we avoid the stricter rules.
 - **Android Auto review.** Extra review, see section 4.
 
@@ -410,10 +410,9 @@ All open questions are answered. These points still need a check at the source o
 
 | # | Check | Why |
 |---|---|---|
-| C2 | A lawyer's view before the paid tier | Linking to public streams, showing station names, stream recording, and use of the Radio Browser data, whose licence its pages do not state |
+| C2 | Our own check of the rules before the paid tier | Linking to public streams, showing station names, stream recording, and use of the Radio Browser data, whose licence its pages do not state. Read the Play policy and the terms of each source again, and ask the Radio Browser project about its data |
 | C4 | Exact alarm permission for the radio alarm | Play allows `USE_EXACT_ALARM` only for some app types |
 | C5 | Trial builds | Our own equalizer processor, the pause and rewind buffer for live radio, crossfade with gapless |
 | C6 | Play target API level and foreground service declaration | Rules at release time |
 | C7 | Subscription prices | Monthly and yearly amounts |
 | C8 | Google Drive rules, if it is added later | Verification and yearly assessment cost |
-| C9 | Open core licence review | A lawyer confirms GPL-3.0 with dual licensing for the core, the contributor agreement text and the trademark note |
