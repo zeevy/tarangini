@@ -65,6 +65,8 @@ internal class SessionPlaybackController @Inject constructor(
     override fun resume() = send { player ->
         // After an error or a stop the player is idle and must be prepared again before it can play.
         if (player.playbackState == Player.STATE_IDLE) player.prepare()
+        // At the end of the queue play alone does nothing: the item must start again.
+        if (player.playbackState == Player.STATE_ENDED) player.seekToDefaultPosition()
         player.play()
     }
 

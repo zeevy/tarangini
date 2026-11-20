@@ -23,6 +23,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
+import com.siliconcircuits.tarangini.core.ui.component.BackButton
 import com.siliconcircuits.tarangini.feature.library.R
 
 /**
@@ -57,12 +58,7 @@ internal fun DetailScaffold(
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            painter = painterResource(CoreUiR.drawable.ic_back),
-                            contentDescription = stringResource(CoreUiR.string.action_back),
-                        )
-                    }
+                    BackButton(onClick = onBack)
                 },
             )
         },

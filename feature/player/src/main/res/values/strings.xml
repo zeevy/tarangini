@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (C) Silicon Circuits and the Tarangini contributors. This file
+  is part of Tarangini, free software under the GNU General Public License,
+  version 3 only. See the LICENSE file. SPDX-License-Identifier: GPL-3.0-only
+-->
+<resources>
+    <string name="now_playing_title">Now playing</string>
+    <string name="mini_player_open">Open the player</string>
+    <string name="mini_player_loading">Loading</string>
+</resources>

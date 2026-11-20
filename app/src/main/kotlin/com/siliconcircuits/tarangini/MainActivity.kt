@@ -11,6 +11,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
+import com.siliconcircuits.tarangini.feature.player.miniplayer.MiniPlayer
 import com.siliconcircuits.tarangini.navigation.TaranginiShell
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -21,7 +22,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             TaranginiTheme {
-                TaranginiShell()
+                TaranginiShell(miniPlayer = { onOpen, modifier -> MiniPlayer(onOpen = onOpen, modifier = modifier) })
             }
         }
     }
