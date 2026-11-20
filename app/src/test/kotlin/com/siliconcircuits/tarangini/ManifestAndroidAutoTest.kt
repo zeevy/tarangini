@@ -46,4 +46,13 @@ class ManifestAndroidAutoTest {
 
         assertTrue(found.any { it.serviceInfo.name.endsWith(".PlaybackService") && it.serviceInfo.exported })
     }
+
+    @Test
+    fun `the cover pictures are served under the name the items use`() {
+        // The addresses in the items are made with this name. A changed application id must change both.
+        val provider = app.packageManager.resolveContentProvider("com.siliconcircuits.tarangini.artwork", 0)
+
+        assertTrue(provider?.name.orEmpty().endsWith(".ArtworkProvider"))
+        assertTrue(provider?.exported == true)
+    }
 }

@@ -513,7 +513,10 @@ class PlaybackSessionCallbackTest {
             null,
         ).get()
 
+        val found = callback.onGetSearchResult(session, theCar, "song", 0, 100, null).get()
+
         assertEquals(SessionError.ERROR_SESSION_AUTHENTICATION_EXPIRED, tabs.resultCode)
+        assertEquals(SessionError.ERROR_SESSION_AUTHENTICATION_EXPIRED, found.resultCode)
         assertEquals("Allow", songs.sessionError?.message)
         // The car is told when the library changes, so the lists come back after the permission is given.
         assertEquals(

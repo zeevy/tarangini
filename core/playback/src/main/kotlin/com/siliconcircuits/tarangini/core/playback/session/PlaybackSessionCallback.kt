@@ -110,7 +110,7 @@ internal class PlaybackSessionCallback(
         empty?.let { note -> session.sendError(browser, note) }
         when {
             parent == null -> null
-            refused != null -> params?.let { LibraryResult.ofError(refused, it) } ?: LibraryResult.ofError(refused)
+            refused != null -> refused.asResult(params)
             empty != null -> emptyList<MediaItem>().asPage(page, pageSize, params)
             else -> car.tree.children(parent, tabLimit)?.asPage(page, pageSize, params)
         }
@@ -152,7 +152,9 @@ internal class PlaybackSessionCallback(
         pageSize: Int,
         params: MediaLibraryService.LibraryParams?,
     ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = scope.fromLibrary {
-        car.search.results(query).asPage(page, pageSize, params)
+        // Without the audio permission nothing found could play, so the search says what to do, as a list does.
+        car.problems.noAccess()?.let { refused -> refused.asResult(params) }
+            ?: car.search.results(query).asPage(page, pageSize, params)
     }
 
     /**
