@@ -16,6 +16,7 @@ import com.siliconcircuits.tarangini.core.data.local.dao.LibraryDao
 import com.siliconcircuits.tarangini.core.data.local.dao.PlaylistDao
 import com.siliconcircuits.tarangini.core.data.local.dao.QueueDao
 import com.siliconcircuits.tarangini.core.data.local.dao.StationDao
+import com.siliconcircuits.tarangini.core.data.local.dao.StationStreamDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -50,4 +51,7 @@ internal object DatabaseModule {
 
     @Provides
     fun stationDao(database: TaranginiDatabase): StationDao = database.stationDao()
+
+    @Provides
+    fun stationStreamDao(database: TaranginiDatabase): StationStreamDao = database.stationStreamDao()
 }

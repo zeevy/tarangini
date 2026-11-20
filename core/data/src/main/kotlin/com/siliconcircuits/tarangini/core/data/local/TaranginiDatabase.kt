@@ -14,6 +14,7 @@ import com.siliconcircuits.tarangini.core.data.local.dao.LibraryDao
 import com.siliconcircuits.tarangini.core.data.local.dao.PlaylistDao
 import com.siliconcircuits.tarangini.core.data.local.dao.QueueDao
 import com.siliconcircuits.tarangini.core.data.local.dao.StationDao
+import com.siliconcircuits.tarangini.core.data.local.dao.StationStreamDao
 import com.siliconcircuits.tarangini.core.data.local.entity.AlbumEntity
 import com.siliconcircuits.tarangini.core.data.local.entity.ArtistEntity
 import com.siliconcircuits.tarangini.core.data.local.entity.FavouriteSongEntity
@@ -68,6 +69,8 @@ internal abstract class TaranginiDatabase : RoomDatabase() {
     abstract fun queueDao(): QueueDao
 
     abstract fun stationDao(): StationDao
+
+    abstract fun stationStreamDao(): StationStreamDao
 
     companion object {
         const val FILE_NAME = "tarangini.db"

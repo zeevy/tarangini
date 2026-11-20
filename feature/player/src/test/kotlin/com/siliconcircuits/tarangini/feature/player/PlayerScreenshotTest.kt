@@ -8,6 +8,7 @@ package com.siliconcircuits.tarangini.feature.player
 
 import androidx.compose.runtime.Composable
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackItem
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
@@ -62,6 +63,12 @@ class PlayerScreenshotTest {
 
     @Test
     fun `a station`() = both("now_playing_station") { NowPlayingContent(station, actions, {}, {}) }
+
+    @Test
+    fun `a station with no connection`() = both("now_playing_station_error") {
+        val failed = station.copy(artist = null, showPause = false, error = PlaybackError.NETWORK)
+        NowPlayingContent(failed, actions, {}, {})
+    }
 
     @Test
     fun `nothing loaded`() = both("now_playing_empty") { NowPlayingContent(null, actions, {}, {}) }

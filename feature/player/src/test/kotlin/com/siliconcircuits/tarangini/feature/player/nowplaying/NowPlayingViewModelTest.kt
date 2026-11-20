@@ -167,6 +167,7 @@ class NowPlayingViewModelTest {
             playback.state.value = loaded(PlaybackState(playWhenReady = true, error = PlaybackError.CANNOT_PLAY))
             runCurrent()
             assertEquals(false, viewModel.state.value?.showPause)
+            assertEquals(PlaybackError.CANNOT_PLAY, viewModel.state.value?.error)
 
             viewModel.togglePlay()
             viewModel.next()

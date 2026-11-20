@@ -22,6 +22,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,6 +36,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.min
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
 import com.siliconcircuits.tarangini.core.ui.component.AlbumArt
 import com.siliconcircuits.tarangini.core.ui.component.BackButton
@@ -155,14 +157,15 @@ private fun Controls(
             overflow = TextOverflow.Ellipsis,
         )
         // A station that sends no song title has no line here. The line below says that it is live.
-        if (state.artist != null ||
-            !state.isLive
-        ) {
-            OneLine(state.artist ?: stringResource(CoreUiR.string.unknown_artist))
-        }
+        val hasArtistLine = state.artist != null || !state.isLive
+        if (hasArtistLine) OneLine(state.artist ?: stringResource(CoreUiR.string.unknown_artist))
         // A station has no album. An empty line would only push the buttons down.
         state.album?.let { OneLine(it) }
-        if (state.isLive) LiveLine(state.isBuffering) else SeekBar(state, actions.onSeek)
+        when {
+            state.error != null -> ErrorLine(state.error, actions.onTogglePlay)
+            state.isLive -> LiveLine(state.isBuffering)
+            else -> SeekBar(state, actions.onSeek)
+        }
         PlayerButtons(state, actions)
     }
 }
@@ -176,6 +179,26 @@ private fun OneLine(text: String) {
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
     )
+}
+
+/** Why the item does not play, with a button that tries again. It takes the place of the seek bar. */
+@Composable
+private fun ErrorLine(error: PlaybackError, onRetry: () -> Unit) {
+    val text = when (error) {
+        PlaybackError.NETWORK -> R.string.player_error_network
+        PlaybackError.FILE_NOT_AVAILABLE -> R.string.player_error_file
+        PlaybackError.CANNOT_PLAY -> R.string.player_error_cannot_play
+        PlaybackError.UNKNOWN -> R.string.player_error_unknown
+    }
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = stringResource(text),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.error,
+            textAlign = TextAlign.Center,
+        )
+        TextButton(onClick = onRetry) { Text(stringResource(R.string.player_try_again)) }
+    }
 }
 
 /** A live stream has no length, so there is nothing to seek in. The line says that it is live, or that it loads. */

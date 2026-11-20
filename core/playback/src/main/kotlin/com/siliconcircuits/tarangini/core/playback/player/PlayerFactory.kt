@@ -14,6 +14,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.siliconcircuits.tarangini.core.playback.stream.StationTitles
+import com.siliconcircuits.tarangini.core.playback.stream.StreamRetryPolicy
 import com.siliconcircuits.tarangini.core.playback.stream.streamDataSourceFactory
 import okhttp3.OkHttpClient
 
@@ -30,6 +31,7 @@ import okhttp3.OkHttpClient
  *
  * Radio streams (Icecast, Shoutcast, HLS and playlist files) play through the same player. They
  * are read with [streamDataSourceFactory], and [StationTitles] shows the song title a station sends.
+ * [StreamRetryPolicy] says how long a stream is tried again when the network drops.
  *
  * @param httpClient gives the shared HTTP client when the first stream is opened
  */
@@ -37,9 +39,12 @@ import okhttp3.OkHttpClient
 @OptIn(UnstableApi::class)
 internal fun createPlayer(context: Context, httpClient: () -> OkHttpClient): ExoPlayer {
     val music = AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build()
+    val retry = StreamRetryPolicy()
     val player = ExoPlayer.Builder(context, GaplessRenderersFactory(context))
         .setMediaSourceFactory(
-            DefaultMediaSourceFactory(context).setDataSourceFactory(streamDataSourceFactory(context, httpClient)),
+            DefaultMediaSourceFactory(context)
+                .setDataSourceFactory(streamDataSourceFactory(context, httpClient))
+                .setLoadErrorHandlingPolicy(retry),
         )
         .setAudioAttributes(music, true)
         .setHandleAudioBecomingNoisy(true)
@@ -48,5 +53,6 @@ internal fun createPlayer(context: Context, httpClient: () -> OkHttpClient): Exo
     player.addListener(WakeModeSwitch(player))
     player.addListener(SkipMissingFile(player))
     player.addListener(StationTitles(player))
+    player.addListener(retry)
     return player
 }
