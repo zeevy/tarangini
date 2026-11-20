@@ -8,6 +8,7 @@ package com.siliconcircuits.tarangini.core.playback.resume
 
 import android.database.SQLException
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
 import com.siliconcircuits.tarangini.core.domain.playback.ResumePlace
@@ -61,6 +62,24 @@ class PlaybackResumeTest {
         assertEquals(Player.REPEAT_MODE_ALL, player.repeatMode)
         assertFalse(player.playWhenReady)
         assertFalse("prepare" in player.commands || "play" in player.commands)
+    }
+
+    @Test
+    fun `the queue that comes back has the texts of the library, also for the request to go on`() = runTest {
+        store.saved = threeSongs
+        val withTexts: suspend (List<MediaItem>) -> List<MediaItem> = { items ->
+            items.map { item ->
+                val texts = MediaMetadata.Builder().setTitle("Title of ${item.mediaId}").build()
+                item.buildUpon().setMediaMetadata(texts).build()
+            }
+        }
+
+        val resume = PlaybackResume(player, store, backgroundScope, withTexts).also { it.start() }
+        runCurrent()
+
+        assertEquals("Title of b", player.getMediaItemAt(1).mediaMetadata.title)
+        assertEquals(listOf("a", "b", "c"), queue())
+        assertEquals("Title of c", resume.resumption()?.mediaItems?.get(2)?.mediaMetadata?.title)
     }
 
     @Test

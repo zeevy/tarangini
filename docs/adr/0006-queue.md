@@ -27,6 +27,7 @@ Users change what plays next: play next, add to the end, reorder, remove, clear,
 - With shuffle on, "play next" still puts the files after the current item in the queue, but the player picks its own moment to play them. Making them truly next under shuffle is left for the queue screen.
 - When the user moves or removes an item near the front while the items before the start place are still loading, those items can land one place off. The load takes a few seconds, so this is left as it is.
 - The time to first sound was measured on an emulator, not on a phone. Rule T6 asks for a real phone; the check is number 12 in `docs/MANUAL-TESTS.md`.
+- Every item gets its title, artist and album from the library when the playback service takes it, and when the saved queue comes back at the start (`LibraryTexts` in `core:playback/mapper`). The player reads these from the file only for the item it plays, so the mini player and the queue screen would have no texts without this. The texts come from our own database and never from the caller (ADR 0004). An item the library does not know, and every item when the read fails, plays without texts. The read takes 500 addresses at a time, because SQLite limits the values of one statement. The session answers a request for items only after the read. Media3 runs the commands of one controller in the order they came, also while an answer is awaited, so the parts of a long list stay in order.
 
 ## Open point: very long queues and the system
 

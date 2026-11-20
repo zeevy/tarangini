@@ -13,13 +13,18 @@ import android.os.Process
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaLibraryInfo
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
 import com.siliconcircuits.tarangini.core.playback.TestPlaybackApp
+import com.siliconcircuits.tarangini.core.playback.mapper.LibraryTexts
 import com.siliconcircuits.tarangini.core.playback.service.PlaybackService
+import com.siliconcircuits.tarangini.core.testing.library.FakeSongLookup
+import com.siliconcircuits.tarangini.core.testing.library.testSong
 import java.util.concurrent.ExecutionException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.MainScope
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -42,14 +47,22 @@ class PlaybackSessionCallbackTest {
     private val service = controller.create().get()
     private var saved: MediaItemsWithStartPosition? = null
     private var readFailure: Exception? = null
+    private var texts: suspend (List<MediaItem>) -> List<MediaItem> = { it }
     private val callback =
-        PlaybackSessionCallback(CallerPolicy(service.packageName, Process.myUid()), MainScope()) {
+        PlaybackSessionCallback(CallerPolicy(service.packageName, Process.myUid()), MainScope(), { texts(it) }) {
             readFailure?.let { throw it }
                 ?: saved
         }
 
     private val thisApp = caller(service.packageName, Process.myUid(), trusted = false)
     private val session = requireNotNull(service.onGetSession(thisApp))
+
+    /** The item as the session takes it. The read of the texts runs on the main thread, so that runs first. */
+    private fun added(item: MediaItem): MediaItem {
+        val answer = callback.onAddMediaItems(session, thisApp, listOf(item))
+        shadowOf(Looper.getMainLooper()).idle()
+        return answer.get().single()
+    }
 
     @After
     fun destroyService() {
@@ -118,6 +131,69 @@ class PlaybackSessionCallbackTest {
         val result = callback.onAddMediaItems(session, thisApp, items)
 
         assertThrows(ExecutionException::class.java) { result.get() }
+    }
+
+    @Test
+    fun `an accepted item gets the texts of the library, and keeps its checked address`() {
+        val uri = "content://media/external/audio/media/7"
+        val songs = FakeSongLookup(listOf(testSong(7, title = "Bhairavi", artist = "Ravi").copy(mediaUri = uri)))
+        texts = LibraryTexts(songs)::addTo
+        val asked = MediaItem.Builder()
+            .setMediaId(uri)
+            .setUri(uri)
+            .setMediaMetadata(MediaMetadata.Builder().setTitle("A title the caller sent").build())
+            .build()
+
+        val accepted = added(asked)
+
+        assertEquals("Bhairavi", accepted.mediaMetadata.title)
+        assertEquals("Ravi", accepted.mediaMetadata.artist)
+        assertEquals(Uri.parse(uri), accepted.localConfiguration?.uri)
+    }
+
+    @Test
+    fun `the answer waits for the texts, and comes when they are read`() {
+        val read = CompletableDeferred<Unit>()
+        texts = { items ->
+            read.await()
+            items.map { it.buildUpon().setMediaMetadata(MediaMetadata.Builder().setTitle("Read").build()).build() }
+        }
+        val uri = "content://media/external/audio/media/7"
+
+        val answer = callback.onAddMediaItems(
+            session,
+            thisApp,
+            listOf(MediaItem.Builder().setMediaId(uri).setUri(uri).build()),
+        )
+        assertFalse(answer.isDone)
+        read.complete(Unit)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertEquals("Read", answer.get().single().mediaMetadata.title)
+    }
+
+    @Test
+    fun `an item whose id is not its address keeps the id and gets the texts of the checked address`() {
+        val uri = "content://media/external/audio/media/7"
+        texts = LibraryTexts(FakeSongLookup(listOf(testSong(7, title = "Bhairavi").copy(mediaUri = uri))))::addTo
+
+        val accepted = added(MediaItem.Builder().setMediaId("another id").setUri(uri).build())
+
+        assertEquals("another id", accepted.mediaId)
+        assertEquals(Uri.parse(uri), accepted.localConfiguration?.uri)
+        assertEquals("Bhairavi", accepted.mediaMetadata.title)
+    }
+
+    @Test
+    fun `an item is accepted without texts when the library cannot be read`() {
+        texts = LibraryTexts(FakeSongLookup(failure = IllegalStateException("The database is closed")))::addTo
+        val uri = "content://media/external/audio/media/7"
+        val asked = MediaItem.Builder().setMediaId(uri).setUri(uri).build()
+
+        val accepted = added(asked)
+
+        assertEquals(Uri.parse(uri), accepted.localConfiguration?.uri)
+        assertEquals(null, accepted.mediaMetadata.title)
     }
 
     @Test

@@ -17,12 +17,14 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
 
 /**
  * Answers the apps that talk to the media session. It checks the caller and every item a caller asks to play.
  *
- * @param scope runs the read of the saved queue, on the main thread
+ * @param scope runs the read of the saved queue and of the texts, on the main thread
+ * @param texts gives the items of the queue their title, artist and album
  * @param resumption gives what to play when a caller asks to go on and the player is empty, or null for nothing
  */
 // Media3 marks parts of the session API as API that may still change: the "trusted by the system" flag,
@@ -31,6 +33,7 @@ import kotlinx.coroutines.launch
 internal class PlaybackSessionCallback(
     private val callers: CallerPolicy,
     private val scope: CoroutineScope,
+    private val texts: suspend (List<MediaItem>) -> List<MediaItem>,
     private val resumption: suspend () -> MediaItemsWithStartPosition?,
 ) : MediaLibrarySession.Callback {
     override fun onConnect(
@@ -57,10 +60,23 @@ internal class PlaybackSessionCallback(
         mediaSession: MediaSession,
         controller: MediaSession.ControllerInfo,
         mediaItems: List<MediaItem>,
-    ): ListenableFuture<List<MediaItem>> = try {
-        Futures.immediateFuture(mediaItems.map { it.toPlayable() })
-    } catch (refused: IllegalArgumentException) {
-        Futures.immediateFailedFuture(refused)
+    ): ListenableFuture<List<MediaItem>> {
+        val playable = try {
+            mediaItems.map { it.toPlayable() }
+        } catch (refused: IllegalArgumentException) {
+            return Futures.immediateFailedFuture(refused)
+        }
+        val answer = SettableFuture.create<List<MediaItem>>()
+        // The read starts in this call, so an answer that needs no wait is there when the call returns.
+        scope.launch(start = CoroutineStart.UNDISPATCHED) {
+            try {
+                answer.set(texts(playable))
+            } finally {
+                // The caller always gets an answer, also when the read is given up. A second set does nothing.
+                answer.set(playable)
+            }
+        }
+        return answer
     }
 
     /**

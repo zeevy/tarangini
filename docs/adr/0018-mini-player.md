@@ -29,5 +29,4 @@ The item that plays must be in view and under control on every screen: its pictu
 - An item with no title or no artist shows "Unknown title" or "Unknown artist".
 - Previous and seek are not on the bar. They are on the now playing screen and in the notification.
 - A picture test of a state that moves (the wait for data) holds the clock of the test, or it never ends.
-- The player knows the title and the artist of an item only after it has read the file. A queue that was restored at the start of the app shows "Unknown title" until play is pressed. This is fixed together with the queue screen, which needs the texts of every item.
 - The checks that need a phone are in `docs/MANUAL-TESTS.md`.

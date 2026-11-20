@@ -6,6 +6,11 @@
 
 package com.siliconcircuits.tarangini.feature.search
 
+import android.app.Application
+import android.content.ComponentName
+import androidx.activity.ComponentActivity
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onRoot
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.siliconcircuits.tarangini.core.domain.model.SearchResults
 import com.siliconcircuits.tarangini.core.testing.library.testAlbum
@@ -15,9 +20,15 @@ import com.siliconcircuits.tarangini.core.ui.component.SongRowActions
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import java.io.File
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
+import org.junit.rules.TestWatcher
+import org.junit.runner.Description
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
@@ -26,6 +37,22 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(qualifiers = "w320dp-h640dp-xhdpi")
 class SearchScreenshotTest {
+    private val app: Application = RuntimeEnvironment.getApplication()
+    private val composeRule = createAndroidComposeRule<ComponentActivity>()
+
+    /** The manifest of a library has no activity, so the plain one is added before Compose starts it. */
+    private val registerActivity = object : TestWatcher() {
+        override fun starting(description: Description) {
+            shadowOf(app.packageManager)
+                .addActivityIfNotPresent(ComponentName(app.packageName, ComponentActivity::class.java.name))
+        }
+    }
+
+    @get:Rule
+    val rules: RuleChain = RuleChain.outerRule(registerActivity).around(composeRule)
+
+    private val nothingFound = SearchUiState("a text that finds nothing at all", SearchResults())
+
     private val results = SearchResults(
         songs = listOf(
             testSong(1, "Morning raga", artist = "Ravi Shankar"),
@@ -36,28 +63,37 @@ class SearchScreenshotTest {
     )
 
     @Test
-    fun `before a search`() = both("search_start", SearchUiState())
+    fun `before a search, light`() = capture("search_start_light", SearchUiState(), dark = false)
 
     @Test
-    fun results() = both("search_results", SearchUiState("mor", results))
+    fun `before a search, dark`() = capture("search_start_dark", SearchUiState(), dark = true)
 
     @Test
-    fun `no result`() = both("search_none", SearchUiState("a text that finds nothing at all", SearchResults()))
+    fun `results, light`() = capture("search_results_light", SearchUiState("mor", results), dark = false)
 
-    private fun both(name: String, state: SearchUiState) {
-        listOf("light" to false, "dark" to true).forEach { (theme, dark) ->
-            val picture = File("src/test/screenshots/${name}_$theme.png")
-            // Without this, a test with no saved picture passes: there is nothing to compare with.
-            assertTrue(
-                "No saved picture $picture. Run the tests with -PrecordScreenshots.",
-                recording || picture.exists(),
-            )
-            captureRoboImage(picture.path) {
-                TaranginiTheme(darkTheme = dark, dynamicColor = false) {
-                    SearchContent(state.searched, state, SongRowActions({}, {}, {}), {}, {}, {}, {})
-                }
+    @Test
+    fun `results, dark`() = capture("search_results_dark", SearchUiState("mor", results), dark = true)
+
+    @Test
+    fun `no result, light`() = capture("search_none_light", nothingFound, dark = false)
+
+    @Test
+    fun `no result, dark`() = capture("search_none_dark", nothingFound, dark = true)
+
+    private fun capture(name: String, state: SearchUiState, dark: Boolean) {
+        val picture = File("src/test/screenshots/$name.png")
+        // Without this, a test with no saved picture passes: there is nothing to compare with.
+        assertTrue("No saved picture $picture. Run the tests with -PrecordScreenshots.", recording || picture.exists())
+        // The cursor of the empty field blinks. The clock is held, so the picture is of one fixed
+        // moment and does not depend on how fast the test ran.
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            TaranginiTheme(darkTheme = dark, dynamicColor = false) {
+                SearchContent(state.searched, state, SongRowActions({}, {}, {}), {}, {}, {}, {})
             }
         }
+        composeRule.mainClock.advanceTimeByFrame()
+        composeRule.onRoot().captureRoboImage(picture.path)
     }
 }
 

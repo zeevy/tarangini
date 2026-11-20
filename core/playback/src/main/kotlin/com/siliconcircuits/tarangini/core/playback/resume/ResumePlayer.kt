@@ -18,11 +18,11 @@ import com.siliconcircuits.tarangini.core.playback.controller.toRepeatMode
 import com.siliconcircuits.tarangini.core.playback.mapper.playableItem
 
 /** Puts a saved queue into the player at its place. It does not prepare and does not play. */
-internal fun Player.fill(playback: SavedPlayback) {
+internal fun Player.fill(items: List<MediaItem>, place: ResumePlace) {
     // One call: the list comes from the database of this app, in the same process, and nothing waits to sound.
-    setMediaItems(playback.mediaIds.map(::playableItem), playback.place.index, playback.place.positionMs)
-    shuffleModeEnabled = playback.place.shuffle
-    repeatMode = playback.place.repeat.toPlayerMode()
+    setMediaItems(items, place.index, place.positionMs)
+    shuffleModeEnabled = place.shuffle
+    repeatMode = place.repeat.toPlayerMode()
 }
 
 /** The queue of the player and where it is now, in the form that is saved. */
@@ -45,9 +45,3 @@ internal fun Player.Events.movesThePlace(): Boolean = containsAny(
     Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED,
     Player.EVENT_REPEAT_MODE_CHANGED,
 )
-
-/** The saved queue in the form the session takes when a caller asks to go on. */
-// The class is API that Media3 may still change.
-@OptIn(UnstableApi::class)
-internal fun SavedPlayback.toResumption() =
-    MediaItemsWithStartPosition(mediaIds.map(::playableItem), place.index, place.positionMs)

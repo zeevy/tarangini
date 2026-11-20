@@ -18,3 +18,10 @@ import android.provider.MediaStore
  */
 internal fun localMediaUri(sourceId: String): String =
     ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, sourceId.toLong()).toString()
+
+/** The id MediaStore gave the file behind [mediaUri], or null when the address is not one [localMediaUri] makes. */
+internal fun localSourceIdOf(mediaUri: String): String? {
+    val number = mediaUri.substringAfterLast('/')
+    val isNumber = number.isNotEmpty() && number.all { it in '0'..'9' }
+    return number.takeIf { isNumber && mediaUri == "${MediaStore.Audio.Media.EXTERNAL_CONTENT_URI}/$number" }
+}

@@ -8,7 +8,9 @@ package com.siliconcircuits.tarangini.core.playback
 
 import android.app.Application
 import com.siliconcircuits.tarangini.core.domain.playback.ResumeStore
+import com.siliconcircuits.tarangini.core.domain.repository.SongLookup
 import com.siliconcircuits.tarangini.core.playback.service.PlaybackService
+import com.siliconcircuits.tarangini.core.testing.library.FakeSongLookup
 import com.siliconcircuits.tarangini.core.testing.playback.FakeResumeStore
 import dagger.hilt.internal.GeneratedComponent
 import dagger.hilt.internal.GeneratedComponentManager
@@ -24,10 +26,13 @@ internal class TestPlaybackApp :
     Application(),
     GeneratedComponentManager<Any> {
     val resumeStore = FakeResumeStore()
+    val songs = FakeSongLookup()
     private val scope = MainScope()
 
     override fun generatedComponent(): Any = object : PlaybackService.Dependencies, GeneratedComponent {
         override fun resumeStore(): ResumeStore = resumeStore
+
+        override fun songLookup(): SongLookup = songs
 
         override fun playbackScope(): CoroutineScope = scope
     }
