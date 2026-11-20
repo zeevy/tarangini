@@ -7,4 +7,10 @@
 <resources>
     <string name="home_title">Tarangini</string>
     <string name="home_open_settings">Settings</string>
+    <string name="home_continue">Continue listening</string>
+    <string name="home_recent">Recently played</string>
+    <string name="home_playlists">Playlists</string>
+    <string name="home_first_title">Welcome to Tarangini</string>
+    <string name="home_first_text">Open the library to find the songs on this phone. What you play shows here next time.</string>
+    <string name="home_first_open_library">Open library</string>
 </resources>

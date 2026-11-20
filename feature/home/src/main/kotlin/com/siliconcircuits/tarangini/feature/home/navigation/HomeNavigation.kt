@@ -6,10 +6,11 @@
 
 package com.siliconcircuits.tarangini.feature.home.navigation
 
+import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.siliconcircuits.tarangini.feature.home.HomeScreen
 
-fun NavGraphBuilder.homeScreen(onSettingsClick: () -> Unit) {
-    composable<HomeRoute> { HomeScreen(onSettingsClick = onSettingsClick) }
+fun NavGraphBuilder.homeScreen(onSettingsClick: () -> Unit, content: @Composable () -> Unit) {
+    composable<HomeRoute> { HomeScreen(onSettingsClick = onSettingsClick, content = content) }
 }
