@@ -9,8 +9,10 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- Radio streams. -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
-    <application>
+    <application android:networkSecurityConfig="@xml/network_security_config">
         <!--
           Exported so the system, Bluetooth and the car can reach the session. No permission can guard it,
           because those callers hold none of ours. The session callback checks every caller instead.

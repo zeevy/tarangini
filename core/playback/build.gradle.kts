@@ -14,7 +14,11 @@ dependencies {
     implementation(libs.media3.exoplayer)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.media3.session)
+    implementation(libs.media3.exoplayer.hls)
+    implementation(libs.media3.datasource.okhttp)
+    implementation(libs.okhttp)
 
     testImplementation(project(":core:testing"))
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.okhttp.mockwebserver)
 }

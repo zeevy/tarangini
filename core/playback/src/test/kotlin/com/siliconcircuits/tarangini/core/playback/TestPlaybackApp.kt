@@ -16,6 +16,7 @@ import dagger.hilt.internal.GeneratedComponent
 import dagger.hilt.internal.GeneratedComponentManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
+import okhttp3.OkHttpClient
 
 /**
  * The application of a test that starts the playback service. It hands the
@@ -33,6 +34,8 @@ internal class TestPlaybackApp :
         override fun resumeStore(): ResumeStore = resumeStore
 
         override fun songLookup(): SongLookup = songs
+
+        override fun httpClient(): OkHttpClient = OkHttpClient()
 
         override fun playbackScope(): CoroutineScope = scope
     }

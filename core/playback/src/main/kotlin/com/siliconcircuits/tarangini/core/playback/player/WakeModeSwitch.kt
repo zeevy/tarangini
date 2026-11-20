@@ -10,8 +10,7 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
-
-private val STREAM_SCHEMES = setOf("http", "https")
+import com.siliconcircuits.tarangini.core.playback.stream.STREAM_SCHEMES
 
 /**
  * Keeps the phone awake in the way the current item needs, with the screen off.

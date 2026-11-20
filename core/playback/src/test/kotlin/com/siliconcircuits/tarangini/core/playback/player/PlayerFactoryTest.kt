@@ -16,6 +16,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import okhttp3.OkHttpClient
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -33,7 +34,7 @@ import org.robolectric.Shadows.shadowOf
 class PlayerFactoryTest {
     private val context: Context = RuntimeEnvironment.getApplication()
     private val audio = shadowOf(context.getSystemService(AudioManager::class.java))
-    private val player: ExoPlayer = createPlayer(context)
+    private val player: ExoPlayer = createPlayer(context) { OkHttpClient() }
 
     @After
     fun releasePlayer() {

@@ -23,6 +23,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
+import okhttp3.OkHttpClient
 
 /**
  * The one playback service of the app. It owns the one player and the one
@@ -41,6 +42,8 @@ internal class PlaybackService : MediaLibraryService() {
 
         fun songLookup(): SongLookup
 
+        fun httpClient(): OkHttpClient
+
         @PlaybackCoroutineScope
         fun playbackScope(): CoroutineScope
     }
@@ -48,7 +51,7 @@ internal class PlaybackService : MediaLibraryService() {
     override fun onCreate() {
         super.onCreate()
         val app = EntryPointAccessors.fromApplication(applicationContext, Dependencies::class.java)
-        val player = createPlayer(this)
+        val player = createPlayer(this, app::httpClient)
         val texts = LibraryTexts(app.songLookup())
         val resume = PlaybackResume(player, app.resumeStore(), app.playbackScope(), texts::addTo)
         val callback = PlaybackSessionCallback(
