@@ -326,6 +326,22 @@ internal abstract class LibraryDao {
     )
     abstract suspend fun song(songId: Long): SongRow?
 
+    /**
+     * The songs with these file ids, also when a file is gone, in no order.
+     *
+     * @param sourceIds at most 500 ids, which the repository sees to: SQLite limits the values of one statement
+     */
+    @Query(
+        """
+            SELECT s.*, ar.name AS artist_name, al.title AS album_title
+            FROM songs s
+            JOIN artists ar ON ar.id = s.artist_id
+            JOIN albums al ON al.id = s.album_id
+            WHERE s.source = :source AND s.source_id IN (:sourceIds)
+        """,
+    )
+    abstract suspend fun songsBySourceIds(source: SongSource, sourceIds: List<String>): List<SongRow>
+
     @Query(
         """
             SELECT s.*, ar.name AS artist_name, al.title AS album_title

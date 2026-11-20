@@ -7,11 +7,13 @@
 package com.siliconcircuits.tarangini.core.playback.resume
 
 import androidx.annotation.OptIn
+import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
 import com.siliconcircuits.tarangini.core.domain.playback.ResumeStore
 import com.siliconcircuits.tarangini.core.domain.playback.SavedPlayback
+import com.siliconcircuits.tarangini.core.playback.mapper.playableItem
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
@@ -36,11 +38,13 @@ import kotlinx.coroutines.launch
  * Everything here runs on the main thread, like the player.
  *
  * @param scope lives longer than the service, so the last save is not lost when the service ends
+ * @param texts gives the items of the queue their title, artist and album
  */
 internal class PlaybackResume(
     private val player: Player,
     private val store: ResumeStore,
     private val scope: CoroutineScope,
+    private val texts: suspend (List<MediaItem>) -> List<MediaItem> = { it },
 ) : Player.Listener {
     /** Wakes the one coroutine that saves. A wake that comes while it works is kept, more of them count as one. */
     private val wake = Channel<Unit>(Channel.CONFLATED)
@@ -66,10 +70,11 @@ internal class PlaybackResume(
     fun start() {
         scope.launch {
             val playback = store.loadOrNull()
+            val items = playback?.items()
             if (ended) return@launch
             if (player.mediaItemCount == 0) {
                 storedIds = playback?.mediaIds
-                playback?.let(player::fill)
+                if (playback != null && items != null) player.fill(items, playback.place)
             } else {
                 // Somebody filled the player during the read. That queue is the one to store.
                 queueChange++
@@ -89,7 +94,11 @@ internal class PlaybackResume(
      */
     // The answer class is API that Media3 may still change.
     @OptIn(UnstableApi::class)
-    suspend fun resumption(): MediaItemsWithStartPosition? = store.loadOrNull()?.toResumption()
+    suspend fun resumption(): MediaItemsWithStartPosition? = store.loadOrNull()?.let { saved ->
+        MediaItemsWithStartPosition(saved.items(), saved.place.index, saved.place.positionMs)
+    }
+
+    private suspend fun SavedPlayback.items(): List<MediaItem> = texts(mediaIds.map(::playableItem))
 
     /** Saves the queue and the place a last time and stops. Call it before the player is released. */
     fun end() {
