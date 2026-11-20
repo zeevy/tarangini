@@ -17,13 +17,12 @@ import com.siliconcircuits.tarangini.core.domain.model.Album
 import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
 import com.siliconcircuits.tarangini.core.ui.component.AlbumRow
+import com.siliconcircuits.tarangini.core.ui.component.SectionTitle
 import com.siliconcircuits.tarangini.core.ui.component.SongRow
 import com.siliconcircuits.tarangini.core.ui.component.SongRowActions
-import com.siliconcircuits.tarangini.feature.library.R
 import com.siliconcircuits.tarangini.feature.library.component.DetailScaffold
 import com.siliconcircuits.tarangini.feature.library.component.ListBody
 import com.siliconcircuits.tarangini.feature.library.component.PagedColumn
-import com.siliconcircuits.tarangini.feature.library.component.SectionTitle
 import com.siliconcircuits.tarangini.feature.library.list.PagedItems
 import com.siliconcircuits.tarangini.feature.library.permission.AudioPermissionGate
 
@@ -77,13 +76,13 @@ internal fun ArtistContent(
                 onLoadMore = onMoreSongs,
                 header = {
                     if (albums.isNotEmpty()) {
-                        item(key = "albums") { SectionTitle(stringResource(R.string.library_section_albums)) }
+                        item(key = "albums") { SectionTitle(stringResource(CoreUiR.string.section_albums)) }
                         // An album and a song can have the same number, so the album keys get a name in front.
                         items(items = albums, key = { "album-${it.id}" }) { album ->
                             AlbumRow(album, onClick = { onOpenAlbum(album) })
                         }
                     }
-                    item(key = "songs") { SectionTitle(stringResource(R.string.library_section_songs)) }
+                    item(key = "songs") { SectionTitle(stringResource(CoreUiR.string.section_songs)) }
                 },
             ) { SongRow(it, songActions) }
         }

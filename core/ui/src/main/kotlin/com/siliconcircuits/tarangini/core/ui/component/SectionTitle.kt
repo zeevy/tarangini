@@ -4,7 +4,7 @@
  * version 3 only. See the LICENSE file. SPDX-License-Identifier: GPL-3.0-only
  */
 
-package com.siliconcircuits.tarangini.feature.library.component
+package com.siliconcircuits.tarangini.core.ui.component
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -17,7 +17,7 @@ import com.siliconcircuits.tarangini.core.ui.theme.Spacing
 
 /** A small title above a group of rows. A screen reader takes it as a heading. */
 @Composable
-internal fun SectionTitle(text: String, modifier: Modifier = Modifier) {
+fun SectionTitle(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
         modifier = modifier.padding(horizontal = Spacing.medium, vertical = Spacing.small).semantics { heading() },

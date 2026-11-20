@@ -14,7 +14,11 @@ import com.siliconcircuits.tarangini.feature.home.navigation.HomeRoute
 import com.siliconcircuits.tarangini.feature.home.navigation.homeScreen
 import com.siliconcircuits.tarangini.feature.library.navigation.favouritesScreen
 import com.siliconcircuits.tarangini.feature.library.navigation.libraryGraph
+import com.siliconcircuits.tarangini.feature.library.navigation.navigateToAlbum
+import com.siliconcircuits.tarangini.feature.library.navigation.navigateToArtist
 import com.siliconcircuits.tarangini.feature.radio.navigation.radioScreen
+import com.siliconcircuits.tarangini.feature.search.navigation.navigateToSearch
+import com.siliconcircuits.tarangini.feature.search.navigation.searchScreen
 import com.siliconcircuits.tarangini.feature.settings.navigation.navigateToSettings
 import com.siliconcircuits.tarangini.feature.settings.navigation.settingsScreen
 
@@ -23,7 +27,12 @@ import com.siliconcircuits.tarangini.feature.settings.navigation.settingsScreen
 internal fun TaranginiNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
     NavHost(navController = navController, startDestination = HomeRoute, modifier = modifier) {
         homeScreen(onSettingsClick = navController::navigateToSettings)
-        libraryGraph(navController)
+        libraryGraph(navController, onSearch = navController::navigateToSearch)
+        searchScreen(
+            onBack = navController::popBackStack,
+            onOpenAlbum = navController::navigateToAlbum,
+            onOpenArtist = navController::navigateToArtist,
+        )
         radioScreen()
         favouritesScreen()
         settingsScreen(onBackClick = navController::popBackStack)

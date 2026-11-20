@@ -4,15 +4,18 @@
  * version 3 only. See the LICENSE file. SPDX-License-Identifier: GPL-3.0-only
  */
 
-package com.siliconcircuits.tarangini.feature.library
+package com.siliconcircuits.tarangini.core.testing.library
 
 import com.siliconcircuits.tarangini.core.domain.model.Album
 import com.siliconcircuits.tarangini.core.domain.model.Artist
 import com.siliconcircuits.tarangini.core.domain.model.Folder
 import com.siliconcircuits.tarangini.core.domain.model.Song
 
-/** A song for tests. Its address is not one of the phone, so no cover picture is asked for. */
-internal fun testSong(
+/**
+ * A song for tests. Its address is not one of the phone, so no cover
+ * picture is asked for.
+ */
+fun testSong(
     id: Long,
     title: String = "Song $id",
     artist: String = "Artist",
@@ -35,11 +38,13 @@ internal fun testSong(
     dateAdded = id,
 )
 
-internal fun testAlbum(id: Long, title: String, artist: String = "Artist", artistId: Long = 1, songCount: Int = 10) =
+/** An album for tests. */
+fun testAlbum(id: Long, title: String, artist: String = "Artist", artistId: Long = 1, songCount: Int = 10) =
     Album(id = id, title = title, artistId = artistId, artist = artist, year = null, songCount = songCount)
 
-internal fun testArtist(id: Long, name: String, songCount: Int = 12) =
-    Artist(id = id, name = name, songCount = songCount)
+/** An artist for tests. */
+fun testArtist(id: Long, name: String, songCount: Int = 12) = Artist(id = id, name = name, songCount = songCount)
 
-internal fun testFolder(id: Long, name: String, parentId: Long? = null) =
+/** A folder for tests. Its path is its name. */
+fun testFolder(id: Long, name: String, parentId: Long? = null) =
     Folder(id = id, parentId = parentId, name = name, path = name)

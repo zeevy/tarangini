@@ -9,6 +9,10 @@ package com.siliconcircuits.tarangini.feature.library
 import androidx.compose.runtime.Composable
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.siliconcircuits.tarangini.core.domain.model.Song
+import com.siliconcircuits.tarangini.core.testing.library.testAlbum
+import com.siliconcircuits.tarangini.core.testing.library.testArtist
+import com.siliconcircuits.tarangini.core.testing.library.testFolder
+import com.siliconcircuits.tarangini.core.testing.library.testSong
 import com.siliconcircuits.tarangini.core.ui.component.SongRowActions
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import com.siliconcircuits.tarangini.feature.library.album.AlbumContent

@@ -25,14 +25,17 @@ import com.siliconcircuits.tarangini.feature.library.folder.FolderScreen
  * The screens of the Library tab. The detail screens are inside the group
  * of [LibraryRoute], so the tab stays marked while one of them is open and
  * comes back to it when the person returns to the tab.
+ *
+ * @param onSearch opens the search screen, which is not part of this tab
  */
-fun NavGraphBuilder.libraryGraph(navController: NavController) {
+fun NavGraphBuilder.libraryGraph(navController: NavController, onSearch: () -> Unit) {
     navigation<LibraryRoute>(startDestination = LibraryListsRoute) {
         composable<LibraryListsRoute> { entry ->
             LibraryScreen(
                 onOpenAlbum = { navController.open(entry, it.route()) },
                 onOpenArtist = { navController.open(entry, it.route()) },
                 onOpenFolder = { navController.open(entry, it.route()) },
+                onSearch = { if (entry.isShown()) onSearch() },
             )
         }
         composable<AlbumRoute> { entry -> AlbumScreen(onBack = { navController.back(entry) }) }
@@ -49,6 +52,16 @@ fun NavGraphBuilder.libraryGraph(navController: NavController) {
             )
         }
     }
+}
+
+/** Opens the screen of [album] from a screen of another feature, such as search. */
+fun NavController.navigateToAlbum(album: Album) {
+    navigate(album.route()) { launchSingleTop = true }
+}
+
+/** Opens the screen of [artist] from a screen of another feature, such as search. */
+fun NavController.navigateToArtist(artist: Artist) {
+    navigate(artist.route()) { launchSingleTop = true }
 }
 
 fun NavGraphBuilder.favouritesScreen() {

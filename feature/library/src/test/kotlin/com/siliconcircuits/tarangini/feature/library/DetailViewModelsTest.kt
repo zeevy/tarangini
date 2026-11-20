@@ -8,6 +8,9 @@ package com.siliconcircuits.tarangini.feature.library
 
 import androidx.lifecycle.SavedStateHandle
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
+import com.siliconcircuits.tarangini.core.testing.library.testAlbum
+import com.siliconcircuits.tarangini.core.testing.library.testFolder
+import com.siliconcircuits.tarangini.core.testing.library.testSong
 import com.siliconcircuits.tarangini.core.testing.playback.FakePlaybackController
 import com.siliconcircuits.tarangini.core.testing.playback.FakePlaybackQueue
 import com.siliconcircuits.tarangini.feature.library.album.AlbumViewModel

@@ -17,8 +17,6 @@
     <string name="library_sort_album">Album</string>
     <string name="library_sort_date_added">Newest first</string>
     <string name="library_sort_duration">Shortest first</string>
-    <string name="library_section_albums">Albums</string>
-    <string name="library_section_songs">Songs</string>
     <string name="library_loading">Loading</string>
     <string name="library_error_title">The library could not be read</string>
     <string name="library_error_text">Something went wrong on the phone. Your music is not changed.</string>

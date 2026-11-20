@@ -18,6 +18,10 @@ import androidx.compose.ui.test.performClick
 import com.siliconcircuits.tarangini.core.domain.model.Album
 import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.domain.model.SongSort
+import com.siliconcircuits.tarangini.core.testing.library.testAlbum
+import com.siliconcircuits.tarangini.core.testing.library.testArtist
+import com.siliconcircuits.tarangini.core.testing.library.testFolder
+import com.siliconcircuits.tarangini.core.testing.library.testSong
 import com.siliconcircuits.tarangini.core.ui.component.SongRowActions
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import com.siliconcircuits.tarangini.feature.library.list.PagedItems
@@ -156,6 +160,16 @@ class LibraryContentTest {
         composeRule.waitForIdle()
 
         assertEquals(1, asked)
+    }
+
+    @Test
+    fun `the search button opens the search`() {
+        var searches = 0
+        show(actions = LibraryActions(onSearch = { searches++ }))
+
+        composeRule.onNodeWithContentDescription("Search").performClick()
+
+        assertEquals(1, searches)
     }
 
     @Test
