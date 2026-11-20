@@ -6,12 +6,15 @@
 
 package com.siliconcircuits.tarangini.core.playback.browse
 
+import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 
 /**
@@ -23,6 +26,7 @@ import kotlinx.coroutines.launch
  */
 internal class LibraryChangeNotices(
     private val library: LibraryRepository,
+    private val favourites: FavouriteRepository,
     private val scope: CoroutineScope,
     private val opened: () -> Collection<String>,
     private val notify: (String) -> Unit,
@@ -33,7 +37,8 @@ internal class LibraryChangeNotices(
     fun start() {
         // The first value only says that the reading started.
         job = scope.launch {
-            library.changes().drop(1).collectLatest {
+            // The first value of each is the state at the start, which the car has not read yet.
+            merge(library.changes().drop(1), favourites.songIds().drop(1).map { }).collectLatest {
                 // A scan of many files changes the library many times. The car is told once, after the last change.
                 delay(QUIET_MS)
                 opened().forEach(notify)

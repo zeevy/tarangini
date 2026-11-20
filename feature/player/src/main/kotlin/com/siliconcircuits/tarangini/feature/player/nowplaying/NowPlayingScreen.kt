@@ -19,6 +19,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -63,6 +64,7 @@ internal fun NowPlayingScreen(
         onSeek = viewModel::seekTo,
         onToggleShuffle = viewModel::toggleShuffle,
         onCycleRepeat = viewModel::cycleRepeat,
+        onToggleFavourite = viewModel::toggleFavourite,
     )
     NowPlayingContent(state, actions, onBackClick, onOpenQueue, modifier)
 }
@@ -86,6 +88,7 @@ internal fun NowPlayingContent(
                 title = { Text(stringResource(R.string.now_playing_title)) },
                 navigationIcon = { BackButton(onClick = onBackClick) },
                 actions = {
+                    state?.isFavourite?.let { on -> FavouriteButton(on, actions.onToggleFavourite) }
                     IconButton(onClick = onOpenQueue) {
                         Icon(
                             painter = painterResource(CoreUiR.drawable.ic_queue),
@@ -219,3 +222,17 @@ private fun LiveLine(isBuffering: Boolean) {
 }
 
 private const val LARGEST_COVER = 7
+
+/** The heart in the top bar. Its name for a screen reader is what a tap does. */
+@Composable
+private fun FavouriteButton(on: Boolean, onToggle: () -> Unit) {
+    IconButton(onClick = onToggle) {
+        Icon(
+            painter = painterResource(if (on) CoreUiR.drawable.ic_favourite_filled else CoreUiR.drawable.ic_favourite),
+            contentDescription = stringResource(
+                if (on) CoreUiR.string.song_remove_favourite else CoreUiR.string.song_add_favourite,
+            ),
+            tint = if (on) MaterialTheme.colorScheme.primary else LocalContentColor.current,
+        )
+    }
+}

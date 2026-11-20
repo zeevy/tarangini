@@ -15,6 +15,7 @@ import com.siliconcircuits.tarangini.core.domain.model.SearchResults
 import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackController
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackQueue
+import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SearchRepository
 import com.siliconcircuits.tarangini.core.ui.component.SongRowActions
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,11 +24,13 @@ import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /**
@@ -49,6 +52,7 @@ internal class SearchViewModel @Inject constructor(
     private val search: SearchRepository,
     private val playback: PlaybackController,
     private val queue: PlaybackQueue,
+    private val favourites: FavouriteRepository,
 ) : ViewModel() {
     /**
      * What is in the search field. A text field needs its text back in the
@@ -68,6 +72,11 @@ internal class SearchViewModel @Inject constructor(
         onPlay = ::play,
         onPlayNext = { queue.playNext(listOf(it.mediaUri)) },
         onAddToQueue = { queue.addToEnd(listOf(it.mediaUri)) },
+        favourites = favourites.songIds().stateIn(viewModelScope, SharingStarted.Eagerly, emptySet()),
+        // A mark that cannot be saved leaves the row as it was. That says enough.
+        onSetFavourite = { song, favourite ->
+            viewModelScope.launch { runCatching { favourites.setFavourite(song.id, favourite) } }
+        },
     )
 
     init {

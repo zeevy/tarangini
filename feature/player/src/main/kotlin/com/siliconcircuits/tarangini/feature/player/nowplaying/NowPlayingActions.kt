@@ -10,6 +10,7 @@ package com.siliconcircuits.tarangini.feature.player.nowplaying
  * What the person can do on the now playing screen.
  *
  * @property onSeek jumps to a place in the item, in milliseconds
+ * @property onToggleFavourite marks the song that plays as a favourite, or takes the mark away
  */
 internal data class NowPlayingActions(
     val onTogglePlay: () -> Unit,
@@ -18,4 +19,5 @@ internal data class NowPlayingActions(
     val onSeek: (Long) -> Unit,
     val onToggleShuffle: () -> Unit,
     val onCycleRepeat: () -> Unit,
+    val onToggleFavourite: () -> Unit = {},
 )

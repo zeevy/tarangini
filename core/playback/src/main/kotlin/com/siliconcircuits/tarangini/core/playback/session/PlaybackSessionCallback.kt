@@ -6,6 +6,7 @@
 
 package com.siliconcircuits.tarangini.core.playback.session
 
+import android.os.Bundle
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -16,6 +17,9 @@ import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
+import androidx.media3.session.SessionCommand
+import androidx.media3.session.SessionCommands
+import androidx.media3.session.SessionResult
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
@@ -51,6 +55,9 @@ internal class PlaybackSessionCallback(
     /** The lists a caller has read. These are told when the library changes. */
     val opened = OpenedLists()
 
+    /** The heart button of the session. The service sets it once the session exists, as the button needs it. */
+    var favourite: FavouriteButton? = null
+
     override fun onConnect(
         session: MediaSession,
         controller: MediaSession.ControllerInfo,
@@ -59,12 +66,13 @@ internal class PlaybackSessionCallback(
             // The car needs the library commands to browse and the player commands to play what it picked.
             // What it may play is still checked item by item in onAddMediaItems.
             CallerAccess.FULL, CallerAccess.CAR -> MediaSession.ConnectionResult.accept(
-                MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS,
+                MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS.withFavourite(),
                 MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS,
             )
 
+            // The media panel of the phone is such a caller. Its heart button marks only the song that plays.
             CallerAccess.TRANSPORT_ONLY -> MediaSession.ConnectionResult.accept(
-                MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS,
+                MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS.withFavourite(),
                 MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS.buildUpon()
                     .removeAll(Player.COMMAND_SET_MEDIA_ITEM, Player.COMMAND_CHANGE_MEDIA_ITEMS)
                     .build(),
@@ -175,6 +183,19 @@ internal class PlaybackSessionCallback(
         ?.let { item -> car.play.queueFor(item) { missing -> spokenDone(mediaSession, controller, missing) } }
         ?: super.onSetMediaItems(mediaSession, controller, mediaItems, startIndex, startPositionMs)
 
+    /** The one command of our own: a press of the heart button. Only a caller that was let in gets this far. */
+    override fun onCustomCommand(
+        session: MediaSession,
+        controller: MediaSession.ControllerInfo,
+        customCommand: SessionCommand,
+        args: Bundle,
+    ): ListenableFuture<SessionResult> = if (customCommand.customAction == FavouriteButton.COMMAND.customAction) {
+        favourite?.toggle()
+        Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+    } else {
+        super.onCustomCommand(session, controller, customCommand, args)
+    }
+
     override fun onAddMediaItems(
         mediaSession: MediaSession,
         controller: MediaSession.ControllerInfo,
@@ -221,6 +242,8 @@ internal class PlaybackSessionCallback(
         return answer
     }
 }
+
+private fun SessionCommands.withFavourite(): SessionCommands = buildUpon().add(FavouriteButton.COMMAND).build()
 
 /** The most tabs a car shows. A car can ask for fewer. */
 private const val MAX_TABS = 4

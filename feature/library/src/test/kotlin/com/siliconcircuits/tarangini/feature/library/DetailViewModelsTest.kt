@@ -7,6 +7,7 @@
 package com.siliconcircuits.tarangini.feature.library
 
 import androidx.lifecycle.SavedStateHandle
+import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
 import com.siliconcircuits.tarangini.core.testing.library.testAlbum
 import com.siliconcircuits.tarangini.core.testing.library.testFolder
@@ -15,6 +16,7 @@ import com.siliconcircuits.tarangini.core.testing.playback.FakePlaybackControlle
 import com.siliconcircuits.tarangini.core.testing.playback.FakePlaybackQueue
 import com.siliconcircuits.tarangini.feature.library.album.AlbumViewModel
 import com.siliconcircuits.tarangini.feature.library.artist.ArtistViewModel
+import com.siliconcircuits.tarangini.feature.library.favourites.FavouritesViewModel
 import com.siliconcircuits.tarangini.feature.library.folder.FolderViewModel
 import com.siliconcircuits.tarangini.feature.library.list.SongActions
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -43,7 +45,8 @@ class DetailViewModelsTest {
         folderOfSong = mapOf(1L to 1L, 2L to 1L, 3L to 2L)
     }
     private val playback = FakePlaybackController()
-    private val actions = SongActions(playback, FakePlaybackQueue())
+    private val favourites = FakeFavouriteRepository()
+    private val actions = SongActions(playback, FakePlaybackQueue(), favourites)
 
     @Test
     fun `an album shows its songs and plays them as the queue`() = runTest(mainDispatcher.dispatcher) {
@@ -101,4 +104,23 @@ class DetailViewModelsTest {
 
         assertEquals(listOf("Four", "One"), viewModel.songs.state.value.items.map { it.title })
     }
+
+    @Test
+    fun `the favourites show the song marked last first, follow a new mark and play as the queue`() =
+        runTest(mainDispatcher.dispatcher) {
+            favourites.known = library.songs
+            favourites.setFavourite(1, true)
+            val viewModel = FavouritesViewModel(favourites, library, actions)
+            advanceUntilIdle()
+            val before = viewModel.songs.state.value.items.map { it.title }
+
+            viewModel.songActions.onSetFavourite(library.songs[2], true)
+            advanceUntilIdle()
+            viewModel.songActions.onPlay(library.songs[0])
+            advanceUntilIdle()
+
+            assertEquals(listOf("One"), before)
+            assertEquals(listOf("Three", "One"), viewModel.songs.state.value.items.map { it.title })
+            assertEquals(listOf("play [test:3, test:1] from 1"), playback.commands)
+        }
 }

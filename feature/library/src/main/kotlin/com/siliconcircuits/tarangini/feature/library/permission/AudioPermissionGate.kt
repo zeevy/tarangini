@@ -26,7 +26,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import com.siliconcircuits.tarangini.feature.library.R
 
 /**
  * Shows [content] when the app may read audio files, and [AudioPermissionScreen] when it may not.
@@ -36,7 +38,11 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
  *
  */
 @Composable
-internal fun AudioPermissionGate(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+internal fun AudioPermissionGate(
+    modifier: Modifier = Modifier,
+    title: String = stringResource(R.string.library_title),
+    content: @Composable () -> Unit,
+) {
     val context = LocalContext.current
     val activity = LocalActivity.current
     val permission = remember { audioPermissionFor(Build.VERSION.SDK_INT) }
@@ -67,6 +73,7 @@ internal fun AudioPermissionGate(modifier: Modifier = Modifier, content: @Compos
 
             else -> AudioPermissionScreen(
                 state = state,
+                title = title,
                 onAllow = { request.launch(permission) },
                 onOpenSettings = { context.openAppSettings() },
             )

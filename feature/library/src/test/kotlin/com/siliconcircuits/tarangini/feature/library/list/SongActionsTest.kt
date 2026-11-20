@@ -8,6 +8,7 @@ package com.siliconcircuits.tarangini.feature.library.list
 
 import com.siliconcircuits.tarangini.core.domain.model.Page
 import com.siliconcircuits.tarangini.core.domain.model.Song
+import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
 import com.siliconcircuits.tarangini.core.testing.library.testSong
 import com.siliconcircuits.tarangini.core.testing.playback.FakePlaybackController
 import com.siliconcircuits.tarangini.core.testing.playback.FakePlaybackQueue
@@ -19,7 +20,8 @@ import org.junit.Test
 
 class SongActionsTest {
     private val playback = FakePlaybackController()
-    private val actions = SongActions(playback, FakePlaybackQueue())
+    private val favourites = FakeFavouriteRepository()
+    private val actions = SongActions(playback, FakePlaybackQueue(), favourites)
     private val songs = listOf(testSong(1), testSong(2), testSong(3))
 
     private suspend fun slowRead(page: Page): List<Song> {
@@ -56,5 +58,20 @@ class SongActionsTest {
         advanceTimeBy(1_000)
 
         assertEquals(listOf("play [test:2] from 0"), playback.commands)
+    }
+
+    @Test
+    fun `a row can mark its song as a favourite, and every row sees the mark`() = runTest {
+        val rows = actions.rowActions(backgroundScope, ::slowRead)
+        val otherList = actions.rowActions(backgroundScope, ::slowRead)
+
+        rows.onSetFavourite(songs[1], true)
+        advanceTimeBy(1_000)
+        val marked = otherList.favourites.value
+        rows.onSetFavourite(songs[1], false)
+        advanceTimeBy(1_000)
+
+        assertEquals(setOf(2L), marked)
+        assertEquals(emptySet<Long>(), otherList.favourites.value)
     }
 }

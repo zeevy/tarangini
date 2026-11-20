@@ -7,6 +7,8 @@
 <resources>
     <string name="library_title">Library</string>
     <string name="favourites_title">Favourites</string>
+    <string name="favourites_empty_title">No favourites yet</string>
+    <string name="favourites_empty_text">Open the menu of a song and choose Add to favourites.</string>
     <string name="library_tab_songs">Songs</string>
     <string name="library_tab_albums">Albums</string>
     <string name="library_tab_artists">Artists</string>
