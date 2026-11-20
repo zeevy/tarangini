@@ -412,6 +412,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D39 | The search opens from a button in the top bar of the Library tab, as its own screen. It searches 200 ms after the last key, and a tap on a song plays it with the found songs as the queue. See [ADR 0017](adr/0017-search-screen.md) | 20 Nov 2026 | Results are there within 300 ms of the last key, and no search runs for a text that is typed over |
 | D40 | The mini player sits above the bottom bar on every screen but now playing, and is hidden while nothing is loaded. Its button shows "pause" from the tap on play. See [ADR 0018](adr/0018-mini-player.md) | 20 Nov 2026 | No list row is covered, and a tap during loading pauses |
 | D41 | Now playing is a full screen with a seek bar that seeks when the finger lifts. The queue is its own screen, with drag to another place, swipe to remove and the same as actions for a screen reader. An item with no length is shown as live. See [ADR 0019](adr/0019-now-playing-and-queue.md) | 20 Nov 2026 | No jump back of the seek bar, and the queue can be changed without a gesture |
+| D42 | Radio streams play through the one player: Icecast, Shoutcast, HLS and playlist files (`.pls`, `.m3u`) with limits on size, redirects and depth. Only `http` and `https` are followed. Plain `http` is allowed because many stations have nothing else. See [ADR 0020](adr/0020-radio-streams.md) | 20 Nov 2026 | A playlist file from an unknown server can never make the app loop or open a file of the phone |
 
 ## 9. Checks before building
 

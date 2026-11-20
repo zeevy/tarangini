@@ -88,6 +88,10 @@ Run with about 10,000 songs on a mid range phone.
 | 47 | Turn the phone on its side on now playing and on the queue, then back | The cover is beside the controls, every button can be reached, and the place of the seek bar and of the list is kept |
 | 48 | With TalkBack on, open the queue and use the actions of a row | "Move up", "Move down" and "Remove from the queue" are offered and work. The row that plays is read as "Playing now" |
 | 49 | Tap shuffle and repeat on now playing and look at the notification of a car or watch that shows them | The buttons show their state, repeat goes off, all, one, and the order of play follows |
+| 50 | Needs a station added in the app. Play one station of each kind: Icecast MP3, Shoutcast, AAC, HLS (`.m3u8`), a `.pls` address and a `.m3u` address | Each one plays within a few seconds. Now playing shows "Live" and no seek bar |
+| 51 | Play a song, then a station, then a song again | Each change works with one tap. The notification follows, and the song has its seek bar again |
+| 52 | Play a station that has only an `http` address, on mobile data and on Wi-Fi | It plays on both |
+| 53 | Play a station for 10 minutes with the screen off, on Wi-Fi | The sound does not stop |
 
 ## Playback: resume
 

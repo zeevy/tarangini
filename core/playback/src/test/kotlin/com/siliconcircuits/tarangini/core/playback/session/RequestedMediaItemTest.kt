@@ -39,11 +39,46 @@ class RequestedMediaItemTest {
     }
 
     @Test
-    fun `a file path, a web address and the content of another app are refused`() {
+    fun `an http and an https stream are accepted, with nothing but the id and the address`() {
+        listOf("http://radio.example:8000/stream", "https://radio.example/live.m3u8", "HTTP://radio.example/a.pls")
+            .forEach { stream ->
+                val item = requested(stream).toPlayable()
+
+                assertEquals(Uri.parse(stream), item.localConfiguration?.uri)
+                assertEquals("id", item.mediaId)
+                assertEquals(null, item.mediaMetadata.artworkUri)
+            }
+    }
+
+    @Test
+    fun `an address that is not a file of MediaStore or a complete http or https address is refused`() {
+        val refused = listOf(
+            "http://",
+            "http:///stream",
+            "http://user:secret@radio.example/stream",
+            "http://radio.example\\@other.example/stream",
+            "https:radio.example/stream",
+            "ftp://radio.example/stream",
+            "rtsp://radio.example/stream",
+            "rtmp://radio.example/stream",
+            "udp://239.0.0.1:1234",
+            "data:audio/mpeg;base64,AAAA",
+            "asset:///a.mp3",
+            "rawresource:///1",
+            "javascript:alert(1)",
+            "intent://radio.example/#Intent;scheme=http;end",
+        )
+
+        refused.forEach { uri ->
+            assertThrows(uri, IllegalArgumentException::class.java) { requested(uri).toPlayable() }
+        }
+    }
+
+    @Test
+    fun `a file path and the content of another app are refused`() {
         val refused = listOf(
             "file:///data/data/com.siliconcircuits.tarangini/databases/tarangini.db",
             "/sdcard/Music/a.mp3",
-            "https://example.org/a.mp3",
             "content://com.other.app.provider/secret",
             "content://media.evil/external/audio/media/42",
             "content://0@media/external/audio/media/42",

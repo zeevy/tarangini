@@ -12,6 +12,9 @@ import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import com.siliconcircuits.tarangini.core.playback.stream.streamDataSourceFactory
+import okhttp3.OkHttpClient
 
 /**
  * Makes the player of the playback service. Nothing else in the app makes a player.
@@ -23,12 +26,20 @@ import androidx.media3.exoplayer.ExoPlayer
  *
  * Album tracks play with no gap when the files say how much silence their encoder added.
  * [GaplessRenderersFactory] makes that right for the MP3 decoder of Android.
+ *
+ * Radio streams (Icecast, Shoutcast, HLS and playlist files) play through the same player. They
+ * are read with [streamDataSourceFactory].
+ *
+ * @param httpClient gives the shared HTTP client when the first stream is opened
  */
 // The player is built with our own renderers factory, which is API that may still change.
 @OptIn(UnstableApi::class)
-internal fun createPlayer(context: Context): ExoPlayer {
+internal fun createPlayer(context: Context, httpClient: () -> OkHttpClient): ExoPlayer {
     val music = AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build()
     val player = ExoPlayer.Builder(context, GaplessRenderersFactory(context))
+        .setMediaSourceFactory(
+            DefaultMediaSourceFactory(context).setDataSourceFactory(streamDataSourceFactory(context, httpClient)),
+        )
         .setAudioAttributes(music, true)
         .setHandleAudioBecomingNoisy(true)
         .setWakeMode(wakeModeFor(null))
