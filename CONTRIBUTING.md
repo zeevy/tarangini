@@ -76,7 +76,7 @@ The agreement has a version. If the text changes, the new version covers only wh
 ## The pull request
 
 - Fill in the pull request form. Link the issue with `Closes #<number>`.
-- Add screenshots for a change that people can see, in light and dark.
+- Add screenshots for a change that people can see.
 - A maintainer reviews it. Small pull requests are reviewed faster.
 
 ## Rules with ids
@@ -216,7 +216,7 @@ A change must never do these.
 | T1 | Every change ships with tests in the style of the tests next to it. A bug fix starts with a test that fails | Review |
 | T2 | Every ViewModel has a test for each state change and each event. Every use case, mapper, parser and codec has unit tests | Review |
 | T3 | Use the fakes in `core:testing`. Add a fake for every new repository interface. A mock is the last choice | Review |
-| T4 | Every screen has screenshot tests of its content composable in light and dark | CI |
+| T4 | Every screen has screenshot tests of its content composable | CI |
 | T5 | Tests do not sleep and do not touch the real network. Use the test dispatcher and recorded responses | Review |
 | T6 | Performance numbers in an issue are measured on a real phone, not guessed | PR checklist |
 

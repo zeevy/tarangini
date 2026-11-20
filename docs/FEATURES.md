@@ -371,7 +371,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 
 | # | Decision | Date | Effect |
 |---|---|---|---|
-| D1 | minSdk 31 (Android 12) | 19 Nov 2026 | Dynamic colour on every phone. Less old code. `READ_EXTERNAL_STORAGE` is still needed for API 31 and 32 only |
+| D1 | minSdk 31 (Android 12) | 19 Nov 2026 | Less old code. `READ_EXTERNAL_STORAGE` is still needed for API 31 and 32 only |
 | D2 | Android Auto only for MVP | 19 Nov 2026 | One APK for phone and car. Android Automotive OS stays in Future |
 | D3 | Users add stations (name and URL) or pick them from Radio Browser. We ship no station list of our own. Replaces the earlier "our own checked India list" choice | 19 Nov 2026 | Lower legal risk. The India section is only a Radio Browser filter |
 | D4 | Free core app with no ads | 19 Nov 2026 | No Play Billing in MVP or v1.1 |

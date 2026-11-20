@@ -69,9 +69,10 @@ internal fun SeekBar(state: NowPlayingUiState, onSeek: (Long) -> Unit, modifier:
                 SliderDefaults.Track(
                     sliderState = sliderState,
                     modifier = Modifier.height(BarHeight),
-                    // The part not played yet is a dim panel colour, so the played part stands out.
+                    // The part not played yet is dim, so the played part stands out, and still light
+                    // enough to show the whole length on the dark screen.
                     colors = SliderDefaults.colors(
-                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        inactiveTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = UNPLAYED_ALPHA),
                     ),
                     drawStopIndicator = null,
                     thumbTrackGapSize = NoGap,
@@ -96,3 +97,4 @@ private val NoGap = 0.dp
 
 // The shared format leaves a zero out, which is right for a length that is not known. A place is never unknown.
 private const val ZERO = "0:00"
+private const val UNPLAYED_ALPHA = 0.2f

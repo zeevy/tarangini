@@ -18,7 +18,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
-private val Base = Color(0xFF06080F)
 private val PurpleGlow = Color(0xFF7A3CFF)
 private val BlueGlow = Color(0xFF2B5BFF)
 private const val PURPLE_STRENGTH = 0.30f
@@ -31,7 +30,7 @@ private const val BLUE_GLOW_HEIGHT = 0.6f
  * the frame of a screen, and give that frame no colour of its own.
  */
 fun Modifier.glassBackground(): Modifier = drawBehind {
-    drawRect(Base)
+    drawRect(GlassColors.background)
     val reach = size.width
     if (reach > 0f) {
         drawRect(

@@ -108,7 +108,8 @@ internal fun QueueRow(
                 drag.isDragged -> MaterialTheme.colorScheme.surfaceContainerHigh
                 else -> Color.Transparent
             },
-            contentColor = MaterialTheme.colorScheme.onSurface,
+            // The title of the current item is in the accent colour, so it is found at a glance.
+            contentColor = if (isCurrent) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
             tonalElevation = if (drag.isDragged) Spacing.small else Spacing.none,
         ) {
             RowBody(item, isCurrent, drag, actions)
