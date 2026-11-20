@@ -8,11 +8,15 @@ package com.siliconcircuits.tarangini.core.playback.session
 
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.LibraryResult
+import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
+import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
@@ -41,7 +45,9 @@ internal class PlaybackSessionCallback(
         controller: MediaSession.ControllerInfo,
     ): MediaSession.ConnectionResult =
         when (callers.accessFor(controller.packageName, controller.uid, controller.isTrusted)) {
-            CallerAccess.FULL -> MediaSession.ConnectionResult.accept(
+            // The car needs the library commands to browse and the player commands to play what it picked.
+            // What it may play is still checked item by item in onAddMediaItems.
+            CallerAccess.FULL, CallerAccess.CAR -> MediaSession.ConnectionResult.accept(
                 MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS,
                 MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS,
             )
@@ -55,6 +61,28 @@ internal class PlaybackSessionCallback(
 
             CallerAccess.REFUSED -> MediaSession.ConnectionResult.reject()
         }
+
+    /**
+     * The top of the list the car shows. Without an answer here Android Auto
+     * cannot connect at all. Only a caller with the library commands gets
+     * this far: this app and the car.
+     */
+    override fun onGetLibraryRoot(
+        session: MediaLibrarySession,
+        browser: MediaSession.ControllerInfo,
+        params: MediaLibraryService.LibraryParams?,
+    ): ListenableFuture<LibraryResult<MediaItem>> = Futures.immediateFuture(LibraryResult.ofItem(libraryRoot, params))
+
+    /** What is under a node of the list. The list is empty until the browse tree is built. */
+    override fun onGetChildren(
+        session: MediaLibrarySession,
+        browser: MediaSession.ControllerInfo,
+        parentId: String,
+        page: Int,
+        pageSize: Int,
+        params: MediaLibraryService.LibraryParams?,
+    ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> =
+        Futures.immediateFuture(LibraryResult.ofItemList(ImmutableList.of(), params))
 
     override fun onAddMediaItems(
         mediaSession: MediaSession,
@@ -102,3 +130,17 @@ internal class PlaybackSessionCallback(
         return answer
     }
 }
+
+/** The id of the top node of the browse tree. */
+internal const val LIBRARY_ROOT_ID = "root"
+
+private val libraryRoot = MediaItem.Builder()
+    .setMediaId(LIBRARY_ROOT_ID)
+    .setMediaMetadata(
+        MediaMetadata.Builder()
+            .setIsBrowsable(true)
+            .setIsPlayable(false)
+            .setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_MIXED)
+            .build(),
+    )
+    .build()

@@ -10,7 +10,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class CallerPolicyTest {
-    private val policy = CallerPolicy(ownPackage = "our.app", ownUid = 10_001)
+    private val car = KnownCallers { packageName, uid -> packageName == "the.car" && uid == 10_070 }
+    private val policy = CallerPolicy(ownPackage = "our.app", ownUid = 10_001, carCallers = car)
 
     @Test
     fun `this app may do everything, trusted by the system or not`() {
@@ -23,6 +24,17 @@ class CallerPolicyTest {
         val access = policy.accessFor("com.android.systemui", uid = 10_050, trustedBySystem = true)
 
         assertEquals(CallerAccess.TRANSPORT_ONLY, access)
+    }
+
+    @Test
+    fun `the car may browse and play, also when it has notification access`() {
+        assertEquals(CallerAccess.CAR, policy.accessFor("the.car", uid = 10_070, trustedBySystem = false))
+        assertEquals(CallerAccess.CAR, policy.accessFor("the.car", uid = 10_070, trustedBySystem = true))
+    }
+
+    @Test
+    fun `an app that only uses the package name of the car is refused`() {
+        assertEquals(CallerAccess.REFUSED, policy.accessFor("the.car", uid = 10_002, trustedBySystem = false))
     }
 
     @Test
