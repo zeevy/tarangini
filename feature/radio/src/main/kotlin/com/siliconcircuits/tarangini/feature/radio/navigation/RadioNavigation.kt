@@ -6,10 +6,30 @@
 
 package com.siliconcircuits.tarangini.feature.radio.navigation
 
+import androidx.navigation.NavController
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.siliconcircuits.tarangini.feature.radio.RadioScreen
+import com.siliconcircuits.tarangini.feature.radio.form.StationFormScreen
 
-fun NavGraphBuilder.radioScreen() {
-    composable<RadioRoute> { RadioScreen() }
+/** Adds the Radio tab and the form that adds or changes a station. */
+fun NavGraphBuilder.radioScreens(navController: NavController) {
+    composable<RadioRoute> {
+        RadioScreen(
+            onAdd = { navController.openForm(StationFormRoute()) },
+            onEdit = { station -> navController.openForm(StationFormRoute(station.id)) },
+        )
+    }
+    composable<StationFormRoute> {
+        // A second Back while the form closes must not close the tab under it as well.
+        StationFormScreen(onBack = { if (navController.isOnForm()) navController.popBackStack() })
+    }
+}
+
+private fun NavController.isOnForm(): Boolean = currentDestination?.hasRoute<StationFormRoute>() == true
+
+/** Two quick taps open one form, not two. */
+private fun NavController.openForm(route: StationFormRoute) {
+    if (!isOnForm()) navigate(route)
 }

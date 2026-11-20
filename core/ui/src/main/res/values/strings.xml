@@ -14,6 +14,9 @@
     <string name="unknown_title">Unknown title</string>
     <string name="action_open">Open</string>
     <string name="action_search">Search</string>
+    <string name="station_menu">More for %1$s</string>
+    <string name="station_edit">Edit</string>
+    <string name="station_remove">Remove</string>
     <string name="section_songs">Songs</string>
     <string name="section_albums">Albums</string>
     <string name="section_artists">Artists</string>

@@ -52,6 +52,12 @@ private val answers: Map<String, () -> MockResponse> = mapOf(
     "/files-only.m3u" to { text("file:///sdcard/Music/a.mp3\ncontent://media/external/audio/media/1\n") },
     "/file-first.m3u" to { text("file:///sdcard/Music/a.mp3\nicecast.mp3\n") },
     "/empty.pls" to { text("[playlist]\nNumberOfEntries=0\n") },
+    "/no-type" to { MockResponse.Builder().body("sound").build() },
+    "/page.html" to { stream("<html>", "text/html; charset=utf-8").build() },
+    "/named.mp3" to {
+        stream("named", "audio/mpeg").addHeader("icy-name", "My \t Radio").addHeader("icy-br", "128").build()
+    },
+    "/hls-without-ending" to { stream("#EXTM3U", "application/vnd.apple.mpegurl").build() },
 )
 
 private const val NOT_FOUND = 404

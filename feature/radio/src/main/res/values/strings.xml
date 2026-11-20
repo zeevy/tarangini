@@ -6,4 +6,39 @@
 -->
 <resources>
     <string name="radio_title">Radio</string>
+    <string name="radio_add_station">Add station</string>
+    <string name="radio_empty_title">No stations yet</string>
+    <string name="radio_empty_text">Add a station with its name and its stream address.</string>
+    <string name="radio_failed_title">The stations could not be read</string>
+    <string name="radio_failed_text">Leave this tab and open it again.</string>
+    <string name="radio_remove_title">Remove %1$s?</string>
+    <string name="radio_remove_text">The station goes from your list.</string>
+    <string name="radio_remove_confirm">Remove</string>
+    <string name="radio_remove_cancel">Cancel</string>
+    <string name="station_form_add">Add station</string>
+    <string name="station_form_edit">Edit station</string>
+    <string name="station_form_name">Name</string>
+    <string name="station_form_address">Stream address</string>
+    <string name="station_form_address_help">Starts with http:// or https://</string>
+    <string name="station_form_test">Test</string>
+    <string name="station_form_save">Save</string>
+    <string name="station_form_save_failed">The station could not be saved.</string>
+    <string name="station_name_empty">Give the station a name.</string>
+    <string name="station_name_too_long">The name is too long.</string>
+    <string name="station_address_empty">Type the stream address.</string>
+    <string name="station_address_too_long">The address is too long.</string>
+    <string name="station_address_odd_characters">An address has no spaces and no backslash.</string>
+    <string name="station_address_not_http">The address must start with http:// or https://</string>
+    <string name="station_address_no_host">The server name or the port in the address is not right.</string>
+    <string name="station_address_already_saved">Another station of yours has this address.</string>
+    <string name="station_address_has_login">An address with a user name or a password cannot be used.</string>
+    <string name="station_test_running">Trying the address</string>
+    <string name="station_test_found">A stream answers (%1$s).</string>
+    <string name="station_test_name">It calls itself %1$s.</string>
+    <string name="station_test_bitrate">%1$d kbps.</string>
+    <string name="station_test_bad_address">This address cannot be opened.</string>
+    <string name="station_test_no_answer">No server answers at this address.</string>
+    <string name="station_test_bad_answer">The server does not have this address.</string>
+    <string name="station_test_bad_playlist">The playlist file at this address names no stream.</string>
+    <string name="station_test_not_a_stream">The server answers, but not with a stream that can be played.</string>
 </resources>

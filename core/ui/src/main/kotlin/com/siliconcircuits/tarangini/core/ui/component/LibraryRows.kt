@@ -126,13 +126,13 @@ private fun Modifier.opens(onClick: () -> Unit): Modifier =
 
 /** A text of a row. A long one is cut with dots, so every row has the same height. */
 @Composable
-private fun OneLine(text: String) {
+internal fun OneLine(text: String) {
     Text(text = text, maxLines = 1, overflow = TextOverflow.Ellipsis)
 }
 
 /** A picture of the kind of row, on the same tile a cover picture has, so all rows line up. */
 @Composable
-private fun IconTile(icon: Painter) {
+internal fun IconTile(icon: Painter) {
     Box(
         modifier = Modifier
             .size(AlbumArtSize.List)

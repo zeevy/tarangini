@@ -13,4 +13,10 @@ interface StationStreams {
      * The list is empty when no stored station has the address.
      */
     suspend fun ofStationWith(address: String): List<String>
+
+    /**
+     * The names of the stations that play from these addresses, each under its address.
+     * An address of no stored station is left out.
+     */
+    suspend fun namesByAddress(addresses: List<String>): Map<String, String>
 }

@@ -23,4 +23,17 @@ internal interface StationStreamDao {
             "ORDER BY position",
     )
     suspend fun streamUrlsOfStationWith(url: String): List<String>
+
+    /**
+     * The station names for these stream URLs. When two stations have the same URL, the one
+     * stored first comes last. Give at most 500 URLs: SQLite limits the values of one statement.
+     */
+    @Query(
+        "SELECT ss.url AS url, s.name AS name FROM station_streams ss " +
+            "JOIN stations s ON s.id = ss.station_id WHERE ss.url IN (:urls) ORDER BY s.id DESC",
+    )
+    suspend fun namesByUrl(urls: List<String>): List<StreamName>
 }
+
+/** The name of the station that plays from [url]. */
+internal data class StreamName(val url: String, val name: String)
