@@ -27,7 +27,7 @@ interface PlaybackController {
      */
     fun play(mediaUris: List<String>, startIndex: Int = 0)
 
-    /** Goes on with the current item after a pause or an error. */
+    /** Goes on with the current item after a pause or an error. At the end of the queue the item starts again. */
     fun resume()
 
     fun pause()

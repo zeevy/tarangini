@@ -46,6 +46,7 @@ import com.siliconcircuits.tarangini.core.domain.model.SearchResults
 import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
 import com.siliconcircuits.tarangini.core.ui.component.AlbumRow
 import com.siliconcircuits.tarangini.core.ui.component.ArtistRow
+import com.siliconcircuits.tarangini.core.ui.component.BackButton
 import com.siliconcircuits.tarangini.core.ui.component.MessageState
 import com.siliconcircuits.tarangini.core.ui.component.SectionTitle
 import com.siliconcircuits.tarangini.core.ui.component.SongRow
@@ -92,12 +93,7 @@ internal fun SearchContent(
             TopAppBar(
                 title = { SearchField(text, onTextChange) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            painter = painterResource(CoreUiR.drawable.ic_back),
-                            contentDescription = stringResource(CoreUiR.string.action_back),
-                        )
-                    }
+                    BackButton(onClick = onBack)
                 },
             )
         },

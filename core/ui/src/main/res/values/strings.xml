@@ -8,6 +8,9 @@
     <string name="placeholder_message">This screen is not built yet.</string>
     <string name="action_back">Back</string>
     <string name="action_play">Play</string>
+    <string name="action_pause">Pause</string>
+    <string name="action_next">Next</string>
+    <string name="unknown_title">Unknown title</string>
     <string name="action_open">Open</string>
     <string name="action_search">Search</string>
     <string name="section_songs">Songs</string>

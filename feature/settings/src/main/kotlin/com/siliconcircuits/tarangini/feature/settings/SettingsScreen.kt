@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
+import com.siliconcircuits.tarangini.core.ui.component.BackButton
 import com.siliconcircuits.tarangini.core.ui.component.PlaceholderScreen
 
 @Composable
@@ -21,12 +22,7 @@ internal fun SettingsScreen(onBackClick: () -> Unit, modifier: Modifier = Modifi
         title = stringResource(R.string.settings_title),
         modifier = modifier,
         navigationIcon = {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    painter = painterResource(CoreUiR.drawable.ic_back),
-                    contentDescription = stringResource(CoreUiR.string.action_back),
-                )
-            }
+            BackButton(onClick = onBackClick)
         },
     )
 }

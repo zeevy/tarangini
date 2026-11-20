@@ -196,6 +196,17 @@ class SessionPlaybackControllerTest {
     }
 
     @Test
+    fun `resume starts the item again at the end of the queue`() = runTest {
+        val controller = connectedController()
+        player.report { setPlaylist(listOf(FakePlayer.queued("first"))).setPlaybackState(Player.STATE_ENDED) }
+
+        controller.resume()
+        runCurrent()
+
+        assertEquals(listOf("seek to item 0 at 0", "play"), player.commands)
+    }
+
+    @Test
     fun `a command sent before the connection is made runs when it is made`() = runTest {
         val controller = controller()
         link.onScreenOpened()

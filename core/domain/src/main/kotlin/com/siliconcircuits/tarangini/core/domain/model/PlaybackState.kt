@@ -18,6 +18,7 @@ package com.siliconcircuits.tarangini.core.domain.model
  * @property isBuffering true while the player waits for data before it can go on
  * @property positionMs how far the current item has played
  * @property durationMs the length of the current item, or null when it is not known (live radio)
+ * @property isEnded true when the last item of the queue has played to its end
  * @property error why playback stopped, or null when it did not fail
  */
 data class PlaybackState(
@@ -30,6 +31,7 @@ data class PlaybackState(
     val durationMs: Long? = null,
     val shuffle: Boolean = false,
     val repeat: RepeatMode = RepeatMode.OFF,
+    val isEnded: Boolean = false,
     val error: PlaybackError? = null,
 ) {
     /** The item that plays or is paused, or null when nothing is loaded. */

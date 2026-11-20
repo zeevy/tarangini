@@ -77,6 +77,11 @@ Run with about 10,000 songs on a mid range phone.
 | 36 | Open the search and type a word that finds many songs. Scroll the results | The keyboard closes when the scroll starts. The text stays in the field |
 | 37 | Tap an album in the results, go back, then tap an artist, go back | Each opens its screen. Back returns to the search with the same text and results, and the keyboard stays closed |
 | 38 | Tap the second song of the results. Press Next in the notification | The second song plays, then the third one of the results |
+| 39 | Play a song. Open each tab, the search, an album and Settings. Scroll each list to its end | The mini player shows on each screen. The last row of every list is above it |
+| 40 | With a song playing, pause in the notification, then press play on the mini player, then pause on the lock screen | The button of the mini player and the notification always show the same state |
+| 41 | Play a song and watch the mini player for a minute | The thin line grows evenly, and the picture, title and artist are those of the song |
+| 42 | Tap the mini player on Settings (gesture navigation on) | The now playing screen opens with no mini player. Back returns to Settings. The bar does not sit under the gesture bar |
+| 43 | Play the last song of a short list to its end, with repeat off. Then press play on the mini player | At the end the mini player and the notification both offer play. The press starts the last song again |
 
 ## Playback: resume
 
