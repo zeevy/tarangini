@@ -406,6 +406,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D33 | The playback service saves the queue and the place in it to Room, and brings them back paused when it starts. A play request with an empty player gets the saved queue. An item whose file is gone is skipped. See [ADR 0011](adr/0011-resume.md) | 20 Nov 2026 | The app opens with the last queue, item and position, and a headset button starts it when the app is not running |
 | D34 | The library rescans by itself: at every start of the app, 2 seconds after the audio files changed while the app runs, and through one WorkManager job that the system starts only after a change while the app is closed. See [ADR 0012](adr/0012-auto-rescan.md) | 20 Nov 2026 | New and deleted songs show with no action of the user. No job runs on a timer |
 | D35 | The library is read through one `LibraryRepository`: long lists in pages of at most 500 rows, one signal when the library changed. The saved order of the songs list is in `SettingsRepository`. The phone screens and the playback service use the same interface. See [ADR 0013](adr/0013-library-repository.md) | 20 Nov 2026 | No list loads a whole table. The car and the phone always show the same data |
+| D36 | Search goes through one `SearchRepository` for the phone, the car and voice. It gives songs, albums and artists in three groups, a name that starts with the text first. See [ADR 0014](adr/0014-library-search.md) | 20 Nov 2026 | Every place that searches finds the same things |
 
 ## 9. Checks before building
 

@@ -224,7 +224,7 @@ class LibraryDaoTest {
         assertEquals(listOf(kept), database.playlistDao().items(playlist, 10, 0).map { it.row.song.id })
         assertTrue(database.historyDao().recentSongs(10).isEmpty())
         assertEquals(listOf("Kept"), database.queueDao().queueFiles(SongSource.LOCAL).map { it.sourceId })
-        assertTrue(library.searchSongs(requireNotNull(FtsQuery.prefix("gone")), 10).isEmpty())
+        assertTrue(search("gone").isEmpty())
         assertNull(library.song(id))
     }
 
@@ -289,6 +289,7 @@ class LibraryDaoTest {
         assertEquals(listOf("Plain"), library.songsByTitle(10, 0).map { it.song.title })
     }
 
-    private suspend fun search(text: String): List<String> =
-        FtsQuery.prefix(text)?.let { query -> library.searchSongs(query, 10).map { it.song.title } }.orEmpty()
+    private suspend fun search(text: String): List<String> = FtsQuery.prefix(text)?.let { query ->
+        library.searchSongs(query, query, "", 10).map { it.song.title }
+    }.orEmpty()
 }

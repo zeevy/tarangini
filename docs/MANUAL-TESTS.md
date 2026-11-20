@@ -53,6 +53,7 @@ Run on a mid range phone. A scan is started from the library screen.
 | 20 | Mark a song on a memory card as a favourite. Take the card out, scan, put the card back and scan | The song leaves the lists and comes back, and it is still a favourite. It is in the lists once |
 | 25 | Open the app with the library showing. Copy a song to the phone from a computer | The song is in the library within a few seconds, with no tap |
 | 26 | Swipe the app away. Copy a song to the phone and delete another one. Wait 10 minutes and open the app | The new song is there and the deleted one is gone when the library shows |
+| 27 | When the search screen is there: with about 20,000 songs on the phone, type one letter, then a word, in the search field | The results change with no delay that is felt (under a tenth of a second) |
 
 ## Playback: resume
 

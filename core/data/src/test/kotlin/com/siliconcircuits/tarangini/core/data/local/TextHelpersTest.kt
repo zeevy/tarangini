@@ -24,6 +24,13 @@ class TextHelpersTest {
     }
 
     @Test
+    fun `a search in one column gets lower case words with the column name, so none is an operator`() {
+        assertEquals("album:or* album:not* album:near*", FtsQuery.prefixIn("album", "OR \"NOT\" (NEAR)"))
+        assertEquals("title:ఎందరో*", FtsQuery.prefixIn("title", "-ఎందరో-"))
+        assertNull(FtsQuery.prefixIn("artist", " - & / "))
+    }
+
+    @Test
     fun `each word of a search becomes a quoted prefix term`() {
         assertEquals("\"morning*\" \"raga*\"", FtsQuery.prefix("  morning   raga "))
     }

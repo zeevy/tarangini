@@ -41,7 +41,7 @@ Every list and search has an index behind it (D2). Tables under 1,000 rows need 
 | Songs in one folder, folders in one folder | Hot | `songs(folder_id, file_name)`, `folders(parent_id, name)` |
 | Albums by title, albums of one artist, with song counts | Hot | `albums(title_key)`, `albums(artist_id, title_key)`; the count uses `songs(album_id, ...)` |
 | Artists by name, with song counts | Hot | `artists(name_key)`; the count uses `songs(artist_id, ...)` |
-| Search title, artist and album as the user types | Hot | The full text table `song_search` |
+| Search title, artist and album as the user types: songs, albums and artists, at most 100 rows each | Hot | The full text table `song_search`. Albums and artists are found through it too, with the words looked for in one column; then by primary key |
 | A scan reads the key, change time, size, file name and folder of every stored song, once | Per scan | Unique `songs(source, source_id)`; the folder comes by primary key |
 | A scan finds a stored song by its file | Per file | Unique `songs(source, source_id)` |
 | A scan saves an artist, an album, a folder | Per file | Unique `artists(name_key)`, `albums(artist_id, title_key)`, `folders(path)` |
@@ -137,7 +137,7 @@ Choices worth a line:
 | Sorting is the same on every phone | `title_key` and `name_key` are made by one function, `sortKey`: lower case, one form for each letter, no outer spaces. The index is on the key |
 | Two adds at the same moment get different places | The place is "highest place plus one" inside the one insert statement |
 | Two plays at the same moment are both counted | `play_count = play_count + 1` inside one statement |
-| Search text cannot act as a search operator | `FtsQuery` turns each word into a quoted prefix term and limits the count and length of words (D7) |
+| Search text cannot act as a search operator | `FtsQuery` keeps only letters, digits and their marks, limits the count and length of words, and turns each word into a quoted prefix term. For a search in one column the words are lower case instead, because the table takes no quoted word there and its operators are capitals (D7) |
 | Stored names such as `LOCAL`, `USER`, `ALL` | SQLite through Room has no check rule for them. Only the DAOs write them, from Kotlin enums whose names never change |
 
 ## 7. Transactions

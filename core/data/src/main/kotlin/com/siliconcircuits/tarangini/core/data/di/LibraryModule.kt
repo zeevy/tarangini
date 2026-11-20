@@ -12,12 +12,14 @@ import com.siliconcircuits.tarangini.core.data.mediastore.DefaultLibraryWatcher
 import com.siliconcircuits.tarangini.core.data.mediastore.MediaStoreAudioSource
 import com.siliconcircuits.tarangini.core.data.mediastore.TimeSource
 import com.siliconcircuits.tarangini.core.data.repository.DefaultLibraryRepository
+import com.siliconcircuits.tarangini.core.data.repository.DefaultSearchRepository
 import com.siliconcircuits.tarangini.core.data.repository.DefaultSettingsRepository
 import com.siliconcircuits.tarangini.core.data.work.RescanSchedule
 import com.siliconcircuits.tarangini.core.data.work.WorkManagerRescanSchedule
 import com.siliconcircuits.tarangini.core.domain.library.LibraryScanner
 import com.siliconcircuits.tarangini.core.domain.library.LibraryWatcher
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
+import com.siliconcircuits.tarangini.core.domain.repository.SearchRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SettingsRepository
 import dagger.Binds
 import dagger.Module
@@ -39,6 +41,9 @@ internal abstract class LibraryModule {
 
     @Binds
     abstract fun libraryRepository(repository: DefaultLibraryRepository): LibraryRepository
+
+    @Binds
+    abstract fun searchRepository(repository: DefaultSearchRepository): SearchRepository
 
     @Binds
     abstract fun settingsRepository(repository: DefaultSettingsRepository): SettingsRepository
