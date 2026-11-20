@@ -12,6 +12,7 @@ import androidx.sqlite.driver.AndroidSQLiteDriver
 import com.siliconcircuits.tarangini.core.data.local.TaranginiDatabase
 import com.siliconcircuits.tarangini.core.data.local.dao.FavouriteDao
 import com.siliconcircuits.tarangini.core.data.local.dao.HistoryDao
+import com.siliconcircuits.tarangini.core.data.local.dao.LetterDao
 import com.siliconcircuits.tarangini.core.data.local.dao.LibraryDao
 import com.siliconcircuits.tarangini.core.data.local.dao.PlaylistDao
 import com.siliconcircuits.tarangini.core.data.local.dao.QueueDao
@@ -42,6 +43,9 @@ internal object DatabaseModule {
 
     @Provides
     fun libraryDao(database: TaranginiDatabase): LibraryDao = database.libraryDao()
+
+    @Provides
+    fun letterDao(database: TaranginiDatabase): LetterDao = database.letterDao()
 
     @Provides
     fun playlistDao(database: TaranginiDatabase): PlaylistDao = database.playlistDao()

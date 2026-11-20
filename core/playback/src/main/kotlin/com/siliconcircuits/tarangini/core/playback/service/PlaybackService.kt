@@ -11,8 +11,14 @@ import android.os.Process
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import com.siliconcircuits.tarangini.core.domain.playback.ResumeStore
+import com.siliconcircuits.tarangini.core.domain.repository.LibraryLetters
+import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SongLookup
 import com.siliconcircuits.tarangini.core.domain.repository.StationStreams
+import com.siliconcircuits.tarangini.core.playback.browse.BrowseItems
+import com.siliconcircuits.tarangini.core.playback.browse.BrowseTree
+import com.siliconcircuits.tarangini.core.playback.browse.LibraryChangeNotices
+import com.siliconcircuits.tarangini.core.playback.browse.browseLabels
 import com.siliconcircuits.tarangini.core.playback.di.PlaybackCoroutineScope
 import com.siliconcircuits.tarangini.core.playback.mapper.LibraryTexts
 import com.siliconcircuits.tarangini.core.playback.player.LastSound
@@ -38,6 +44,7 @@ import okhttp3.OkHttpClient
 internal class PlaybackService : MediaLibraryService() {
     private var session: MediaLibrarySession? = null
     private var resume: PlaybackResume? = null
+    private var notices: LibraryChangeNotices? = null
 
     /** What the service takes from the app. The system makes a service, so nothing can be handed to its constructor. */
     @EntryPoint
@@ -46,6 +53,10 @@ internal class PlaybackService : MediaLibraryService() {
         fun resumeStore(): ResumeStore
 
         fun songLookup(): SongLookup
+
+        fun libraryRepository(): LibraryRepository
+
+        fun libraryLetters(): LibraryLetters
 
         fun httpClient(): OkHttpClient
 
@@ -67,14 +78,20 @@ internal class PlaybackService : MediaLibraryService() {
         val callback = PlaybackSessionCallback(
             callers = CallerPolicy(packageName, Process.myUid(), CertificateCallers(packageManager)),
             scope = app.playbackScope(),
+            tree = BrowseTree(app.libraryRepository(), app.libraryLetters(), BrowseItems(browseLabels(this))),
             texts = texts::addTo,
             resumption = resume::resumption,
         )
         val builder = MediaLibrarySession.Builder(this, player, callback)
         openAppIntent()?.let(builder::setSessionActivity)
-        session = builder.build()
+        val session = builder.build()
+        this.session = session
         this.resume = resume
         resume.start()
+        // Int.MAX_VALUE as the number of rows means "not known": the car reads the list again and counts itself.
+        notices = LibraryChangeNotices(app.libraryRepository(), app.playbackScope(), callback.opened::all) { listId ->
+            session.notifyChildrenChanged(listId, Int.MAX_VALUE, null)
+        }.also(LibraryChangeNotices::start)
     }
 
     /** What a tap on the notification or the lock screen card opens: this app. */
@@ -85,6 +102,8 @@ internal class PlaybackService : MediaLibraryService() {
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? = session
 
     override fun onDestroy() {
+        notices?.end()
+        notices = null
         resume?.end()
         resume = null
         session?.run {

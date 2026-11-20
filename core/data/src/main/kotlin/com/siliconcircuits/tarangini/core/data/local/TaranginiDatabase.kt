@@ -10,6 +10,7 @@ import androidx.room3.Database
 import androidx.room3.RoomDatabase
 import com.siliconcircuits.tarangini.core.data.local.dao.FavouriteDao
 import com.siliconcircuits.tarangini.core.data.local.dao.HistoryDao
+import com.siliconcircuits.tarangini.core.data.local.dao.LetterDao
 import com.siliconcircuits.tarangini.core.data.local.dao.LibraryDao
 import com.siliconcircuits.tarangini.core.data.local.dao.PlaylistDao
 import com.siliconcircuits.tarangini.core.data.local.dao.QueueDao
@@ -63,6 +64,8 @@ internal abstract class TaranginiDatabase : RoomDatabase() {
     abstract fun historyDao(): HistoryDao
 
     abstract fun libraryDao(): LibraryDao
+
+    abstract fun letterDao(): LetterDao
 
     abstract fun playlistDao(): PlaylistDao
 

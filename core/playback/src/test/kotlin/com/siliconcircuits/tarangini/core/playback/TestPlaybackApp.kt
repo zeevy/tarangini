@@ -8,9 +8,13 @@ package com.siliconcircuits.tarangini.core.playback
 
 import android.app.Application
 import com.siliconcircuits.tarangini.core.domain.playback.ResumeStore
+import com.siliconcircuits.tarangini.core.domain.repository.LibraryLetters
+import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SongLookup
 import com.siliconcircuits.tarangini.core.domain.repository.StationStreams
 import com.siliconcircuits.tarangini.core.playback.service.PlaybackService
+import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryLetters
+import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeSongLookup
 import com.siliconcircuits.tarangini.core.testing.playback.FakeResumeStore
 import com.siliconcircuits.tarangini.core.testing.station.FakeStationStreams
@@ -30,12 +34,17 @@ internal class TestPlaybackApp :
     GeneratedComponentManager<Any> {
     val resumeStore = FakeResumeStore()
     val songs = FakeSongLookup()
+    val library = FakeLibraryRepository()
     private val scope = MainScope()
 
     override fun generatedComponent(): Any = object : PlaybackService.Dependencies, GeneratedComponent {
         override fun resumeStore(): ResumeStore = resumeStore
 
         override fun songLookup(): SongLookup = songs
+
+        override fun libraryRepository(): LibraryRepository = library
+
+        override fun libraryLetters(): LibraryLetters = FakeLibraryLetters(library)
 
         override fun httpClient(): OkHttpClient = OkHttpClient()
 
