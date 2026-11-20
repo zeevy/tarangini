@@ -45,7 +45,7 @@ class TaranginiShellMiniPlayerTest {
     @Before
     fun showShell() {
         composeRule.setContent {
-            TaranginiTheme(dynamicColor = false) {
+            TaranginiTheme {
                 TaranginiShell(miniPlayer = { onOpen, modifier ->
                     Text("mini player", modifier.testTag("mini").clickable(onClick = onOpen))
                 })

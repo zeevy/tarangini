@@ -69,7 +69,7 @@ class RadioContentTest {
     )
 
     private fun show(state: RadioUiState) {
-        composeRule.setContent { TaranginiTheme(dynamicColor = false) { RadioContent(state, actions) } }
+        composeRule.setContent { TaranginiTheme { RadioContent(state, actions) } }
     }
 
     @Test

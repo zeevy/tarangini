@@ -6,19 +6,29 @@
 
 package com.siliconcircuits.tarangini.navigation
 
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.siliconcircuits.tarangini.core.ui.theme.GlassEdge
+import com.siliconcircuits.tarangini.core.ui.theme.GlassPanel
+import com.siliconcircuits.tarangini.core.ui.theme.Spacing
 
 /** The bottom bar: one item per tab, with [selected] marked. */
 @Composable
@@ -27,15 +37,24 @@ internal fun TaranginiBottomBar(
     onSelect: (TopLevelDestination) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    NavigationBar(modifier = modifier) {
-        TopLevelDestination.entries.forEach { destination ->
-            NavigationBarItem(
-                selected = destination == selected,
-                onClick = { onSelect(destination) },
-                // The label names the item, so the icon needs no description of its own.
-                icon = { Icon(painter = painterResource(destination.icon), contentDescription = null) },
-                label = { TabLabel(stringResource(destination.label)) },
-            )
+    // The bar floats: a glass pill with space around it, above the gesture bar of the phone.
+    Surface(
+        modifier = modifier.navigationBarsPadding().padding(horizontal = Spacing.medium, vertical = Spacing.small),
+        shape = CircleShape,
+        color = GlassPanel,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        border = GlassEdge,
+    ) {
+        NavigationBar(containerColor = Color.Transparent, windowInsets = WindowInsets()) {
+            TopLevelDestination.entries.forEach { destination ->
+                NavigationBarItem(
+                    selected = destination == selected,
+                    onClick = { onSelect(destination) },
+                    // The label names the item, so the icon needs no description of its own.
+                    icon = { Icon(painter = painterResource(destination.icon), contentDescription = null) },
+                    label = { TabLabel(stringResource(destination.label)) },
+                )
+            }
         }
     }
 }

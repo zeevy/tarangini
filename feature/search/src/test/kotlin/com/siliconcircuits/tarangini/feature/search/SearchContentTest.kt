@@ -94,7 +94,7 @@ class SearchContentTest {
         typed = state.searched
         composeRule.setContent {
             CompositionLocalProvider(LocalSoftwareKeyboardController provides keyboard) {
-                TaranginiTheme(dynamicColor = false) {
+                TaranginiTheme {
                     SearchContent(
                         text = typed,
                         state = state,

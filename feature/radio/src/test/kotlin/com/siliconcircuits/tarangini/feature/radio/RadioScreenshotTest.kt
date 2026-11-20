@@ -32,7 +32,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
-/** The Radio tab and the station form at the narrowest width, in light and dark. */
+/** The Radio tab and the station form at the narrowest width. */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(qualifiers = "w320dp-h640dp-xhdpi")
@@ -49,13 +49,13 @@ class RadioScreenshotTest {
     )
 
     @Test
-    fun `no stations`() = both("radio_empty") { RadioContent(RadioUiState(emptyList()), radioActions) }
+    fun `no stations`() = shot("radio_empty") { RadioContent(RadioUiState(emptyList()), radioActions) }
 
     @Test
-    fun `stations`() = both("radio_stations") { RadioContent(RadioUiState(stations), radioActions) }
+    fun `stations`() = shot("radio_stations") { RadioContent(RadioUiState(stations), radioActions) }
 
     @Test
-    fun `the form with a message and a test result`() = both("station_form") {
+    fun `the form with a message and a test result`() = shot("station_form") {
         val state = StationFormUiState(
             nameFault = NameFault.EMPTY,
             test = TestState.Done(StreamTest.Found("audio/mpeg", "Radio Bhairavi", 128)),
@@ -63,17 +63,15 @@ class RadioScreenshotTest {
         StationFormContent(state, "", "https://bhairavi.example/stream", formActions)
     }
 
-    private fun both(name: String, content: @Composable () -> Unit) {
-        listOf("light" to false, "dark" to true).forEach { (theme, dark) ->
-            val picture = File("src/test/screenshots/${name}_$theme.png")
-            // Without this, a test with no saved picture passes: there is nothing to compare with.
-            assertTrue(
-                "No saved picture $picture. Run the tests with -PrecordScreenshots.",
-                recording || picture.exists(),
-            )
-            captureRoboImage(picture.path) {
-                TaranginiTheme(darkTheme = dark, dynamicColor = false) { content() }
-            }
+    private fun shot(name: String, content: @Composable () -> Unit) {
+        val picture = File("src/test/screenshots/$name.png")
+        // Without this, a test with no saved picture passes: there is nothing to compare with.
+        assertTrue(
+            "No saved picture $picture. Run the tests with -PrecordScreenshots.",
+            recording || picture.exists(),
+        )
+        captureRoboImage(picture.path) {
+            TaranginiTheme { content() }
         }
     }
 }

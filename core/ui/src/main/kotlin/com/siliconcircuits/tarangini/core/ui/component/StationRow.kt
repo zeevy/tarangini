@@ -32,6 +32,7 @@ import com.siliconcircuits.tarangini.core.ui.R
 @Composable
 fun StationRow(station: Station, actions: StationRowActions, modifier: Modifier = Modifier) {
     ListItem(
+        colors = clearRowColors(),
         headlineContent = { OneLine(station.name) },
         supportingContent = { OneLine(station.streamUrls.firstOrNull().orEmpty()) },
         leadingContent = { IconTile(painterResource(R.drawable.ic_radio)) },

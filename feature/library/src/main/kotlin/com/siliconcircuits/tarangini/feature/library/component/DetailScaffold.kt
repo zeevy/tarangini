@@ -19,11 +19,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
 import com.siliconcircuits.tarangini.core.ui.component.BackButton
+import com.siliconcircuits.tarangini.core.ui.theme.glassBackground
+import com.siliconcircuits.tarangini.core.ui.theme.glassTopBarColors
 import com.siliconcircuits.tarangini.feature.library.R
 
 /**
@@ -40,9 +43,12 @@ internal fun DetailScaffold(
     content: @Composable () -> Unit,
 ) {
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.glassBackground(),
+        containerColor = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onBackground,
         topBar = {
             TopAppBar(
+                colors = glassTopBarColors(),
                 title = {
                     Column {
                         Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis)
