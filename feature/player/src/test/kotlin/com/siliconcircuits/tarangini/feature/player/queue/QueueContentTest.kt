@@ -74,7 +74,7 @@ class QueueContentTest {
     private fun show(state: QueueUiState) {
         shown = state
         composeRule.setContent {
-            TaranginiTheme(dynamicColor = false) { QueueContent(shown, actions, { done += "back" }) }
+            TaranginiTheme { QueueContent(shown, actions, { done += "back" }) }
         }
     }
 

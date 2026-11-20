@@ -28,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
@@ -100,7 +101,14 @@ internal fun QueueRow(
         onDismiss = { value -> if (value != SwipeToDismissBoxValue.Settled) actions.onRemove() },
     ) {
         Surface(
-            color = if (isCurrent) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface,
+            // A row has no colour of its own. The current item has the accent tint, and a row that is
+            // dragged gets a panel colour so the rows it passes do not show through it.
+            color = when {
+                isCurrent -> MaterialTheme.colorScheme.primaryContainer
+                drag.isDragged -> MaterialTheme.colorScheme.surfaceContainerHigh
+                else -> Color.Transparent
+            },
+            contentColor = MaterialTheme.colorScheme.onSurface,
             tonalElevation = if (drag.isDragged) Spacing.small else Spacing.none,
         ) {
             RowBody(item, isCurrent, drag, actions)

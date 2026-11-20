@@ -69,6 +69,10 @@ internal fun SeekBar(state: NowPlayingUiState, onSeek: (Long) -> Unit, modifier:
                 SliderDefaults.Track(
                     sliderState = sliderState,
                     modifier = Modifier.height(BarHeight),
+                    // The part not played yet is a dim panel colour, so the played part stands out.
+                    colors = SliderDefaults.colors(
+                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    ),
                     drawStopIndicator = null,
                     thumbTrackGapSize = NoGap,
                 )

@@ -154,7 +154,7 @@ A change must never do these.
 | U6 | Every user facing text is a string resource, with plurals where a count shows. No text built by joining strings | Lint |
 | U7 | Colours, type, shapes and spacing come from the theme in `core:ui`. No hard-coded colour, `sp` or `dp` value for these in a feature | detekt, review |
 | U8 | Shared pieces (song row, station tile, empty and error states) live in `core:ui`. A feature does not keep a private copy | Review |
-| U9 | Every screen has loading, empty and error states, and works in light, dark, dynamic colour, at 320dp width and at the largest font size | Screenshot tests |
+| U9 | Every screen has loading, empty and error states, and works in the one dark look of the app, at 320dp width and at the largest font size | Screenshot tests |
 | U10 | Accessibility: a content description on every icon button, touch targets of at least 48dp, WCAG AA contrast, works with TalkBack | Lint, review |
 | U11 | Phone first and simple. No hover-only effects and no gesture that has no visible control. After a tap, the result is in view | Review |
 | U12 | A composable takes a `Modifier` as its first optional parameter and passes it to its root | detekt |
