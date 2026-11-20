@@ -12,7 +12,22 @@
     <!-- Radio streams. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!--
+      The session callback reads the signing certificate of the two apps that may browse: Android Auto and
+      the Google app. Android hides other apps from this one unless they are named here, and a hidden app
+      would be refused.
+    -->
+    <queries>
+        <package android:name="com.google.android.projection.gearhead" />
+        <package android:name="com.google.android.googlequicksearchbox" />
+    </queries>
+
     <application android:networkSecurityConfig="@xml/network_security_config">
+        <!-- Tells Android Auto that this app is a media app, so it shows in the car. -->
+        <meta-data
+            android:name="com.google.android.gms.car.application"
+            android:resource="@xml/automotive_app_desc" />
+
         <!--
           Exported so the system, Bluetooth and the car can reach the session. No permission can guard it,
           because those callers hold none of ours. The session callback checks every caller instead.

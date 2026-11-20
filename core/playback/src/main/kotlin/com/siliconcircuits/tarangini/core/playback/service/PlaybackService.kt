@@ -20,6 +20,7 @@ import com.siliconcircuits.tarangini.core.playback.player.SkipSilentEnd
 import com.siliconcircuits.tarangini.core.playback.player.createPlayer
 import com.siliconcircuits.tarangini.core.playback.resume.PlaybackResume
 import com.siliconcircuits.tarangini.core.playback.session.CallerPolicy
+import com.siliconcircuits.tarangini.core.playback.session.CertificateCallers
 import com.siliconcircuits.tarangini.core.playback.session.PlaybackSessionCallback
 import com.siliconcircuits.tarangini.core.playback.stream.StreamFailover
 import dagger.hilt.EntryPoint
@@ -64,7 +65,7 @@ internal class PlaybackService : MediaLibraryService() {
         val texts = LibraryTexts(app.songLookup(), app.stationStreams())
         val resume = PlaybackResume(player, app.resumeStore(), app.playbackScope(), texts::addTo)
         val callback = PlaybackSessionCallback(
-            callers = CallerPolicy(ownPackage = packageName, ownUid = Process.myUid()),
+            callers = CallerPolicy(packageName, Process.myUid(), CertificateCallers(packageManager)),
             scope = app.playbackScope(),
             texts = texts::addTo,
             resumption = resume::resumption,

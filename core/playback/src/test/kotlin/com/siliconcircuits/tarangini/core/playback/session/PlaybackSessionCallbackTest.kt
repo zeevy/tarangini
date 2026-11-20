@@ -18,6 +18,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
+import androidx.media3.session.SessionCommand
 import com.siliconcircuits.tarangini.core.playback.TestPlaybackApp
 import com.siliconcircuits.tarangini.core.playback.mapper.LibraryTexts
 import com.siliconcircuits.tarangini.core.playback.service.PlaybackService
@@ -49,8 +50,9 @@ class PlaybackSessionCallbackTest {
     private var saved: MediaItemsWithStartPosition? = null
     private var readFailure: Exception? = null
     private var texts: suspend (List<MediaItem>) -> List<MediaItem> = { it }
+    private val car = KnownCallers { packageName, uid -> packageName == CAR && uid == Process.myUid() + CAR_UID_STEP }
     private val callback =
-        PlaybackSessionCallback(CallerPolicy(service.packageName, Process.myUid()), MainScope(), { texts(it) }) {
+        PlaybackSessionCallback(CallerPolicy(service.packageName, Process.myUid(), car), MainScope(), { texts(it) }) {
             readFailure?.let { throw it }
                 ?: saved
         }
@@ -94,6 +96,36 @@ class PlaybackSessionCallbackTest {
         ).forEach { command -> assertTrue(result.availablePlayerCommands.contains(command)) }
         assertFalse(result.availablePlayerCommands.contains(Player.COMMAND_SET_MEDIA_ITEM))
         assertFalse(result.availablePlayerCommands.contains(Player.COMMAND_CHANGE_MEDIA_ITEMS))
+    }
+
+    @Test
+    fun `the car may browse the library and play from it`() {
+        val theCar = caller(CAR, Process.myUid() + CAR_UID_STEP, trusted = true)
+
+        val result = callback.onConnect(session, theCar)
+
+        assertTrue(result.isAccepted)
+        assertTrue(result.availableSessionCommands.contains(SessionCommand.COMMAND_CODE_LIBRARY_GET_CHILDREN))
+        assertTrue(result.availablePlayerCommands.contains(Player.COMMAND_SET_MEDIA_ITEM))
+    }
+
+    @Test
+    fun `the car gets the top of the library, and an empty list under it for now`() {
+        val theCar = caller(CAR, Process.myUid() + CAR_UID_STEP, trusted = true)
+
+        val root = callback.onGetLibraryRoot(session, theCar, null).get()
+        val children = callback.onGetChildren(session, theCar, LIBRARY_ROOT_ID, 0, 100, null).get()
+
+        assertEquals(LIBRARY_ROOT_ID, root.value?.mediaId)
+        assertEquals(true, root.value?.mediaMetadata?.isBrowsable)
+        assertEquals(emptyList<MediaItem>(), children.value?.toList())
+    }
+
+    @Test
+    fun `an app that only claims the package name of the car is refused`() {
+        val impostor = caller(CAR, Process.myUid() + 1, trusted = false)
+
+        assertFalse(callback.onConnect(session, impostor).isAccepted)
     }
 
     @Test
@@ -261,3 +293,6 @@ class PlaybackSessionCallbackTest {
             true,
         )
 }
+
+private const val CAR = "com.google.android.projection.gearhead"
+private const val CAR_UID_STEP = 7

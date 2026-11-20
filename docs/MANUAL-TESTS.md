@@ -113,6 +113,17 @@ Run with about 10,000 songs on a mid range phone.
 | 23 | Put three songs in the queue and play the first. Delete the file of the second song with a file manager. Let the first song end | The third song plays |
 | 24 | Force stop the app. From a computer, send a media play key to the app's `MediaButtonReceiver` with `adb shell am broadcast` | The app does not crash. If it starts, it plays only the last queue |
 
+## Android Auto
+
+These need the Desktop Head Unit or a car. The steps are in [ANDROID-AUTO.md](ANDROID-AUTO.md).
+
+| No. | Steps | Expected |
+|---|---|---|
+| 65 | Start the head unit and open the app list | Tarangini is in the list with its icon |
+| 66 | Play a song on the phone, then open Tarangini in the head unit | The car shows the song with its title, artist and cover |
+| 67 | Press pause, play, next and previous in the head unit | The phone does the same, and the car shows the new state |
+| 68 | Install the Media Controller Test app and pick Tarangini in it | The test app lists Tarangini and cannot connect |
+
 ## Results
 
 Write each run here: the date, the phone and Android version, the app version, the checks that failed, and who ran it.
