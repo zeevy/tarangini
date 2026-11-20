@@ -21,6 +21,7 @@ import com.siliconcircuits.tarangini.core.domain.library.ScanOutcome
 import com.siliconcircuits.tarangini.core.domain.library.ScanState
 import com.siliconcircuits.tarangini.core.domain.library.ScanSummary
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
@@ -342,6 +343,30 @@ class DefaultLibraryScannerTest {
 
         source.failure = null
         assertEquals(1, scanner.summary().added)
+    }
+
+    @Test
+    fun `two scans never run at the same time`() = runTest {
+        var running = 0
+        var mostRunning = 0
+        val probe = object : AudioFileSource by source {
+            override fun hasPermission(): Boolean {
+                running++
+                mostRunning = maxOf(mostRunning, running)
+                return true
+            }
+
+            override fun files(): List<AudioFile> {
+                running--
+                return emptyList()
+            }
+        }
+        val scanner = DefaultLibraryScanner(probe, library, settings(), { now }, StandardTestDispatcher(testScheduler))
+
+        val scans = List(2) { launch { scanner.scan() } }
+        scans.forEach { it.join() }
+
+        assertEquals(1, mostRunning)
     }
 
     private suspend fun LibraryDao.searchSongsByPrefix(word: String): List<String> =

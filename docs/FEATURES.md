@@ -321,6 +321,7 @@ Checked against Google's pages on 19 Nov 2026 (check C3). Each row names its sou
 | `INTERNET` | Radio and the station directory | Normal permission |
 | `ACCESS_NETWORK_STATE` | Know Wi-Fi vs mobile data for data saver, and when to reconnect | Normal permission |
 | `WAKE_LOCK` | Keep the CPU awake during playback | ExoPlayer wake mode: `WAKE_MODE_LOCAL` for a file, `WAKE_MODE_NETWORK` for a stream |
+| `RECEIVE_BOOT_COMPLETED` | WorkManager puts the rescan job back after the phone restarts | Normal permission. Comes from the manifest of WorkManager |
 | `SCHEDULE_EXACT_ALARM` or `USE_EXACT_ALARM` | Radio alarm (premium, Future) | Not sure which one Play allows for a player with an alarm. `USE_EXACT_ALARM` is only for alarm clock and calendar apps. Check the policy before building |
 
 We do not need `MANAGE_EXTERNAL_STORAGE`. Play rejects it for media players.
@@ -403,6 +404,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D31 | The public core is under GPL-3.0 (version 3 only) with a contributor agreement. The owner keeps the right to relicense and ships the Play build with the closed premium module (dual licensing). Replaces MPL-2.0 from D5 | 19 Nov 2026 | `LICENSE`, the header of every source file and the header check changed. No outside contribution is merged without the agreement. GPL and AGPL libraries of others stay forbidden. See `docs/adr/0009-licence-gpl3.md` |
 | D32 | A scan writes only the difference between MediaStore and the library, 500 songs in a transaction. A song whose file is gone is kept for 30 days. A file that comes back under a new id is matched by folder, name and size. A song the settings hide is never removed. See [ADR 0010](adr/0010-library-scan.md) | 20 Nov 2026 | A scan with no change writes nothing, and favourites and playlists survive a memory card that is taken out |
 | D33 | The playback service saves the queue and the place in it to Room, and brings them back paused when it starts. A play request with an empty player gets the saved queue. An item whose file is gone is skipped. See [ADR 0011](adr/0011-resume.md) | 20 Nov 2026 | The app opens with the last queue, item and position, and a headset button starts it when the app is not running |
+| D34 | The library rescans by itself: at every start of the app, 2 seconds after the audio files changed while the app runs, and through one WorkManager job that the system starts only after a change while the app is closed. See [ADR 0012](adr/0012-auto-rescan.md) | 20 Nov 2026 | New and deleted songs show with no action of the user. No job runs on a timer |
 
 ## 9. Checks before building
 

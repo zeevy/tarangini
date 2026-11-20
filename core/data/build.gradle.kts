@@ -14,7 +14,10 @@ dependencies {
     implementation(project(":core:domain"))
 
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.work.runtime)
     implementation(libs.kotlinx.coroutines.android)
 
+    testImplementation(project(":core:testing"))
+    testImplementation(libs.androidx.work.testing)
     testImplementation(libs.kotlinx.coroutines.test)
 }

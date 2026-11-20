@@ -9,11 +9,18 @@ package com.siliconcircuits.tarangini.core.data.mediastore
 import android.Manifest
 import android.app.Application
 import android.content.ContentProvider
+import android.content.ContentUris
 import android.content.ContentValues
 import android.database.Cursor
 import android.database.MatrixCursor
 import android.net.Uri
 import android.provider.MediaStore
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -196,5 +203,18 @@ class MediaStoreAudioSourceTest {
         assertNull(MediaStoreAudioSource.leadingNumber("A1"))
         assertNull(MediaStoreAudioSource.leadingNumber(null))
         assertNull(MediaStoreAudioSource.leadingNumber("12345678901234567890"))
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `a change in the media index of the phone is passed on`() = runTest {
+        val seen = mutableListOf<Unit>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { source.changes().toList(seen) }
+
+        val song = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, 7)
+        application.contentResolver.notifyChange(song, null)
+        runCurrent()
+
+        assertEquals(1, seen.size)
     }
 }
