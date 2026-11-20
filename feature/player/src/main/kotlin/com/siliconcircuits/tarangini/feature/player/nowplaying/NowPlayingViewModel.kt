@@ -13,10 +13,13 @@ import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackController
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackQueue
+import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
+import com.siliconcircuits.tarangini.core.domain.repository.SongLookup
 import com.siliconcircuits.tarangini.feature.player.showsPause
 import com.siliconcircuits.tarangini.feature.player.togglePlay
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.abs
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,6 +28,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
@@ -51,6 +55,7 @@ internal data class NowPlayingUiState(
     val shuffle: Boolean,
     val repeat: RepeatMode,
     val error: PlaybackError? = null,
+    val isFavourite: Boolean? = null,
 ) {
     val isLive: Boolean get() = durationMs == null
 }
@@ -60,6 +65,8 @@ internal data class NowPlayingUiState(
 internal class NowPlayingViewModel @Inject constructor(
     private val playback: PlaybackController,
     private val queue: PlaybackQueue,
+    private val favourites: FavouriteRepository,
+    private val songs: SongLookup,
 ) : ViewModel() {
     /**
      * The place the last seek asked for, while the player is not there yet. The player goes on
@@ -69,12 +76,23 @@ internal class NowPlayingViewModel @Inject constructor(
     private val seekTarget = MutableStateFlow<SeekTarget?>(null)
     private var seekWait: Job? = null
 
+    /** Whether the song that plays is a favourite. Null for an item that is no song of the library. */
+    private val favourite = MutableStateFlow<FavouriteMark?>(null)
+
     /** What to show, or null when nothing is loaded. */
-    val state: StateFlow<NowPlayingUiState?> = combine(playback.state, seekTarget) { now, target ->
-        now.toUiState(target)
+    val state: StateFlow<NowPlayingUiState?> = combine(playback.state, seekTarget, favourite) { now, target, mark ->
+        now.toUiState(target, mark)
     }
         .distinctUntilChanged()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_AFTER_MS), playback.state.value.toUiState(null))
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(STOP_AFTER_MS),
+            playback.state.value.toUiState(null, null),
+        )
+
+    init {
+        viewModelScope.launch { watchFavourite() }
+    }
 
     fun togglePlay() = playback.togglePlay()
 
@@ -112,6 +130,30 @@ internal class NowPlayingViewModel @Inject constructor(
         },
     )
 
+    /** Marks the song that plays as a favourite, or takes the mark away. */
+    fun toggleFavourite() {
+        val songId = favourite.value?.songId ?: return
+        // The mark is read again here, so two quick taps are two changes. A mark that cannot be
+        // saved leaves the heart as it was. That says enough.
+        viewModelScope.launch {
+            runCatching { favourites.setFavourite(songId, songId !in favourites.songIds().first()) }
+        }
+    }
+
+    private suspend fun watchFavourite() {
+        val song = playback.state.map { it.currentItem?.id }.distinctUntilChanged().map { id -> id to songIdOf(id) }
+        combine(song, favourites.songIds()) { (itemId, songId), ids ->
+            if (itemId != null && songId != null) FavouriteMark(itemId, songId, songId in ids) else null
+        }.collect { favourite.value = it }
+    }
+
+    /** The library row of what plays, or null for a stream and for a file the library does not know. */
+    private suspend fun songIdOf(itemId: String?): Long? = itemId?.let { id ->
+        runCatching { songs.byMediaUri(listOf(id))[id]?.id }
+            .onFailure { if (it is CancellationException) throw it }
+            .getOrNull()
+    }
+
     private companion object {
         const val STOP_AFTER_MS = 5_000L
         const val SEEK_WAIT_MS = 2_000L
@@ -122,7 +164,9 @@ internal class NowPlayingViewModel @Inject constructor(
 /** The place a seek asked for, with the item it was asked in. */
 private data class SeekTarget(val itemId: String, val positionMs: Long)
 
-private fun PlaybackState.toUiState(seekTarget: SeekTarget?): NowPlayingUiState? {
+private data class FavouriteMark(val itemId: String, val songId: Long, val on: Boolean)
+
+private fun PlaybackState.toUiState(seekTarget: SeekTarget?, mark: FavouriteMark?): NowPlayingUiState? {
     val item = currentItem ?: return null
     val length = durationMs?.takeIf { it > 0 }
     // A place asked for in one item says nothing about the next one.
@@ -139,5 +183,7 @@ private fun PlaybackState.toUiState(seekTarget: SeekTarget?): NowPlayingUiState?
         shuffle = shuffle,
         repeat = repeat,
         error = error,
+        // A mark read for one item says nothing about the next one.
+        isFavourite = mark?.takeIf { it.itemId == item.id }?.on,
     )
 }

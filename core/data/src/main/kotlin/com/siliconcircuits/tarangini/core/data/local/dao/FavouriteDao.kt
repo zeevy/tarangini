@@ -18,15 +18,24 @@ import kotlinx.coroutines.flow.Flow
 /** Reads and writes favourite songs and favourite stations. */
 @Dao
 internal abstract class FavouriteDao {
-    /** Marks a song as a favourite. A song that is one already keeps its first time. */
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    abstract suspend fun addSong(favourite: FavouriteSongEntity)
+    /**
+     * Marks a song as a favourite when the library knows it. A song that is one already keeps its
+     * first time, and a song that was removed in the meantime is left alone.
+     */
+    @Query(
+        """
+            INSERT OR IGNORE INTO favourite_songs(song_id, added_at)
+            SELECT id, :addedAt FROM songs WHERE id = :songId
+        """,
+    )
+    abstract suspend fun addKnownSong(songId: Long, addedAt: Long)
+
+    /** The ids of all favourite songs. A new list comes after every change. */
+    @Query("SELECT song_id FROM favourite_songs")
+    abstract fun favouriteSongIds(): Flow<List<Long>>
 
     @Query("DELETE FROM favourite_songs WHERE song_id = :songId")
     abstract suspend fun removeSong(songId: Long)
-
-    @Query("SELECT EXISTS (SELECT 1 FROM favourite_songs WHERE song_id = :songId)")
-    abstract fun isFavouriteSong(songId: Long): Flow<Boolean>
 
     /** Favourite songs, newest first. */
     @Query(

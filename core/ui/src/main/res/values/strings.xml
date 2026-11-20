@@ -23,6 +23,9 @@
     <string name="song_menu">More options for %1$s</string>
     <string name="song_play_next">Play next</string>
     <string name="song_add_to_queue">Add to queue</string>
+    <string name="song_add_favourite">Add to favourites</string>
+    <string name="song_remove_favourite">Remove from favourites</string>
+    <string name="song_is_favourite">Favourite</string>
     <string name="unknown_artist">Unknown artist</string>
     <string name="unknown_album">Unknown album</string>
     <string name="row_two_parts">%1$s · %2$s</string>

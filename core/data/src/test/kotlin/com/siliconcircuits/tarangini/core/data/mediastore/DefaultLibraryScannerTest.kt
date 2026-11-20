@@ -128,7 +128,7 @@ class DefaultLibraryScannerTest {
         val scanner = scanner()
         scanner.scan()
         val gone = library.songKeys(SongSource.LOCAL).first { it.sourceId == "2" }.id
-        database.favouriteDao().addSong(FavouriteSongEntity(songId = gone, addedAt = 1))
+        database.favouriteDao().addKnownSong(gone, addedAt = 1)
 
         source.files = listOf(audioFile("1", title = "Stays"))
         val summary = scanner.summary()
@@ -136,7 +136,7 @@ class DefaultLibraryScannerTest {
         assertEquals(ScanSummary(added = 0, updated = 0, removed = 1, unchanged = 1), summary)
         assertEquals(listOf("Stays"), titles())
         assertEquals(now, library.song(gone)?.song?.missingSince)
-        assertTrue(database.favouriteDao().isFavouriteSong(gone).first())
+        assertTrue(gone in database.favouriteDao().favouriteSongIds().first())
 
         source.files = listOf(audioFile("1", title = "Stays"), audioFile("2", title = "Goes"))
         scanner.scan()
@@ -152,7 +152,7 @@ class DefaultLibraryScannerTest {
         val scanner = scanner()
         scanner.scan()
         val id = library.songKeys(SongSource.LOCAL).single().id
-        database.favouriteDao().addSong(FavouriteSongEntity(songId = id, addedAt = 1))
+        database.favouriteDao().addKnownSong(id, addedAt = 1)
         source.files = emptyList()
         scanner.scan()
 
@@ -163,7 +163,7 @@ class DefaultLibraryScannerTest {
         assertEquals(id, row.id)
         assertEquals("77", row.sourceId)
         assertNull(row.missingSince)
-        assertTrue(database.favouriteDao().isFavouriteSong(id).first())
+        assertTrue(id in database.favouriteDao().favouriteSongIds().first())
     }
 
     @Test
@@ -273,7 +273,7 @@ class DefaultLibraryScannerTest {
         val scanner = scanner(settings)
         scanner.scan()
         val id = library.songKeys(SongSource.LOCAL).single().id
-        database.favouriteDao().addSong(FavouriteSongEntity(songId = id, addedAt = 1))
+        database.favouriteDao().addKnownSong(id, addedAt = 1)
 
         settings.edit { it[SettingsKeys.MIN_TRACK_SECONDS] = 30 }
         scanner.scan()
@@ -286,7 +286,7 @@ class DefaultLibraryScannerTest {
         scanner.scan()
 
         assertEquals(listOf("Short"), titles())
-        assertTrue(database.favouriteDao().isFavouriteSong(id).first())
+        assertTrue(id in database.favouriteDao().favouriteSongIds().first())
     }
 
     @Test

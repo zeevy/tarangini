@@ -10,6 +10,10 @@ import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackItem
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
+import com.siliconcircuits.tarangini.core.domain.model.Song
+import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
+import com.siliconcircuits.tarangini.core.testing.library.FakeSongLookup
+import com.siliconcircuits.tarangini.core.testing.library.testSong
 import com.siliconcircuits.tarangini.core.testing.playback.FakePlaybackController
 import com.siliconcircuits.tarangini.core.testing.playback.FakePlaybackQueue
 import com.siliconcircuits.tarangini.feature.player.MainDispatcherRule
@@ -36,10 +40,14 @@ class NowPlayingViewModelTest {
 
     private fun loaded(state: PlaybackState = PlaybackState()) = state.copy(queue = listOf(song), currentIndex = 0)
 
-    private fun TestScope.watched(): NowPlayingViewModel = NowPlayingViewModel(playback, queue).also { viewModel ->
-        backgroundScope.launch { viewModel.state.collect() }
-        runCurrent()
-    }
+    private val favourites = FakeFavouriteRepository()
+    private var songs = emptyList<Song>()
+
+    private fun TestScope.watched(): NowPlayingViewModel =
+        NowPlayingViewModel(playback, queue, favourites, FakeSongLookup(songs)).also { viewModel ->
+            backgroundScope.launch { viewModel.state.collect() }
+            runCurrent()
+        }
 
     @Test
     fun `nothing is shown while nothing is loaded`() = runTest(mainDispatcher.dispatcher) {
@@ -195,4 +203,34 @@ class NowPlayingViewModelTest {
                 queue.commands,
             )
         }
+
+    @Test
+    fun `the heart shows for a song of the library and a press changes its mark`() =
+        runTest(mainDispatcher.dispatcher) {
+            songs = listOf(testSong(1))
+            val viewModel = watched()
+            playback.state.value = loaded()
+            runCurrent()
+            val before = viewModel.state.value?.isFavourite
+
+            viewModel.toggleFavourite()
+            runCurrent()
+
+            assertEquals(false, before)
+            assertEquals(true, viewModel.state.value?.isFavourite)
+            assertEquals(listOf(1L), favourites.ids.value)
+        }
+
+    @Test
+    fun `an item that is no song of the library has no heart`() = runTest(mainDispatcher.dispatcher) {
+        val viewModel = watched()
+        playback.state.value = loaded()
+        runCurrent()
+
+        viewModel.toggleFavourite()
+        runCurrent()
+
+        assertNull(viewModel.state.value?.isFavourite)
+        assertEquals(emptyList<Long>(), favourites.ids.value)
+    }
 }

@@ -10,16 +10,20 @@ import com.siliconcircuits.tarangini.core.domain.model.Page
 import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackController
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackQueue
+import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
 import com.siliconcircuits.tarangini.core.ui.component.SongRowActions
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /** What a tap on a song or on its menu does. Every list of songs uses it, so they all behave the same. */
 internal class SongActions @Inject constructor(
     private val playback: PlaybackController,
     private val queue: PlaybackQueue,
+    private val favourites: FavouriteRepository,
 ) {
     /**
      * The actions for the rows of one list. [read] gives that list page by
@@ -36,6 +40,10 @@ internal class SongActions @Inject constructor(
             },
             onPlayNext = { queue.playNext(listOf(it.mediaUri)) },
             onAddToQueue = { queue.addToEnd(listOf(it.mediaUri)) },
+            favourites = favourites.songIds().stateIn(scope, SharingStarted.Eagerly, emptySet()),
+            onSetFavourite = { song, favourite ->
+                scope.launch { attempt { favourites.setFavourite(song.id, favourite) } }
+            },
         )
     }
 

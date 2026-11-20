@@ -34,6 +34,7 @@ internal fun AudioPermissionScreen(
     onAllow: () -> Unit,
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
+    title: String = stringResource(R.string.library_title),
 ) {
     Scaffold(
         modifier = modifier.glassBackground(),
@@ -42,7 +43,7 @@ internal fun AudioPermissionScreen(
         topBar = {
             TopAppBar(
                 colors = glassTopBarColors(),
-                title = { Text(stringResource(R.string.library_title)) },
+                title = { Text(title) },
             )
         },
     ) { innerPadding ->

@@ -10,6 +10,7 @@ import androidx.media3.common.MediaItem
 import com.siliconcircuits.tarangini.core.domain.model.Page
 import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.domain.model.SongSort
+import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryLetters
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
 
@@ -28,6 +29,7 @@ internal class BrowseTree(
     private val library: LibraryRepository,
     private val letters: LibraryLetters,
     private val items: BrowseItems,
+    private val favourites: FavouriteRepository,
 ) {
     /** The top node. The car asks for it first, before any list. */
     val root: MediaItem = items.list(MediaId.Root)
@@ -44,7 +46,7 @@ internal class BrowseTree(
         is MediaId.Letter -> rows(parent.list, parent, group(parent))
         MediaId.Folders -> library.folders(null).map(items::folder)
         is MediaId.Folder -> library.folders(parent.id).map(items::folder) + songItems(parent)
-        is MediaId.Album, is MediaId.Artist -> songItems(parent)
+        is MediaId.Album, is MediaId.Artist, MediaId.Favourites -> songItems(parent)
         is MediaId.SongIn -> null
     }
 
@@ -101,6 +103,7 @@ internal class BrowseTree(
         is MediaId.Album -> library.songsOfAlbum(list.id, Page(Page.MAX_LIMIT))
         is MediaId.Artist -> library.songsOfArtist(list.id, Page(Page.MAX_LIMIT))
         is MediaId.Folder -> library.songsInFolder(list.id, Page(Page.MAX_LIMIT))
+        MediaId.Favourites -> favourites.songs(Page(Page.MAX_LIMIT))
         MediaId.Root, MediaId.Library, MediaId.Folders, is MediaId.SongIn -> emptyList()
     }
 

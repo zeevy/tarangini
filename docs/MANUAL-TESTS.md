@@ -142,6 +142,10 @@ These need the Desktop Head Unit or a car. The steps are in [ANDROID-AUTO.md](AN
 | 85 | Take away the audio permission of Tarangini in the settings of the phone, then open Library in the car | The car shows "Allow access to audio files on your phone, when it is safe" and no endless loading |
 | 86 | Give the permission back on the phone and open the app once | The lists come back in the car without a reconnect |
 | 87 | Use a phone with no music (or hide all folders), then open Library in the car | The tab is empty and the car shows that there are no songs yet |
+| 88 | On the phone open the menu of a song and choose "Add to favourites", then open the Favourites tab | The row shows a small heart at once, in every list. The Favourites tab lists the song, the one marked last first |
+| 89 | Play a song and press the heart on the now playing screen, then look at the notification and the lock screen | The heart is filled in all three places. A press on the heart of the notification takes the mark away again |
+| 90 | Open Favourites in the car and tap a song | The tab lists the favourites, the one marked last first, and the song plays with the favourites as the queue |
+| 91 | Play a song in the car and press the heart on the player screen of the car | The heart changes, and the song shows in the Favourites tab of the car and of the phone |
 
 ## Results
 

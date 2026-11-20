@@ -17,6 +17,7 @@ import com.siliconcircuits.tarangini.core.playback.browse.BrowseTree
 import com.siliconcircuits.tarangini.core.playback.browse.CarSearch
 import com.siliconcircuits.tarangini.core.playback.browse.MediaId
 import com.siliconcircuits.tarangini.core.playback.mapper.playableItem
+import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryLetters
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeSearchRepository
@@ -37,13 +38,21 @@ import org.robolectric.RobolectricTestRunner
 /** What the car search shows, and what a spoken "play ..." starts. */
 @RunWith(RobolectricTestRunner::class)
 class CarPlayTest {
+    private val favourites = FakeFavouriteRepository()
     private val library = FakeLibraryRepository()
     private val found = FakeSearchRepository()
     private val told = mutableListOf<NothingToPlay?>()
     private var saved: MediaItemsWithStartPosition? = null
-    private val items = BrowseItems(BrowseLabels("Library", "Songs", "Albums", "Artists", "Folders", "?", "?", null))
+    private val items =
+        BrowseItems(
+            BrowseLabels(
+                "Library", "Songs", "Albums", "Artists", "Folders", "?", "?", null,
+                favourites = "Favourites",
+                favouritesIcon = null,
+            ),
+        )
     private val search = CarSearch(found, library, items)
-    private val tree = BrowseTree(library, FakeLibraryLetters(library), items)
+    private val tree = BrowseTree(library, FakeLibraryLetters(library), items, favourites)
     private val carPlay = CarPlay(MainScope(), tree, search, library) { saved }
 
     private fun queueFor(item: MediaItem) = carPlay.queueFor(item) { told += it }

@@ -23,6 +23,7 @@ import com.siliconcircuits.tarangini.core.playback.mapper.toMediaItem
  * The texts of the nodes that are not in the library, in the language of the phone.
  *
  * @property libraryIcon the white icon of the Library tab, as an address the car can read
+ * @property favouritesIcon the white icon of the Favourites tab, as an address the car can read
  */
 internal data class BrowseLabels(
     val library: String,
@@ -33,6 +34,8 @@ internal data class BrowseLabels(
     val unknownAlbum: String,
     val unknownArtist: String,
     val libraryIcon: Uri?,
+    val favourites: String,
+    val favouritesIcon: Uri?,
 )
 
 /** The labels from the string resources of the app. */
@@ -44,13 +47,18 @@ internal fun browseLabels(context: Context) = BrowseLabels(
     folders = context.getString(R.string.car_folders),
     unknownAlbum = context.getString(R.string.car_unknown_album),
     unknownArtist = context.getString(R.string.car_unknown_artist),
-    libraryIcon = Uri.Builder()
-        .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
-        .authority(context.packageName)
-        .appendPath(context.resources.getResourceTypeName(R.drawable.ic_car_library))
-        .appendPath(context.resources.getResourceEntryName(R.drawable.ic_car_library))
-        .build(),
+    libraryIcon = context.iconAddress(R.drawable.ic_car_library),
+    favourites = context.getString(R.string.car_favourites),
+    favouritesIcon = context.iconAddress(R.drawable.ic_car_favourites),
 )
+
+/** The address of a drawable of this app. The car loads the icon of a tab from it. */
+private fun Context.iconAddress(drawable: Int): Uri = Uri.Builder()
+    .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
+    .authority(packageName)
+    .appendPath(resources.getResourceTypeName(drawable))
+    .appendPath(resources.getResourceEntryName(drawable))
+    .build()
 
 /**
  * Makes the items the car shows: the fixed nodes with their labels, and
@@ -61,6 +69,12 @@ internal class BrowseItems(private val labels: BrowseLabels) {
     /** The tabs at the top, the most useful first. A car that shows fewer tabs gets the first ones. */
     fun tabs(): List<MediaItem> = listOf(
         node(MediaId.Library, labels.library, MediaMetadata.MEDIA_TYPE_FOLDER_MIXED, icon = labels.libraryIcon),
+        node(
+            MediaId.Favourites,
+            labels.favourites,
+            MediaMetadata.MEDIA_TYPE_FOLDER_MIXED,
+            icon = labels.favouritesIcon,
+        ),
     )
 
     /** The lists under the Library tab. */

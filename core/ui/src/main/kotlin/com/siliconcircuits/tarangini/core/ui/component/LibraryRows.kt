@@ -9,6 +9,7 @@ package com.siliconcircuits.tarangini.core.ui.component
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -20,6 +21,7 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,6 +35,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import com.siliconcircuits.tarangini.core.domain.model.Album
 import com.siliconcircuits.tarangini.core.domain.model.Artist
 import com.siliconcircuits.tarangini.core.domain.model.Folder
@@ -48,6 +51,8 @@ import com.siliconcircuits.tarangini.core.ui.R
 fun SongRow(song: Song, actions: SongRowActions, modifier: Modifier = Modifier) {
     val artist = song.artist.ifEmpty { stringResource(R.string.unknown_artist) }
     val length = formatDuration(song.durationMs)
+    val favourites by actions.favourites.collectAsState()
+    val isFavourite = song.id in favourites
     ListItem(
         colors = clearRowColors(),
         headlineContent = { OneLine(song.title) },
@@ -55,13 +60,25 @@ fun SongRow(song: Song, actions: SongRowActions, modifier: Modifier = Modifier) 
             OneLine(if (length.isEmpty()) artist else stringResource(R.string.row_two_parts, artist, length))
         },
         leadingContent = { AlbumArt(song.artworkUri) },
-        trailingContent = { SongMenu(song, actions) },
+        trailingContent = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (isFavourite) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_favourite_filled),
+                        contentDescription = stringResource(R.string.song_is_favourite),
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(FAVOURITE_MARK),
+                    )
+                }
+                SongMenu(song, actions, isFavourite)
+            }
+        },
         modifier = modifier.clickable(onClickLabel = stringResource(R.string.action_play)) { actions.onPlay(song) },
     )
 }
 
 @Composable
-private fun SongMenu(song: Song, actions: SongRowActions) {
+private fun SongMenu(song: Song, actions: SongRowActions, isFavourite: Boolean) {
     var open by remember { mutableStateOf(false) }
     Box {
         IconButton(onClick = { open = true }) {
@@ -83,6 +100,19 @@ private fun SongMenu(song: Song, actions: SongRowActions) {
                 onClick = {
                     open = false
                     actions.onAddToQueue(song)
+                },
+            )
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        stringResource(
+                            if (isFavourite) R.string.song_remove_favourite else R.string.song_add_favourite,
+                        ),
+                    )
+                },
+                onClick = {
+                    open = false
+                    actions.onSetFavourite(song, !isFavourite)
                 },
             )
         }
@@ -154,3 +184,6 @@ internal fun IconTile(icon: Painter) {
 /** A row with no colour of its own, so the background of the screen shows through the list. */
 @Composable
 internal fun clearRowColors(): ListItemColors = ListItemDefaults.colors(containerColor = Color.Transparent)
+
+/** The small heart of a row whose song is a favourite. */
+private val FAVOURITE_MARK = 18.dp

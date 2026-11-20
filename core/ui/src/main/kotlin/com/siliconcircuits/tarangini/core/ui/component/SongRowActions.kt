@@ -7,12 +7,22 @@
 package com.siliconcircuits.tarangini.core.ui.component
 
 import com.siliconcircuits.tarangini.core.domain.model.Song
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 /**
- * What a row of a song can do.
+ * What a row of a song can do, and which songs are favourites.
  *
  * @property onPlay plays the song with its list as the queue
  * @property onPlayNext puts the song right after the one that plays now
  * @property onAddToQueue puts the song at the end of the queue
+ * @property favourites the ids of the favourite songs; a row marks itself when its song is among them
+ * @property onSetFavourite marks the song as a favourite (true) or takes the mark away
  */
-class SongRowActions(val onPlay: (Song) -> Unit, val onPlayNext: (Song) -> Unit, val onAddToQueue: (Song) -> Unit)
+class SongRowActions(
+    val onPlay: (Song) -> Unit,
+    val onPlayNext: (Song) -> Unit,
+    val onAddToQueue: (Song) -> Unit,
+    val favourites: StateFlow<Set<Long>> = MutableStateFlow(emptySet()),
+    val onSetFavourite: (Song, Boolean) -> Unit = { _, _ -> },
+)

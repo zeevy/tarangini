@@ -98,7 +98,7 @@ class LibraryDaoTest {
     @Test
     fun `saving a song again keeps its favourite, playlist place, play count and queue place`() = runTest {
         val id = database.addSong("Song", sourceId = "42")
-        database.favouriteDao().addSong(FavouriteSongEntity(id, addedAt = 1))
+        database.favouriteDao().addKnownSong(id, addedAt = 1)
         val playlist = database.addPlaylist("Mine")
         database.playlistDao().addItem(playlist, id, at = 1)
         database.historyDao().recordSongPlay(id, at = 1)
@@ -189,7 +189,7 @@ class LibraryDaoTest {
     fun `a song whose file is gone leaves the lists, keeps its favourite and comes back`() = runTest {
         val id = database.addSong("Song", sourceId = "42")
         database.addSong("Other", album = "Other album")
-        database.favouriteDao().addSong(FavouriteSongEntity(id, addedAt = 1))
+        database.favouriteDao().addKnownSong(id, addedAt = 1)
 
         library.markMissing(listOf(id), at = 5)
         library.markMissing(listOf(id), at = 9)
@@ -211,7 +211,7 @@ class LibraryDaoTest {
     fun `removing a song removes its favourite, playlist place, play count, queue place and search row`() = runTest {
         val id = database.addSong("Gone")
         val kept = database.addSong("Kept")
-        database.favouriteDao().addSong(FavouriteSongEntity(id, addedAt = 1))
+        database.favouriteDao().addKnownSong(id, addedAt = 1)
         val playlist = database.addPlaylist("Mine")
         database.playlistDao().addItem(playlist, id, at = 1)
         database.playlistDao().addItem(playlist, kept, at = 2)

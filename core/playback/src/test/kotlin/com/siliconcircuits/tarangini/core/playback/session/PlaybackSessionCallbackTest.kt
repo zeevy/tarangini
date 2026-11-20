@@ -23,6 +23,7 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionError
+import androidx.media3.session.SessionResult
 import com.siliconcircuits.tarangini.core.domain.model.Folder
 import com.siliconcircuits.tarangini.core.domain.model.SearchResults
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
@@ -35,6 +36,7 @@ import com.siliconcircuits.tarangini.core.playback.browse.LibraryList
 import com.siliconcircuits.tarangini.core.playback.browse.MediaId
 import com.siliconcircuits.tarangini.core.playback.mapper.LibraryTexts
 import com.siliconcircuits.tarangini.core.playback.service.PlaybackService
+import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryLetters
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeSearchRepository
@@ -44,6 +46,8 @@ import com.siliconcircuits.tarangini.core.testing.station.FakeStationStreams
 import java.util.concurrent.ExecutionException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -61,6 +65,7 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(application = TestPlaybackApp::class)
 class PlaybackSessionCallbackTest {
+    private val favourites = FakeFavouriteRepository()
     private val controller = Robolectric.buildService(PlaybackService::class.java)
     private val service = controller.create().get()
     private var saved: MediaItemsWithStartPosition? = null
@@ -68,7 +73,6 @@ class PlaybackSessionCallbackTest {
     private var texts: suspend (List<MediaItem>) -> List<MediaItem> = { it }
     private val car = KnownCallers { packageName, uid -> packageName == CAR && uid == Process.myUid() + CAR_UID_STEP }
     private val library = FakeLibraryRepository()
-    private val labels = BrowseLabels("Library", "Songs", "Albums", "Artists", "Folders", "No album", "No artist", null)
     private val search = FakeSearchRepository()
     private var allowed = true
     private val callback = callbackOn(library, { texts(it) }) {
@@ -82,7 +86,7 @@ class PlaybackSessionCallbackTest {
         resumption: suspend () -> MediaItemsWithStartPosition?,
     ): PlaybackSessionCallback {
         val items = BrowseItems(labels)
-        val tree = BrowseTree(library, FakeLibraryLetters(this.library), items)
+        val tree = BrowseTree(library, FakeLibraryLetters(this.library), items, favourites)
         val carSearch = CarSearch(search, library, items)
         val carPlay = CarPlay(MainScope(), tree, carSearch, library, resumption)
         val problems = CarProblems(
@@ -92,12 +96,8 @@ class PlaybackSessionCallbackTest {
             noSongs = { SessionError(SessionError.INFO_CANCELLED, "No songs").takeIf { this.library.songs.isEmpty() } },
         )
         val callers = CallerPolicy(service.packageName, Process.myUid(), car)
-        return PlaybackSessionCallback(callers, MainScope(), CarLibrary(tree, carSearch, carPlay, problems), texts, {
-                _,
-                _,
-                _,
-            ->
-        }, resumption)
+        val car = CarLibrary(tree, carSearch, carPlay, problems)
+        return PlaybackSessionCallback(callers, MainScope(), car, texts, { _, _, _ -> }, resumption)
     }
     private val theCar = caller(CAR, Process.myUid() + CAR_UID_STEP, trusted = true)
 
@@ -164,11 +164,11 @@ class PlaybackSessionCallbackTest {
         library.songs = listOf(testSong(1))
         val root = callback.onGetLibraryRoot(session, theCar, null).get()
         val tabs = children(MediaId.Root.encode())
-        val lists = children(tabs.single().mediaId)
+        val lists = children(tabs.first().mediaId)
 
         assertEquals(MediaId.Root.encode(), root.value?.mediaId)
         assertEquals(true, root.value?.mediaMetadata?.isBrowsable)
-        assertEquals(listOf("Library"), tabs.map { it.mediaMetadata.title })
+        assertEquals(listOf("Library", "Favourites"), tabs.map { it.mediaMetadata.title })
         assertEquals(listOf("Songs", "Albums", "Artists", "Folders"), lists.map { it.mediaMetadata.title })
     }
 
@@ -461,18 +461,6 @@ class PlaybackSessionCallbackTest {
         assertTrue(runCatching { answer.get() }.isFailure)
     }
 
-    private fun caller(packageName: String, uid: Int, trusted: Boolean): MediaSession.ControllerInfo =
-        MediaSession.ControllerInfo.createTestOnlyControllerInfo(
-            packageName,
-            1,
-            uid,
-            MediaLibraryInfo.VERSION_INT,
-            MediaLibraryInfo.INTERFACE_VERSION,
-            trusted,
-            Bundle.EMPTY,
-            true,
-        )
-
     @Test
     fun `the car can search, and asks for the results after it is told there are some`() {
         search.results = SearchResults(songs = listOf(testSong(1, "Bhairavi", albumId = 7)))
@@ -547,9 +535,50 @@ class PlaybackSessionCallbackTest {
 
         assertEquals(LibraryResult.RESULT_SUCCESS, sections.resultCode)
         assertEquals(0, sections.value?.size)
-        assertEquals(1, tabs.value?.size)
+        assertEquals(2, tabs.value?.size)
     }
+
+    @Test
+    fun `the car and a caller the system trusts may press the heart button, and the press marks the song that plays`() =
+        runTest {
+            val systemPanel = caller("com.android.systemui", Process.myUid() + 1, trusted = true)
+            favourites.known = listOf(testSong(1))
+            val button = FavouriteButton(backgroundScope, favourites, FakeSongLookup(favourites.known)) { "Heart" }
+            callback.favourite = button
+            button.start { }
+            button.nowPlaying(testSong(1).mediaUri)
+            testScheduler.runCurrent()
+
+            val pressed = callback.onCustomCommand(session, theCar, FavouriteButton.COMMAND, Bundle.EMPTY).get()
+            testScheduler.runCurrent()
+
+            assertTrue(callback.onConnect(session, theCar).availableSessionCommands.contains(FavouriteButton.COMMAND))
+            assertTrue(
+                callback.onConnect(session, systemPanel).availableSessionCommands.contains(FavouriteButton.COMMAND),
+            )
+            assertEquals(SessionResult.RESULT_SUCCESS, pressed.resultCode)
+            assertEquals(listOf(1L), favourites.ids.value)
+        }
 }
+
+private val labels =
+    BrowseLabels(
+        "Library", "Songs", "Albums", "Artists", "Folders", "No album", "No artist", null,
+        favourites = "Favourites",
+        favouritesIcon = null,
+    )
+
+private fun caller(packageName: String, uid: Int, trusted: Boolean): MediaSession.ControllerInfo =
+    MediaSession.ControllerInfo.createTestOnlyControllerInfo(
+        packageName,
+        1,
+        uid,
+        MediaLibraryInfo.VERSION_INT,
+        MediaLibraryInfo.INTERFACE_VERSION,
+        trusted,
+        Bundle.EMPTY,
+        true,
+    )
 
 private const val CAR = "com.google.android.projection.gearhead"
 private const val CAR_UID_STEP = 7

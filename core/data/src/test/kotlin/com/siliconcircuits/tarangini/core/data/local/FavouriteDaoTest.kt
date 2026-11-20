@@ -29,24 +29,37 @@ class FavouriteDaoTest {
     fun `favourite songs come newest first and a second add changes nothing`() = runTest {
         val first = database.addSong("First")
         val second = database.addSong("Second")
-        favourites.addSong(FavouriteSongEntity(first, addedAt = 1))
-        favourites.addSong(FavouriteSongEntity(second, addedAt = 2))
+        favourites.addKnownSong(first, addedAt = 1)
+        favourites.addKnownSong(second, addedAt = 2)
 
-        favourites.addSong(FavouriteSongEntity(first, addedAt = 3))
+        favourites.addKnownSong(first, addedAt = 3)
 
         assertEquals(listOf(second, first), favourites.favouriteSongs(10, 0).map { it.song.id })
         assertEquals(listOf(first), favourites.favouriteSongs(limit = 1, offset = 1).map { it.song.id })
     }
 
     @Test
+    fun `a song the library does not know is not marked, and the ids follow every change`() = runTest {
+        val id = database.addSong("Song")
+
+        favourites.addKnownSong(id, addedAt = 1)
+        favourites.addKnownSong(id + 100, addedAt = 2)
+        favourites.addKnownSong(id, addedAt = 3)
+
+        assertEquals(listOf(id), favourites.favouriteSongIds().first())
+        favourites.removeSong(id)
+        assertEquals(emptyList<Long>(), favourites.favouriteSongIds().first())
+    }
+
+    @Test
     fun `taking a song out of the favourites keeps the song`() = runTest {
         val id = database.addSong("Song")
-        favourites.addSong(FavouriteSongEntity(id, addedAt = 1))
-        assertTrue(favourites.isFavouriteSong(id).first())
+        favourites.addKnownSong(id, addedAt = 1)
+        assertTrue(id in favourites.favouriteSongIds().first())
 
         favourites.removeSong(id)
 
-        assertFalse(favourites.isFavouriteSong(id).first())
+        assertFalse(id in favourites.favouriteSongIds().first())
         assertEquals(1, database.libraryDao().songsByTitle(10, 0).size)
     }
 

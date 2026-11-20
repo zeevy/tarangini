@@ -9,12 +9,14 @@ package com.siliconcircuits.tarangini.core.playback
 import android.app.Application
 import com.siliconcircuits.tarangini.core.domain.playback.ResumeStore
 import com.siliconcircuits.tarangini.core.domain.repository.AudioAccess
+import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryLetters
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SearchRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SongLookup
 import com.siliconcircuits.tarangini.core.domain.repository.StationStreams
 import com.siliconcircuits.tarangini.core.playback.service.PlaybackService
+import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryLetters
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeSearchRepository
@@ -39,6 +41,7 @@ internal class TestPlaybackApp :
     val songs = FakeSongLookup()
     val library = FakeLibraryRepository()
     val search = FakeSearchRepository()
+    val favourites = FakeFavouriteRepository()
     var audioAllowed = true
     private val scope = MainScope()
 
@@ -52,6 +55,8 @@ internal class TestPlaybackApp :
         override fun libraryLetters(): LibraryLetters = FakeLibraryLetters(library)
 
         override fun searchRepository(): SearchRepository = search
+
+        override fun favouriteRepository(): FavouriteRepository = favourites
 
         override fun audioAccess(): AudioAccess = AudioAccess { audioAllowed }
 

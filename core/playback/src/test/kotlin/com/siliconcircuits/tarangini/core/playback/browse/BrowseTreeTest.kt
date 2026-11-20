@@ -7,6 +7,7 @@
 package com.siliconcircuits.tarangini.core.playback.browse
 
 import androidx.media3.common.MediaItem
+import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryLetters
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
 import com.siliconcircuits.tarangini.core.testing.library.testAlbum
@@ -25,10 +26,15 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class BrowseTreeTest {
+    private val favourites = FakeFavouriteRepository()
     private val library = FakeLibraryRepository()
     private val labels =
-        BrowseLabels("Library", "Songs", "Albums", "Artists", "Folders", "Unknown album", "Unknown artist", null)
-    private val tree = BrowseTree(library, FakeLibraryLetters(library), BrowseItems(labels))
+        BrowseLabels(
+            "Library", "Songs", "Albums", "Artists", "Folders", "Unknown album", "Unknown artist", null,
+            favourites = "Favourites",
+            favouritesIcon = null,
+        )
+    private val tree = BrowseTree(library, FakeLibraryLetters(library), BrowseItems(labels), favourites)
 
     private suspend fun under(id: MediaId, tabLimit: Int = MAX_TABS): List<MediaItem> =
         requireNotNull(tree.children(id, tabLimit))
@@ -40,6 +46,21 @@ class BrowseTreeTest {
     private fun MediaItem.id(): MediaId = requireNotNull(MediaId.parse(mediaId))
 
     /** A library too long for one list: 60 songs under "a", 50 under "b", 3 that start with a digit or a sign. */
+    @Test
+    fun `the Favourites tab lists the favourite songs, the one marked last first, and a tap plays them`() = runTest {
+        library.songs = listOf(testSong(1, "One"), testSong(2, "Two"), testSong(3, "Three"))
+        favourites.known = library.songs
+        favourites.setFavourite(3, true)
+        favourites.setFavourite(1, true)
+
+        val rows = under(MediaId.Favourites)
+        val queue = tree.queue(MediaId.SongIn(3, MediaId.Favourites))
+
+        assertEquals(listOf("One", "Three"), rows.titles())
+        assertEquals(listOf(MediaId.SongIn(1, MediaId.Favourites), MediaId.SongIn(3, MediaId.Favourites)), rows.ids())
+        assertEquals(listOf(1L, 3L) to 1, queue?.songs?.map { it.id } to queue?.index)
+    }
+
     private fun longLibrary() {
         val a = (1L..60L).map { testSong(it, title = "a song %03d".format(it)) }
         val b = (61L..110L).map { testSong(it, title = "B song %03d".format(it)) }
@@ -49,8 +70,8 @@ class BrowseTreeTest {
     }
 
     @Test
-    fun `the top shows the Library tab, and the Library shows its four lists`() = runTest {
-        assertEquals(listOf("Library"), under(MediaId.Root).titles())
+    fun `the top shows the Library and Favourites tabs, and the Library shows its four lists`() = runTest {
+        assertEquals(listOf("Library", "Favourites"), under(MediaId.Root).titles())
         assertEquals(listOf("Songs", "Albums", "Artists", "Folders"), under(MediaId.Library).titles())
     }
 

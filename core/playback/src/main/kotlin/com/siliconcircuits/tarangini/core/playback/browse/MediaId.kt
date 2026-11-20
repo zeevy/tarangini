@@ -32,6 +32,9 @@ internal sealed interface MediaId {
     /** The top folders. */
     data object Folders : MediaId
 
+    /** The Favourites tab: the favourite songs, the one marked last first. */
+    data object Favourites : MediaId
+
     /**
      * The rows of a long list that start with one letter.
      *
@@ -58,7 +61,7 @@ internal sealed interface MediaId {
     /** True for a node whose children are songs, so a song can name it as its list. */
     val holdsSongs: Boolean
         get() = when (this) {
-            is Album, is Artist, is Folder -> true
+            is Album, is Artist, is Folder, Favourites -> true
             is Section -> list == LibraryList.SONGS
             is Letter -> list == LibraryList.SONGS
             Root, Library, Folders, is SongIn -> false
@@ -69,6 +72,7 @@ internal sealed interface MediaId {
         Root -> ROOT
         Library -> LIBRARY
         Folders -> FOLDERS
+        Favourites -> FAVOURITES
         is Section -> list.word
         is Letter -> "${list.word}$PART$letter"
         is Album -> "$ALBUM$PART$id"
@@ -84,6 +88,7 @@ internal sealed interface MediaId {
         private const val ROOT = "root"
         private const val LIBRARY = "library"
         private const val FOLDERS = "folders"
+        private const val FAVOURITES = "favourites"
         private const val ALBUM = "album"
         private const val ARTIST = "artist"
         private const val FOLDER = "folder"
@@ -128,6 +133,7 @@ internal sealed interface MediaId {
             ROOT -> Root
             LIBRARY -> Library
             FOLDERS -> Folders
+            FAVOURITES -> Favourites
             else -> LibraryList.entries.firstOrNull { it.word == word }?.let(::Section)
         }
 

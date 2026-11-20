@@ -10,6 +10,8 @@ import android.app.PendingIntent
 import android.os.Looper
 import android.os.Process
 import androidx.annotation.OptIn
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
@@ -18,6 +20,7 @@ import com.siliconcircuits.tarangini.core.domain.model.Page
 import com.siliconcircuits.tarangini.core.domain.model.SongSort
 import com.siliconcircuits.tarangini.core.domain.playback.ResumeStore
 import com.siliconcircuits.tarangini.core.domain.repository.AudioAccess
+import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryLetters
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SearchRepository
@@ -40,6 +43,7 @@ import com.siliconcircuits.tarangini.core.playback.session.CarLibrary
 import com.siliconcircuits.tarangini.core.playback.session.CarPlay
 import com.siliconcircuits.tarangini.core.playback.session.CarProblems
 import com.siliconcircuits.tarangini.core.playback.session.CertificateCallers
+import com.siliconcircuits.tarangini.core.playback.session.FavouriteButton
 import com.siliconcircuits.tarangini.core.playback.session.NothingToPlay
 import com.siliconcircuits.tarangini.core.playback.session.PlaybackSessionCallback
 import com.siliconcircuits.tarangini.core.playback.stream.StreamFailover
@@ -48,6 +52,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 
@@ -59,6 +64,7 @@ import okhttp3.OkHttpClient
 internal class PlaybackService : MediaLibraryService() {
     private var session: MediaLibrarySession? = null
     private var resume: PlaybackResume? = null
+    private var favouriteButton: Job? = null
     private var notices: LibraryChangeNotices? = null
     private var scope: CoroutineScope? = null
 
@@ -77,6 +83,8 @@ internal class PlaybackService : MediaLibraryService() {
         fun searchRepository(): SearchRepository
 
         fun audioAccess(): AudioAccess
+
+        fun favouriteRepository(): FavouriteRepository
 
         fun httpClient(): OkHttpClient
 
@@ -97,7 +105,7 @@ internal class PlaybackService : MediaLibraryService() {
         val resume = PlaybackResume(player, app.resumeStore(), app.playbackScope(), texts::addTo)
         scope = app.playbackScope()
         val items = BrowseItems(browseLabels(this))
-        val tree = BrowseTree(app.libraryRepository(), app.libraryLetters(), items)
+        val tree = BrowseTree(app.libraryRepository(), app.libraryLetters(), items, app.favouriteRepository())
         val search = CarSearch(app.searchRepository(), app.libraryRepository(), items)
         val callback = PlaybackSessionCallback(
             callers = CallerPolicy(packageName, Process.myUid(), CertificateCallers(packageManager)),
@@ -118,10 +126,41 @@ internal class PlaybackService : MediaLibraryService() {
         this.session = session
         this.resume = resume
         resume.start()
+        favouriteButton = showFavouriteButton(session, callback, app)
         // Int.MAX_VALUE as the number of rows means "not known": the car reads the list again and counts itself.
-        notices = LibraryChangeNotices(app.libraryRepository(), app.playbackScope(), callback.opened::all) { listId ->
+        notices = LibraryChangeNotices(
+            app.libraryRepository(),
+            app.favouriteRepository(),
+            app.playbackScope(),
+            callback.opened::all,
+        ) { listId ->
             session.notifyChildrenChanged(listId, Int.MAX_VALUE, null)
         }.also(LibraryChangeNotices::start)
+    }
+
+    /**
+     * Puts the heart button next to the player buttons and keeps it in step with the song that plays.
+     * The returned job ends the watching.
+     */
+    // The buttons of a session are API of Media3 that may still change.
+    @OptIn(UnstableApi::class)
+    private fun showFavouriteButton(
+        session: MediaLibrarySession,
+        callback: PlaybackSessionCallback,
+        app: Dependencies,
+    ): Job {
+        val button = FavouriteButton(app.playbackScope(), app.favouriteRepository(), app.songLookup()) { isFavourite ->
+            getString(if (isFavourite) R.string.car_remove_favourite else R.string.car_add_favourite)
+        }
+        callback.favourite = button
+        button.nowPlaying(session.player.currentMediaItem?.mediaId)
+        session.player.addListener(
+            object : Player.Listener {
+                override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) =
+                    button.nowPlaying(mediaItem?.mediaId)
+            },
+        )
+        return button.start(session::setMediaButtonPreferences)
     }
 
     /**
@@ -184,6 +223,8 @@ internal class PlaybackService : MediaLibraryService() {
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? = session
 
     override fun onDestroy() {
+        favouriteButton?.cancel()
+        favouriteButton = null
         notices?.end()
         notices = null
         resume?.end()
