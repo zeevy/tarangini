@@ -76,7 +76,7 @@ class DefaultLibraryScannerTest {
         assertEquals("external_primary", top.path)
         val music = library.childFolders(top.id).single()
         assertEquals("Music", music.name)
-        assertEquals(listOf("Yaman"), library.songsInFolder(music.id).map { it.song.title })
+        assertEquals(listOf("Yaman"), library.songsInFolder(music.id, limit = 10, offset = 0).map { it.song.title })
         assertEquals(listOf("Ragas"), library.childFolders(music.id).map { it.name })
     }
 

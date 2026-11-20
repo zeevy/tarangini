@@ -51,10 +51,18 @@ class SettingsKeysTest {
             SettingsKeys.MIN_TRACK_SECONDS,
             SettingsKeys.INCLUDED_FOLDERS,
             SettingsKeys.EXCLUDED_FOLDERS,
+            SettingsKeys.SONG_SORT,
         ).map { it.name }
 
         assertEquals(
-            listOf("theme_mode", "dynamic_color", "min_track_seconds", "included_folders", "excluded_folders"),
+            listOf(
+                "theme_mode",
+                "dynamic_color",
+                "min_track_seconds",
+                "included_folders",
+                "excluded_folders",
+                "song_sort",
+            ),
             names,
         )
         assertEquals("settings", SettingsKeys.FILE_NAME)

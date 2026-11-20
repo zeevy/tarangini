@@ -8,8 +8,10 @@ package com.siliconcircuits.tarangini.core.data.di
 
 import android.content.Context
 import androidx.datastore.core.DataStore
+import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.preferencesDataStoreFile
 import com.siliconcircuits.tarangini.core.data.settings.SettingsKeys
 import dagger.Module
@@ -25,6 +27,8 @@ internal object SettingsModule {
     /** The one settings store. A second store on the same file would corrupt it, so this is a singleton. */
     @Provides
     @Singleton
-    fun settingsStore(@ApplicationContext context: Context): DataStore<Preferences> =
-        PreferenceDataStoreFactory.create { context.preferencesDataStoreFile(SettingsKeys.FILE_NAME) }
+    fun settingsStore(@ApplicationContext context: Context): DataStore<Preferences> = PreferenceDataStoreFactory.create(
+        // A file that is broken starts again with the default of every setting, so the app still opens.
+        corruptionHandler = ReplaceFileCorruptionHandler { emptyPreferences() },
+    ) { context.preferencesDataStoreFile(SettingsKeys.FILE_NAME) }
 }

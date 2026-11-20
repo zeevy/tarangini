@@ -31,6 +31,9 @@ internal object SettingsKeys {
     /** When this is not empty, only these folders are scanned. */
     val INCLUDED_FOLDERS = stringSetPreferencesKey("included_folders")
 
+    /** The order of the list of all songs: the name of a `SongSort`. */
+    val SONG_SORT = stringPreferencesKey("song_sort")
+
     /** Folders a scan skips. */
     val EXCLUDED_FOLDERS = stringSetPreferencesKey("excluded_folders")
 }
