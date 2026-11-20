@@ -25,13 +25,14 @@ import kotlinx.coroutines.launch
  * @param scope runs the read of the saved queue, on the main thread
  * @param resumption gives what to play when a caller asks to go on and the player is empty, or null for nothing
  */
+// Media3 marks parts of the session API as API that may still change: the "trusted by the system" flag,
+// the default command sets and everything about playback resumption.
+@OptIn(UnstableApi::class)
 internal class PlaybackSessionCallback(
     private val callers: CallerPolicy,
     private val scope: CoroutineScope,
     private val resumption: suspend () -> MediaItemsWithStartPosition?,
 ) : MediaLibrarySession.Callback {
-    // Media3 marks the "trusted by the system" flag and the default command sets as API that may still change.
-    @OptIn(UnstableApi::class)
     override fun onConnect(
         session: MediaSession,
         controller: MediaSession.ControllerInfo,
@@ -67,8 +68,6 @@ internal class PlaybackSessionCallback(
      * the play button of a Bluetooth device after the app was killed. The
      * items come from the database of this app and never from the caller.
      */
-    // The call is API that Media3 may still change.
-    @OptIn(UnstableApi::class)
     override fun onPlaybackResumption(
         mediaSession: MediaSession,
         controller: MediaSession.ControllerInfo,
