@@ -6,15 +6,13 @@
 
 package com.siliconcircuits.tarangini.feature.player.nowplaying
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
@@ -65,7 +63,8 @@ internal fun SeekBar(state: NowPlayingUiState, onSeek: (Long) -> Unit, modifier:
                 contentDescription = label
                 stateDescription = place
             },
-            thumb = { PlaceDot() },
+            // No handle: the end of the filled part is the place. The whole bar takes the touch.
+            thumb = { Spacer(modifier = Modifier.size(width = NoGap, height = BarHeight)) },
             track = { sliderState ->
                 SliderDefaults.Track(
                     sliderState = sliderState,
@@ -82,18 +81,12 @@ internal fun SeekBar(state: NowPlayingUiState, onSeek: (Long) -> Unit, modifier:
     }
 }
 
-/** The place in the item: a dot as high as the bar, in a colour that stands out on both of its parts. */
-@Composable
-private fun PlaceDot() {
-    Box(modifier = Modifier.size(BarHeight).background(MaterialTheme.colorScheme.onSurface, CircleShape))
-}
-
 @Composable
 private fun Time(text: String) {
     Text(text = text, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 
-// The height of the bar and of the dot on it. The area that takes a touch stays the 48 dp of the slider.
+// The height of the bar. The area that takes a touch stays the 48 dp of the slider.
 private val BarHeight = 12.dp
 private val NoGap = 0.dp
 
