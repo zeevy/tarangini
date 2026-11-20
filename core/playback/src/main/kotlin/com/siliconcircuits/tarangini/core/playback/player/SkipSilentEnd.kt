@@ -8,7 +8,6 @@ package com.siliconcircuits.tarangini.core.playback.player
 
 import androidx.media3.common.C
 import androidx.media3.common.PlaybackException
-import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import com.siliconcircuits.tarangini.core.playback.stream.isStreamAddress
 import kotlinx.coroutines.CoroutineScope
@@ -21,29 +20,33 @@ import kotlinx.coroutines.launch
  *
  * A file that was cut short, such as a ringtone made from a song, can keep the header of the whole
  * song. The player believes the header, so after the last sound it stays "playing" in silence
- * until the stated end, with a position that creeps. Nothing fails, so no error tells about it.
+ * until the stated end. Nothing fails, so no error tells about it, and on some files the position
+ * even moves on at the speed of the clock.
  *
- * So the position is watched while a file plays. When it stays well behind the clock, the sound
- * has ended: the next item is played, or playback stops at the start of the last one.
+ * So what is watched is the sound itself: [LastSound] says when the decoder last gave any. When a
+ * file that plays has given none for a few seconds, its sound has ended: the next item is played,
+ * or playback stops at the start of the last one.
  *
  * A place inside that silence can also be asked for, by a seek or by the place that was saved when
  * the app closed. The file has nothing there, so the player fails. That is treated the same way.
  *
  * A stream is left alone. It has no stated end, and its pauses are handled as buffering.
  */
-internal class SkipSilentEnd(private val player: Player, private val scope: CoroutineScope) : Player.Listener {
+internal class SkipSilentEnd(
+    private val player: Player,
+    private val sound: LastSound,
+    private val scope: CoroutineScope,
+) : Player.Listener {
     private var watch: Job? = null
 
     override fun onIsPlayingChanged(isPlaying: Boolean) = watchAgain()
 
-    // A seek or a new item moves the position by itself, so the watch starts again from there.
+    // After a seek or at a new item the decoder starts afresh, so the count starts afresh too.
     override fun onPositionDiscontinuity(
         oldPosition: Player.PositionInfo,
         newPosition: Player.PositionInfo,
         reason: Int,
     ) = watchAgain()
-
-    override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters) = watchAgain()
 
     override fun onPlayerError(error: PlaybackException) {
         val pastTheEnd = error.errorCode == PlaybackException.ERROR_CODE_IO_READ_POSITION_OUT_OF_RANGE
@@ -59,23 +62,20 @@ internal class SkipSilentEnd(private val player: Player, private val scope: Coro
 
     private fun watchAgain() {
         watch?.cancel()
-        watch = if (player.isPlaying && isFile()) scope.launch { watchPosition() } else null
+        // The last sound may be from before a long pause.
+        sound.heard()
+        watch = if (player.isPlaying && isFile()) scope.launch { watchSound() } else null
     }
 
-    private suspend fun watchPosition() {
-        var slowWindows = 0
-        while (slowWindows < SLOW_WINDOWS) {
-            val before = player.currentPosition
-            delay(WATCH_MS)
+    private suspend fun watchSound() {
+        while (true) {
+            delay(CHECK_MS)
             // The player can be released while this waits. Then nothing is asked of it any more.
             if (!player.isPlaying) return
-            val moved = player.currentPosition - before
             val left = if (player.duration == C.TIME_UNSET) 0 else player.duration - player.currentPosition
-            val isSlow = moved < WATCH_MS * player.playbackParameters.speed * SLOWEST_SHARE && left > WATCH_MS
-            // One slow window can be a new audio route that takes a second to start. Silence stays slow.
-            slowWindows = if (isSlow) slowWindows + 1 else 0
+            // Close to the stated end the player ends the item by itself.
+            if (sound.silentForMs() >= SILENCE_MS && left > SILENCE_MS) return moveOn()
         }
-        moveOn()
     }
 
     private fun moveOn() {
@@ -88,12 +88,11 @@ internal class SkipSilentEnd(private val player: Player, private val scope: Coro
     }
 }
 
-/** How long the position is watched before it is judged. */
-internal const val WATCH_MS = 2_000L
+/**
+ * A file that plays and gave no sound for this long has none left. The sound that was already in
+ * the output buffer still plays for part of that time.
+ */
+internal const val SILENCE_MS = 3_000L
 
-/** So many slow windows in a row mean silence. Together they are the silence a person hears at most. */
-internal const val SLOW_WINDOWS = 2
-
-// Sound that plays moves the position with the clock. In the silence after the last sound it moved
-// at less than half of that on a Pixel 6a, so three quarters tells the two apart safely.
-private const val SLOWEST_SHARE = 0.75f
+/** How often the time since the last sound is looked at. */
+internal const val CHECK_MS = 1_000L

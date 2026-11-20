@@ -101,7 +101,7 @@ Run with about 10,000 songs on a mid range phone.
 | 60 | Add one station each with an HLS (`.m3u8`), a `.pls` and a `.m3u` address and play them | Each one plays |
 | 61 | Edit a station, then remove it | The new name shows in the list. Remove asks first, and the station is gone after "Remove" |
 | 62 | Play a saved station, then press Next on a headset or in the car | The next saved station plays |
-| 63 | Play an MP3 that was cut short and still states the length of the whole song, with another song after it | About 4 seconds after its last sound the next song plays. The screen can be off |
+| 63 | Play an MP3 that was cut short and still states the length of the whole song, with another song after it | About 3 seconds after its last sound the next song plays. The screen can be off |
 
 ## Playback: resume
 
