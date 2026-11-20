@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -62,7 +63,14 @@ fun MessageState(
             textAlign = TextAlign.Center,
         )
         if (actionLabel != null) {
-            Button(onClick = onAction) { Text(actionLabel) }
+            Button(
+                onClick = onAction,
+                // The main button of a screen is white with dark text.
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    contentColor = MaterialTheme.colorScheme.onSecondary,
+                ),
+            ) { Text(actionLabel) }
         }
     }
 }

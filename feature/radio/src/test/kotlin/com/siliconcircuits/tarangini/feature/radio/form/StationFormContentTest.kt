@@ -84,7 +84,7 @@ class StationFormContentTest {
                     actions.onAddressChange(it)
                 },
             )
-            TaranginiTheme(dynamicColor = false) { StationFormContent(state, typedName, typedAddress, typing) }
+            TaranginiTheme { StationFormContent(state, typedName, typedAddress, typing) }
         }
     }
 

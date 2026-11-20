@@ -8,9 +8,11 @@ package com.siliconcircuits.tarangini
 
 import android.app.SearchManager
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.provider.MediaStore
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackController
@@ -26,7 +28,8 @@ class MainActivity : ComponentActivity() {
     lateinit var playback: PlaybackController
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
+        // The app is dark only, so the icons of the system bars are always light.
+        enableEdgeToEdge(SystemBarStyle.dark(Color.TRANSPARENT), SystemBarStyle.dark(Color.TRANSPARENT))
         super.onCreate(savedInstanceState)
         // A screen that is built again, after a turn of the phone, must not start the request a second time.
         if (savedInstanceState == null) playSpokenRequest(intent)

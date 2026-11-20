@@ -32,7 +32,7 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
-/** The search screen at the narrowest width, in light and dark. */
+/** The search screen at the narrowest width. */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(qualifiers = "w320dp-h640dp-xhdpi")
@@ -63,24 +63,15 @@ class SearchScreenshotTest {
     )
 
     @Test
-    fun `before a search, light`() = capture("search_start_light", SearchUiState(), dark = false)
+    fun `before a search`() = capture("search_start", SearchUiState())
 
     @Test
-    fun `before a search, dark`() = capture("search_start_dark", SearchUiState(), dark = true)
+    fun `results`() = capture("search_results", SearchUiState("mor", results))
 
     @Test
-    fun `results, light`() = capture("search_results_light", SearchUiState("mor", results), dark = false)
+    fun `no result`() = capture("search_none", nothingFound)
 
-    @Test
-    fun `results, dark`() = capture("search_results_dark", SearchUiState("mor", results), dark = true)
-
-    @Test
-    fun `no result, light`() = capture("search_none_light", nothingFound, dark = false)
-
-    @Test
-    fun `no result, dark`() = capture("search_none_dark", nothingFound, dark = true)
-
-    private fun capture(name: String, state: SearchUiState, dark: Boolean) {
+    private fun capture(name: String, state: SearchUiState) {
         val picture = File("src/test/screenshots/$name.png")
         // Without this, a test with no saved picture passes: there is nothing to compare with.
         assertTrue("No saved picture $picture. Run the tests with -PrecordScreenshots.", recording || picture.exists())
@@ -88,7 +79,7 @@ class SearchScreenshotTest {
         // moment and does not depend on how fast the test ran.
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
-            TaranginiTheme(darkTheme = dark, dynamicColor = false) {
+            TaranginiTheme {
                 SearchContent(state.searched, state, SongRowActions({}, {}, {}), {}, {}, {}, {})
             }
         }
