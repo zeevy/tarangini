@@ -100,9 +100,12 @@ private fun QueueList(state: QueueUiState, actions: QueueActions, modifier: Modi
     var dragStart by remember { mutableIntStateOf(0) }
     var dragItems by remember { mutableStateOf<List<PlaybackItem>?>(null) }
     val onMove by rememberUpdatedState(actions.onMove)
-    val reorder = remember(list) {
-        ReorderState(list) { from, to -> rows = rows.toMutableList().apply { add(to, removeAt(from)) } }
+    // The drag state lives longer than one copy of the row order: every change of the queue gives a
+    // new copy. The swap must reach the copy that is on screen now.
+    val onSwap by rememberUpdatedState<(Int, Int) -> Unit> { from, to ->
+        rows = rows.toMutableList().apply { add(to, removeAt(from)) }
     }
+    val reorder = remember(list) { ReorderState(list) { from, to -> onSwap(from, to) } }
 
     // The row goes back in line when the queue changes during a drag.
     LaunchedEffect(state.items) { reorder.end() }

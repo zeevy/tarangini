@@ -9,6 +9,10 @@ package com.siliconcircuits.tarangini.feature.player.queue
 import android.app.Application
 import android.content.ComponentName
 import androidx.activity.ComponentActivity
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
@@ -65,10 +69,24 @@ class QueueContentTest {
         PlaybackItem("a", "First", "Ravi"),
     )
 
+    private var shown by mutableStateOf(QueueUiState())
+
     private fun show(state: QueueUiState) {
+        shown = state
         composeRule.setContent {
-            TaranginiTheme(dynamicColor = false) { QueueContent(state, actions, { done += "back" }) }
+            TaranginiTheme(dynamicColor = false) { QueueContent(shown, actions, { done += "back" }) }
         }
+    }
+
+    /** Drags the row with [title] by its handle, in small steps as a finger does. */
+    private fun dragByHandle(title: String, rows: Float) {
+        composeRule.onNode(hasText(title) and SemanticsMatcher.keyIsDefined(SemanticsActions.CustomActions))
+            .performTouchInput {
+                down(Offset(right - HANDLE_FROM_END_PX, centerY))
+                repeat(DRAG_STEPS) { moveBy(Offset(0f, height * rows / DRAG_STEPS)) }
+                up()
+            }
+        composeRule.waitForIdle()
     }
 
     /** Runs the action a screen reader offers under [label] on the row with [title]. */
@@ -131,6 +149,26 @@ class QueueContentTest {
     }
 
     @Test
+    fun `a drag by the handle moves the row, and the player is told once`() {
+        show(QueueUiState(songs.take(3), currentIndex = 0))
+
+        dragByHandle("First", rows = 1.2f)
+
+        assertEquals(listOf("move 0 to 1"), done)
+    }
+
+    @Test
+    fun `a drag still moves the row after the queue has changed`() {
+        show(QueueUiState(songs.take(3), currentIndex = 0))
+        shown = QueueUiState(songs.take(3).reversed(), currentIndex = 0)
+        composeRule.waitForIdle()
+
+        dragByHandle("Third", rows = 1.2f)
+
+        assertEquals(listOf("move 0 to 1"), done)
+    }
+
+    @Test
     fun `a screen reader can move a row up or down and remove it`() {
         show(QueueUiState(songs, currentIndex = 0))
 
@@ -156,5 +194,10 @@ class QueueContentTest {
         composeRule.onNodeWithText("The queue is empty").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Back").performClick()
         assertEquals(listOf("back"), done)
+    }
+
+    private companion object {
+        const val HANDLE_FROM_END_PX = 20f
+        const val DRAG_STEPS = 12
     }
 }
