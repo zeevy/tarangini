@@ -416,6 +416,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D43 | The song title a station sends is cleaned and written into the item that plays, so every screen, the notification and the car show it. With no title the name of the station shows. See [ADR 0021](adr/0021-station-song-titles.md) | 20 Nov 2026 | A text from an unknown server is never shown as it comes, and is at most 200 characters |
 | D44 | A stream that drops is tried again for 2 minutes, with waits of at most 5 seconds, then the next address of the station is tried, then the error shows with a retry button. Nothing watches the network. See [ADR 0022](adr/0022-stream-reconnect.md) | 20 Nov 2026 | The player keeps the loading state while it tries, so no screen shows a failure that mends itself |
 | D45 | A station is added with a name and a stream address. The address is checked in the form, in the store and by the player; a Test button tries it without playing. See [ADR 0023](adr/0023-user-stations.md) | 20 Nov 2026 | Only complete `http` and `https` addresses with no login are stored |
+| D46 | A file with less sound than its header states gives way to the next item about 4 seconds after its last sound, and so does a start inside that silence. The file is not changed. See [ADR 0024](adr/0024-file-shorter-than-stated.md) | 20 Nov 2026 | The player believes the header and would stay silent in the playing state until the stated end |
 
 ## 9. Checks before building
 

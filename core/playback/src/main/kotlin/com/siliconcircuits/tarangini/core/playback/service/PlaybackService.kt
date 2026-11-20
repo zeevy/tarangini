@@ -15,6 +15,7 @@ import com.siliconcircuits.tarangini.core.domain.repository.SongLookup
 import com.siliconcircuits.tarangini.core.domain.repository.StationStreams
 import com.siliconcircuits.tarangini.core.playback.di.PlaybackCoroutineScope
 import com.siliconcircuits.tarangini.core.playback.mapper.LibraryTexts
+import com.siliconcircuits.tarangini.core.playback.player.SkipSilentEnd
 import com.siliconcircuits.tarangini.core.playback.player.createPlayer
 import com.siliconcircuits.tarangini.core.playback.resume.PlaybackResume
 import com.siliconcircuits.tarangini.core.playback.session.CallerPolicy
@@ -57,6 +58,7 @@ internal class PlaybackService : MediaLibraryService() {
         val app = EntryPointAccessors.fromApplication(applicationContext, Dependencies::class.java)
         val player = createPlayer(this, app::httpClient)
         player.addListener(StreamFailover(player, app.stationStreams(), app.playbackScope()))
+        player.addListener(SkipSilentEnd(player, app.playbackScope()))
         val texts = LibraryTexts(app.songLookup(), app.stationStreams())
         val resume = PlaybackResume(player, app.resumeStore(), app.playbackScope(), texts::addTo)
         val callback = PlaybackSessionCallback(
