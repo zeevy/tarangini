@@ -35,7 +35,6 @@ android {
 dependencies {
     implementation(project(":feature:home"))
     implementation(project(":feature:library"))
-    implementation(project(":feature:radio"))
     implementation(project(":feature:player"))
     implementation(project(":feature:search"))
     implementation(project(":feature:settings"))
