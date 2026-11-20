@@ -12,4 +12,6 @@
     <string name="car_folders">Folders</string>
     <string name="car_unknown_album">Unknown album</string>
     <string name="car_unknown_artist">Unknown artist</string>
+    <string name="car_nothing_found">Nothing in your library matches that</string>
+    <string name="car_no_songs">There are no songs in your library yet</string>
 </resources>

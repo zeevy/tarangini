@@ -16,6 +16,7 @@ import androidx.media3.common.MediaLibraryInfo
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaConstants
 import androidx.media3.session.MediaLibraryService.LibraryParams
 import androidx.media3.session.MediaSession
@@ -23,17 +24,20 @@ import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionError
 import com.siliconcircuits.tarangini.core.domain.model.Folder
+import com.siliconcircuits.tarangini.core.domain.model.SearchResults
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
 import com.siliconcircuits.tarangini.core.playback.TestPlaybackApp
 import com.siliconcircuits.tarangini.core.playback.browse.BrowseItems
 import com.siliconcircuits.tarangini.core.playback.browse.BrowseLabels
 import com.siliconcircuits.tarangini.core.playback.browse.BrowseTree
+import com.siliconcircuits.tarangini.core.playback.browse.CarSearch
 import com.siliconcircuits.tarangini.core.playback.browse.LibraryList
 import com.siliconcircuits.tarangini.core.playback.browse.MediaId
 import com.siliconcircuits.tarangini.core.playback.mapper.LibraryTexts
 import com.siliconcircuits.tarangini.core.playback.service.PlaybackService
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryLetters
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
+import com.siliconcircuits.tarangini.core.testing.library.FakeSearchRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeSongLookup
 import com.siliconcircuits.tarangini.core.testing.library.testSong
 import com.siliconcircuits.tarangini.core.testing.station.FakeStationStreams
@@ -65,14 +69,24 @@ class PlaybackSessionCallbackTest {
     private val car = KnownCallers { packageName, uid -> packageName == CAR && uid == Process.myUid() + CAR_UID_STEP }
     private val library = FakeLibraryRepository()
     private val labels = BrowseLabels("Library", "Songs", "Albums", "Artists", "Folders", "No album", "No artist", null)
-    private val callback = PlaybackSessionCallback(
-        CallerPolicy(service.packageName, Process.myUid(), car),
-        MainScope(),
-        BrowseTree(library, FakeLibraryLetters(library), BrowseItems(labels)),
-        { texts(it) },
-    ) {
+    private val search = FakeSearchRepository()
+    private val callback = callbackOn(library, { texts(it) }) {
         readFailure?.let { throw it }
             ?: saved
+    }
+
+    private fun callbackOn(
+        library: LibraryRepository,
+        texts: suspend (List<MediaItem>) -> List<MediaItem>,
+        resumption: suspend () -> MediaItemsWithStartPosition?,
+    ): PlaybackSessionCallback {
+        val items = BrowseItems(labels)
+        val tree = BrowseTree(library, FakeLibraryLetters(this.library), items)
+        val carSearch = CarSearch(search, library, items)
+        val carPlay = CarPlay(MainScope(), tree, carSearch, library, resumption)
+        val callers = CallerPolicy(service.packageName, Process.myUid(), car)
+        return PlaybackSessionCallback(callers, MainScope(), CarLibrary(tree, carSearch, carPlay), texts, { _, _, _ ->
+        }, resumption)
     }
     private val theCar = caller(CAR, Process.myUid() + CAR_UID_STEP, trusted = true)
 
@@ -179,12 +193,7 @@ class PlaybackSessionCallbackTest {
 
     @Test
     fun `the car gets an error and no crash when the library cannot be read`() {
-        val broken = PlaybackSessionCallback(
-            CallerPolicy(service.packageName, Process.myUid(), car),
-            MainScope(),
-            BrowseTree(BrokenLibrary(library), FakeLibraryLetters(library), BrowseItems(labels)),
-            { it },
-        ) { null }
+        val broken = callbackOn(BrokenLibrary(library), { it }) { null }
 
         val list = broken.onGetChildren(session, theCar, MediaId.Folders.encode(), 0, 100, null).get()
 
@@ -451,6 +460,31 @@ class PlaybackSessionCallbackTest {
             Bundle.EMPTY,
             true,
         )
+
+    @Test
+    fun `the car can search, and asks for the results after it is told there are some`() {
+        search.results = SearchResults(songs = listOf(testSong(1, "Bhairavi", albumId = 7)))
+
+        val accepted = callback.onSearch(session, theCar, "bhai", null).get()
+        val results = callback.onGetSearchResult(session, theCar, "bhai", 0, 100, null).get()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertEquals(LibraryResult.RESULT_SUCCESS, accepted.resultCode)
+        assertEquals(listOf(MediaId.SongIn(1, MediaId.Album(7)).encode()), results.value?.map { it.mediaId })
+    }
+
+    @Test
+    fun `a spoken request from the car plays what it finds, and cannot be added to the queue`() {
+        search.results = SearchResults(songs = listOf(testSong(2, "Bhairavi")))
+        val request = MediaItem.RequestMetadata.Builder().setSearchQuery("bhairavi").build()
+        val spoken = MediaItem.Builder().setRequestMetadata(request).build()
+
+        val queue = callback.onSetMediaItems(session, theCar, listOf(spoken), 0, 0).get()
+        val added = callback.onAddMediaItems(session, theCar, listOf(spoken))
+
+        assertEquals(listOf(testSong(2).mediaUri), queue.mediaItems.map { it.mediaId })
+        assertThrows(ExecutionException::class.java) { added.get() }
+    }
 }
 
 private const val CAR = "com.google.android.projection.gearhead"

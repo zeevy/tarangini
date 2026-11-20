@@ -6,6 +6,7 @@
 
 package com.siliconcircuits.tarangini.core.playback.controller
 
+import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackController
@@ -61,6 +62,15 @@ internal class SessionPlaybackController @Inject constructor(
     }
 
     override fun play(mediaUris: List<String>, startIndex: Int) = loader.replace(mediaUris, startIndex)
+
+    // The words go to the session as a search request, the way a voice assistant sends them, so a
+    // request spoken on the phone and one spoken in the car are answered by the same code.
+    override fun playSpoken(words: String) = send { player ->
+        val request = MediaItem.RequestMetadata.Builder().setSearchQuery(words).build()
+        // The session starts to play when the words found something. A "play" from here would also
+        // start the old queue when they found nothing.
+        player.setMediaItem(MediaItem.Builder().setRequestMetadata(request).build())
+    }
 
     override fun resume() = send { player ->
         // After an error or a stop the player is idle and must be prepared again before it can play.

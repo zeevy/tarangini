@@ -131,6 +131,12 @@ These need the Desktop Head Unit or a car. The steps are in [ANDROID-AUTO.md](AN
 | 74 | Press next, previous and play or pause on the steering wheel, once over Android Auto and once over Bluetooth alone | The phone does the same. The volume buttons change the volume of the car |
 | 75 | Play a song in Tarangini, disconnect the phone from the car, then connect it again | Tarangini is still the player the car shows, with the same song at the same place. It does not start to play by itself unless the car is set to resume |
 | 76 | With nothing playing, press play on the steering wheel after Tarangini was the last player | The last queue goes on from where it stopped |
+| 77 | In the car open the search of Tarangini and type or say a part of a song title | Songs, then artists, then albums are listed. A tap on a song plays it |
+| 78 | Say "play (a song title) on Tarangini" | That song plays |
+| 79 | Say "play songs by (an artist) on Tarangini" | The songs of the artist play |
+| 80 | Say "play (words that match nothing) on Tarangini" | Nothing plays, and the car shows that nothing matches. No silence with a playing state |
+| 81 | Say "play music on Tarangini" once with a queue from before and once after the app data was cleared | The last queue goes on. With no queue, songs of the library play in a mixed order |
+| 82 | On the phone alone, with the app closed, say "play (a song title) on Tarangini" to the assistant | The app opens and the song plays |
 
 ## Results
 
