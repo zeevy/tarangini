@@ -415,6 +415,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D42 | Radio streams play through the one player: Icecast, Shoutcast, HLS and playlist files (`.pls`, `.m3u`) with limits on size, redirects and depth. Only `http` and `https` are followed. Plain `http` is allowed because many stations have nothing else. See [ADR 0020](adr/0020-radio-streams.md) | 20 Nov 2026 | A playlist file from an unknown server can never make the app loop or open a file of the phone |
 | D43 | The song title a station sends is cleaned and written into the item that plays, so every screen, the notification and the car show it. With no title the name of the station shows. See [ADR 0021](adr/0021-station-song-titles.md) | 20 Nov 2026 | A text from an unknown server is never shown as it comes, and is at most 200 characters |
 | D44 | A stream that drops is tried again for 2 minutes, with waits of at most 5 seconds, then the next address of the station is tried, then the error shows with a retry button. Nothing watches the network. See [ADR 0022](adr/0022-stream-reconnect.md) | 20 Nov 2026 | The player keeps the loading state while it tries, so no screen shows a failure that mends itself |
+| D45 | A station is added with a name and a stream address. The address is checked in the form, in the store and by the player; a Test button tries it without playing. See [ADR 0023](adr/0023-user-stations.md) | 20 Nov 2026 | Only complete `http` and `https` addresses with no login are stored |
 
 ## 9. Checks before building
 

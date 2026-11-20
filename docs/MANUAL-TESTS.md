@@ -97,6 +97,10 @@ Run with about 10,000 songs on a mid range phone.
 | 56 | Needs a station added in the app. Play a station, turn the network off for 30 seconds, turn it on | The screens show that it loads. The station plays again with no tap, a few seconds after the network is back |
 | 57 | Play a station and leave the network off for more than 2 minutes | Now playing shows "No connection to the station" with "Try again", and the notification shows an error. With the network back, "Try again" plays |
 | 58 | Store a station with a dead first address and a good second one, and play it | The station plays from the second address after a short wait |
+| 59 | Radio tab, add a station with a real Icecast address. Tap Test, then Save, then the station | Test says that a stream answers. The station is in the list and plays, with its name in the mini player and the notification |
+| 60 | Add one station each with an HLS (`.m3u8`), a `.pls` and a `.m3u` address and play them | Each one plays |
+| 61 | Edit a station, then remove it | The new name shows in the list. Remove asks first, and the station is gone after "Remove" |
+| 62 | Play a saved station, then press Next on a headset or in the car | The next saved station plays |
 
 ## Playback: resume
 

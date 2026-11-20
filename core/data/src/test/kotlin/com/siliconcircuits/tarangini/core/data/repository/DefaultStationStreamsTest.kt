@@ -45,6 +45,24 @@ class DefaultStationStreamsTest {
     }
 
     @Test
+    fun `names are found by address, and the station stored first wins a shared address`() = runTest {
+        database.addStation("First", urls = listOf("https://same.example/", "https://first.example/"))
+        database.addStation("Second", urls = listOf("https://second.example/", "https://same.example/"))
+
+        val names = streams.namesByAddress(
+            listOf(
+                "https://second.example/",
+                "https://same.example/",
+                "https://same.example/",
+                "https://unknown.example/",
+            ),
+        )
+
+        assertEquals(mapOf("https://second.example/" to "Second", "https://same.example/" to "First"), names)
+        assertEquals(emptyMap<String, String>(), streams.namesByAddress(emptyList()))
+    }
+
+    @Test
     fun `an address that two stations have gives the station stored first`() = runTest {
         database.addStation("First", urls = listOf("https://same.example/", "https://first.example/"))
         database.addStation("Second", urls = listOf("https://second.example/", "https://same.example/"))

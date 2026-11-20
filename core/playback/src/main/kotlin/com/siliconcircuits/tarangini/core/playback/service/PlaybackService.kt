@@ -57,7 +57,7 @@ internal class PlaybackService : MediaLibraryService() {
         val app = EntryPointAccessors.fromApplication(applicationContext, Dependencies::class.java)
         val player = createPlayer(this, app::httpClient)
         player.addListener(StreamFailover(player, app.stationStreams(), app.playbackScope()))
-        val texts = LibraryTexts(app.songLookup())
+        val texts = LibraryTexts(app.songLookup(), app.stationStreams())
         val resume = PlaybackResume(player, app.resumeStore(), app.playbackScope(), texts::addTo)
         val callback = PlaybackSessionCallback(
             callers = CallerPolicy(ownPackage = packageName, ownUid = Process.myUid()),

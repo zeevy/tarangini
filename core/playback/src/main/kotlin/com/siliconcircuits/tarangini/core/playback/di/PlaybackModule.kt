@@ -11,16 +11,19 @@ package com.siliconcircuits.tarangini.core.playback.di
 
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackController
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackQueue
+import com.siliconcircuits.tarangini.core.domain.station.StreamTester
 import com.siliconcircuits.tarangini.core.playback.controller.MediaControllerConnector
 import com.siliconcircuits.tarangini.core.playback.controller.SessionConnector
 import com.siliconcircuits.tarangini.core.playback.controller.SessionPlaybackController
 import com.siliconcircuits.tarangini.core.playback.controller.SessionPlaybackQueue
+import com.siliconcircuits.tarangini.core.playback.stream.DefaultStreamTester
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -37,11 +40,18 @@ internal abstract class PlaybackModule {
     @Binds
     abstract fun sessionConnector(connector: MediaControllerConnector): SessionConnector
 
+    @Binds
+    abstract fun streamTester(tester: DefaultStreamTester): StreamTester
+
     companion object {
         /** A media controller may be used only on the main thread, so the scope runs there. */
         @Provides
         @Singleton
         @PlaybackCoroutineScope
         fun playbackScope(): CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+
+        @Provides
+        @StreamIoDispatcher
+        fun streamIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
     }
 }

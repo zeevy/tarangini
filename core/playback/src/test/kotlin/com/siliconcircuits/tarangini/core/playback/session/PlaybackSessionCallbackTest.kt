@@ -23,6 +23,7 @@ import com.siliconcircuits.tarangini.core.playback.mapper.LibraryTexts
 import com.siliconcircuits.tarangini.core.playback.service.PlaybackService
 import com.siliconcircuits.tarangini.core.testing.library.FakeSongLookup
 import com.siliconcircuits.tarangini.core.testing.library.testSong
+import com.siliconcircuits.tarangini.core.testing.station.FakeStationStreams
 import java.util.concurrent.ExecutionException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.MainScope
@@ -137,7 +138,7 @@ class PlaybackSessionCallbackTest {
     fun `an accepted item gets the texts of the library, and keeps its checked address`() {
         val uri = "content://media/external/audio/media/7"
         val songs = FakeSongLookup(listOf(testSong(7, title = "Bhairavi", artist = "Ravi").copy(mediaUri = uri)))
-        texts = LibraryTexts(songs)::addTo
+        texts = LibraryTexts(songs, FakeStationStreams())::addTo
         val asked = MediaItem.Builder()
             .setMediaId(uri)
             .setUri(uri)
@@ -175,7 +176,11 @@ class PlaybackSessionCallbackTest {
     @Test
     fun `an item whose id is not its address keeps the id and gets the texts of the checked address`() {
         val uri = "content://media/external/audio/media/7"
-        texts = LibraryTexts(FakeSongLookup(listOf(testSong(7, title = "Bhairavi").copy(mediaUri = uri))))::addTo
+        texts =
+            LibraryTexts(
+                FakeSongLookup(listOf(testSong(7, title = "Bhairavi").copy(mediaUri = uri))),
+                FakeStationStreams(),
+            )::addTo
 
         val accepted = added(MediaItem.Builder().setMediaId("another id").setUri(uri).build())
 
@@ -185,8 +190,26 @@ class PlaybackSessionCallbackTest {
     }
 
     @Test
+    fun `a stream gets the name its station was stored with, and a stream of no station gets none`() {
+        val stored = "https://radio.example/stream"
+        texts = LibraryTexts(FakeSongLookup(), FakeStationStreams(names = mapOf(stored to "Radio Bhairavi")))::addTo
+
+        val known = added(MediaItem.Builder().setMediaId(stored).setUri(stored).build())
+        val unknown = added(MediaItem.Builder().setMediaId("x").setUri("https://other.example/").build())
+
+        assertEquals("Radio Bhairavi", known.mediaMetadata.station.toString())
+        assertEquals("Radio Bhairavi", known.mediaMetadata.title.toString())
+        assertEquals(Uri.parse(stored), known.localConfiguration?.uri)
+        assertEquals(null, unknown.mediaMetadata.station)
+    }
+
+    @Test
     fun `an item is accepted without texts when the library cannot be read`() {
-        texts = LibraryTexts(FakeSongLookup(failure = IllegalStateException("The database is closed")))::addTo
+        texts =
+            LibraryTexts(
+                FakeSongLookup(failure = IllegalStateException("The database is closed")),
+                FakeStationStreams(),
+            )::addTo
         val uri = "content://media/external/audio/media/7"
         val asked = MediaItem.Builder().setMediaId(uri).setUri(uri).build()
 
