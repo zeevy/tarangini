@@ -16,6 +16,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
+import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import org.junit.Assert.assertEquals
@@ -136,6 +137,25 @@ class NowPlayingContentTest {
         composeRule.onNodeWithText("Radio Mirchi").assertIsDisplayed()
         composeRule.onNodeWithText("Unknown artist").assertDoesNotExist()
         composeRule.onNodeWithText("Live").assertIsDisplayed()
+    }
+
+    @Test
+    fun `a station the player gave up on says why, and the button tries again`() {
+        show(song.copy(durationMs = null, showPause = false, error = PlaybackError.NETWORK))
+
+        composeRule.onNodeWithText("No connection to the station. Check the network.").assertIsDisplayed()
+        composeRule.onNodeWithText("Live").assertDoesNotExist()
+        composeRule.onNodeWithText("Try again").performClick()
+
+        assertEquals(listOf("toggle"), done)
+    }
+
+    @Test
+    fun `a song with an error shows the reason in place of the seek bar`() {
+        show(song.copy(showPause = false, error = PlaybackError.FILE_NOT_AVAILABLE))
+
+        composeRule.onNodeWithText("This file is not there any more.").assertIsDisplayed()
+        composeRule.onNodeWithText("Try again").assertIsDisplayed()
     }
 
     @Test

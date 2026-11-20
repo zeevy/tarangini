@@ -8,6 +8,11 @@
     <string name="now_playing_title">Now playing</string>
     <string name="mini_player_open">Open the player</string>
     <string name="player_loading">Loading</string>
+    <string name="player_error_network">No connection to the station. Check the network.</string>
+    <string name="player_error_file">This file is not there any more.</string>
+    <string name="player_error_cannot_play">This cannot be played.</string>
+    <string name="player_error_unknown">Playing did not work.</string>
+    <string name="player_try_again">Try again</string>
     <string name="now_playing_empty_title">Nothing is playing</string>
     <string name="now_playing_empty_text">Pick a song in the library to start.</string>
     <string name="now_playing_position">Position in the song</string>

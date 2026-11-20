@@ -8,6 +8,7 @@ package com.siliconcircuits.tarangini.feature.player.nowplaying
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackController
@@ -35,6 +36,8 @@ import kotlinx.coroutines.withTimeoutOrNull
  * @property positionMs how far the item has played. After a seek it is the place asked for, until
  *   the player is there
  * @property durationMs the length of the item, or null for a live stream, which has no seek bar
+ * @property error why the item does not play, or null. For a stream it is set only after the player
+ *   has given up trying
  */
 internal data class NowPlayingUiState(
     val title: String?,
@@ -47,6 +50,7 @@ internal data class NowPlayingUiState(
     val durationMs: Long?,
     val shuffle: Boolean,
     val repeat: RepeatMode,
+    val error: PlaybackError? = null,
 ) {
     val isLive: Boolean get() = durationMs == null
 }
@@ -134,5 +138,6 @@ private fun PlaybackState.toUiState(seekTarget: SeekTarget?): NowPlayingUiState?
         durationMs = length,
         shuffle = shuffle,
         repeat = repeat,
+        error = error,
     )
 }

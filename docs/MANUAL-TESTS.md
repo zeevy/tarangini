@@ -94,6 +94,9 @@ Run with about 10,000 songs on a mid range phone.
 | 53 | Play a station for 10 minutes with the screen off, on Wi-Fi | The sound does not stop |
 | 54 | Needs a station added in the app. Play a station that sends song titles and wait for the next song | The mini player, now playing, the notification and the lock screen show the new title within a few seconds, with the station under it |
 | 55 | Play a station that sends no titles | Its name is the title, and the line under it says "Live" in the mini player. Nothing says "Unknown artist" |
+| 56 | Needs a station added in the app. Play a station, turn the network off for 30 seconds, turn it on | The screens show that it loads. The station plays again with no tap, a few seconds after the network is back |
+| 57 | Play a station and leave the network off for more than 2 minutes | Now playing shows "No connection to the station" with "Try again", and the notification shows an error. With the network back, "Try again" plays |
+| 58 | Store a station with a dead first address and a good second one, and play it | The station plays from the second address after a short wait |
 
 ## Playback: resume
 

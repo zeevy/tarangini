@@ -9,9 +9,11 @@ package com.siliconcircuits.tarangini.core.playback
 import android.app.Application
 import com.siliconcircuits.tarangini.core.domain.playback.ResumeStore
 import com.siliconcircuits.tarangini.core.domain.repository.SongLookup
+import com.siliconcircuits.tarangini.core.domain.repository.StationStreams
 import com.siliconcircuits.tarangini.core.playback.service.PlaybackService
 import com.siliconcircuits.tarangini.core.testing.library.FakeSongLookup
 import com.siliconcircuits.tarangini.core.testing.playback.FakeResumeStore
+import com.siliconcircuits.tarangini.core.testing.station.FakeStationStreams
 import dagger.hilt.internal.GeneratedComponent
 import dagger.hilt.internal.GeneratedComponentManager
 import kotlinx.coroutines.CoroutineScope
@@ -36,6 +38,8 @@ internal class TestPlaybackApp :
         override fun songLookup(): SongLookup = songs
 
         override fun httpClient(): OkHttpClient = OkHttpClient()
+
+        override fun stationStreams(): StationStreams = FakeStationStreams()
 
         override fun playbackScope(): CoroutineScope = scope
     }

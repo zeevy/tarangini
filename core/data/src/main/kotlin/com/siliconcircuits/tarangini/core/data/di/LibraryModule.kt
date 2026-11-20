@@ -15,6 +15,7 @@ import com.siliconcircuits.tarangini.core.data.repository.DefaultLibraryReposito
 import com.siliconcircuits.tarangini.core.data.repository.DefaultSearchRepository
 import com.siliconcircuits.tarangini.core.data.repository.DefaultSettingsRepository
 import com.siliconcircuits.tarangini.core.data.repository.DefaultSongLookup
+import com.siliconcircuits.tarangini.core.data.repository.DefaultStationStreams
 import com.siliconcircuits.tarangini.core.data.work.RescanSchedule
 import com.siliconcircuits.tarangini.core.data.work.WorkManagerRescanSchedule
 import com.siliconcircuits.tarangini.core.domain.library.LibraryScanner
@@ -23,6 +24,7 @@ import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SearchRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SettingsRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SongLookup
+import com.siliconcircuits.tarangini.core.domain.repository.StationStreams
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -46,6 +48,9 @@ internal abstract class LibraryModule {
 
     @Binds
     abstract fun songLookup(lookup: DefaultSongLookup): SongLookup
+
+    @Binds
+    abstract fun stationStreams(streams: DefaultStationStreams): StationStreams
 
     @Binds
     abstract fun searchRepository(repository: DefaultSearchRepository): SearchRepository
