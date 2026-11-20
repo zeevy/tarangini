@@ -18,10 +18,11 @@ A person marks songs as favourites and finds them again in one list, on the phon
 | The media session has one button of its own, a heart (`FavouriteButton`, `core:playback/session`). It shows for a song of the library and its press marks the song that plays | A command that names a song | The notification, the lock screen and the car get the button from the session with no code of their own. A press that names nothing cannot be used to mark another song |
 | The heart command is given to this app, to the car and to callers the system trusts | Only this app | The media panel of the phone is a caller the system trusts and shows the button of the notification |
 | The car has a Favourites tab after Library (`MediaId.Favourites`). A tap on a song plays the favourites from that song on | Favourites as a fifth list under Library | A driver reaches it with one tap. The car allows four tabs and two are used now |
-| The lists the car has open are told after a mark changed | Tell only the Favourites list | The same notice as for a library change, and a mark changes at most once per tap |
+| After a mark changed the car is told about the Favourites list only, when it has it open | Tell every open list, as after a library change | The list the driver looks at must not be read again and lose its place for a heart press |
 
 ## What follows
 
 - Favourite stations, their order by drag and their own copy of name and addresses come back with radio.
+- The car shows the 500 favourites marked last, as every car list has at most 500 rows.
 - A favourite whose file is gone is not listed and keeps its mark for 30 days, as the scan keeps the song.
 - The heart of the session is one button. More buttons (shuffle, repeat) are for the car work in v1.1.

@@ -79,8 +79,9 @@ class LibraryChangeNoticesTest {
     }
 
     @Test
-    fun `the open lists are told after a favourite was marked`() = runTest {
-        val notices = LibraryChangeNotices(library, favourites, backgroundScope, { listOf("favourites") }, told::add)
+    fun `only the favourites list is told after a favourite was marked`() = runTest {
+        val open = { listOf("songs", "favourites") }
+        val notices = LibraryChangeNotices(library, favourites, backgroundScope, open, told::add)
         notices.start()
         pass()
 

@@ -132,9 +132,12 @@ internal class NowPlayingViewModel @Inject constructor(
 
     /** Marks the song that plays as a favourite, or takes the mark away. */
     fun toggleFavourite() {
-        val mark = favourite.value ?: return
-        // A mark that cannot be saved leaves the heart as it was. That says enough.
-        viewModelScope.launch { runCatching { favourites.setFavourite(mark.songId, !mark.on) } }
+        val songId = favourite.value?.songId ?: return
+        // The mark is read again here, so two quick taps are two changes. A mark that cannot be
+        // saved leaves the heart as it was. That says enough.
+        viewModelScope.launch {
+            runCatching { favourites.setFavourite(songId, songId !in favourites.songIds().first()) }
+        }
     }
 
     private suspend fun watchFavourite() {

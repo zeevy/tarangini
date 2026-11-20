@@ -76,4 +76,23 @@ class FavouriteButtonTest {
         assertEquals(emptyList<Long>(), favourites.ids.value)
         assertEquals(listOf("Add", "Remove", "Add"), names().takeLast(3).map { it.single() })
     }
+
+    @Test
+    fun `a press right after the song changed does not reach the song before, and two quick presses are two changes`() =
+        runTest {
+            val button = button()
+            button.nowPlaying(songs[0].mediaUri)
+            runCurrent()
+
+            button.nowPlaying(songs[1].mediaUri)
+            button.toggle()
+            runCurrent()
+            val afterEarlyPress = favourites.ids.value
+            button.toggle()
+            button.toggle()
+            runCurrent()
+
+            assertEquals(emptyList<Long>(), afterEarlyPress)
+            assertEquals(emptyList<Long>(), favourites.ids.value)
+        }
 }

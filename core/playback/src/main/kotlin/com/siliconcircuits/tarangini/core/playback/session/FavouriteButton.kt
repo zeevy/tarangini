@@ -19,6 +19,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
@@ -42,6 +43,8 @@ internal class FavouriteButton(
 
     /** Tells which item plays now, by its id in the queue. Null when nothing is loaded. */
     fun nowPlaying(mediaId: String?) {
+        // Until the mark of the new item is read, a press does nothing. It must never reach the item before.
+        if (mediaId != playing.value) mark = null
         playing.value = mediaId
     }
 
@@ -61,8 +64,9 @@ internal class FavouriteButton(
 
     /** A press of the button. A mark that cannot be saved leaves the button as it was. */
     fun toggle() {
-        val now = mark ?: return
-        scope.launch { runCatching { favourites.setFavourite(now.songId, !now.on) } }
+        val songId = mark?.songId ?: return
+        // The mark is read again here, so two quick presses are two changes.
+        scope.launch { runCatching { favourites.setFavourite(songId, songId !in favourites.songIds().first()) } }
     }
 
     private fun button(mark: Mark): CommandButton =

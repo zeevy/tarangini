@@ -13,8 +13,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 
 /**
@@ -31,28 +29,32 @@ internal class LibraryChangeNotices(
     private val opened: () -> Collection<String>,
     private val notify: (String) -> Unit,
 ) {
-    private var job: Job? = null
+    private var jobs: List<Job> = emptyList()
 
-    /** Starts to watch the library. */
+    /** Starts to watch the library and the favourites. */
     fun start() {
-        // The first value only says that the reading started.
-        job = scope.launch {
-            // The first value of each is the state at the start, which the car has not read yet.
-            merge(library.changes().drop(1), favourites.songIds().drop(1).map { }).collectLatest {
-                // A scan of many files changes the library many times. The car is told once, after the last change.
-                delay(QUIET_MS)
-                opened().forEach(notify)
-            }
-        }
+        // The first value of each is the state at the start, which the car has not read yet.
+        jobs = listOf(
+            // A scan of many files changes the library many times. The car is told once, after the last change.
+            scope.launch { library.changes().drop(1).collectLatest { tellAfterQuiet { true } } },
+            // A new mark changes one list only. The list the driver looks at is not read again for it.
+            scope.launch { favourites.songIds().drop(1).collectLatest { tellAfterQuiet { it == FAVOURITES } } },
+        )
+    }
+
+    private suspend fun tellAfterQuiet(concerns: (String) -> Boolean) {
+        delay(QUIET_MS)
+        opened().filter(concerns).forEach(notify)
     }
 
     /** Stops the watch. */
     fun end() {
-        job?.cancel()
-        job = null
+        jobs.forEach(Job::cancel)
+        jobs = emptyList()
     }
 
     private companion object {
         const val QUIET_MS = 1_000L
+        val FAVOURITES = MediaId.Favourites.encode()
     }
 }
