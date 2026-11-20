@@ -12,6 +12,7 @@ import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
 import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
+import com.siliconcircuits.tarangini.core.testing.library.FakePlaylistRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeSongLookup
 import com.siliconcircuits.tarangini.core.testing.library.testSong
 import com.siliconcircuits.tarangini.core.testing.playback.FakePlaybackController
@@ -31,6 +32,8 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class NowPlayingViewModelTest {
+    private val playlists = FakePlaylistRepository()
+
     @get:Rule
     val mainDispatcher = MainDispatcherRule()
 
@@ -44,7 +47,7 @@ class NowPlayingViewModelTest {
     private var songs = emptyList<Song>()
 
     private fun TestScope.watched(): NowPlayingViewModel =
-        NowPlayingViewModel(playback, queue, favourites, FakeSongLookup(songs)).also { viewModel ->
+        NowPlayingViewModel(playback, queue, favourites, FakeSongLookup(songs), playlists).also { viewModel ->
             backgroundScope.launch { viewModel.state.collect() }
             runCurrent()
         }
@@ -232,5 +235,19 @@ class NowPlayingViewModelTest {
 
         assertNull(viewModel.state.value?.isFavourite)
         assertEquals(emptyList<Long>(), favourites.ids.value)
+    }
+
+    @Test
+    fun `the song that plays can be put into a new playlist`() = runTest(mainDispatcher.dispatcher) {
+        songs = listOf(testSong(1))
+        playlists.known = songs
+        val viewModel = watched()
+        playback.state.value = loaded()
+        runCurrent()
+
+        viewModel.playlistPick.onCreate(requireNotNull(viewModel.state.value?.songId), "Drive")
+        runCurrent()
+
+        assertEquals(listOf("Drive" to 1), playlists.playlists().map { it.name to it.songCount })
     }
 }

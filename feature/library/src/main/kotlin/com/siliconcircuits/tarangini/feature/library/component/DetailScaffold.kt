@@ -8,6 +8,7 @@ package com.siliconcircuits.tarangini.feature.library.component
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,6 +41,7 @@ internal fun DetailScaffold(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
+    actions: @Composable RowScope.() -> Unit = {},
     content: @Composable () -> Unit,
 ) {
     Scaffold(
@@ -66,6 +68,7 @@ internal fun DetailScaffold(
                 navigationIcon = {
                     BackButton(onClick = onBack)
                 },
+                actions = actions,
             )
         },
     ) { innerPadding ->

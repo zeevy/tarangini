@@ -40,6 +40,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.siliconcircuits.tarangini.core.domain.model.Album
 import com.siliconcircuits.tarangini.core.domain.model.Artist
 import com.siliconcircuits.tarangini.core.domain.model.Folder
+import com.siliconcircuits.tarangini.core.domain.model.Playlist
 import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.domain.model.SongSort
 import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
@@ -56,6 +57,7 @@ import com.siliconcircuits.tarangini.feature.library.component.ListBody
 import com.siliconcircuits.tarangini.feature.library.component.PagedColumn
 import com.siliconcircuits.tarangini.feature.library.list.PagedItems
 import com.siliconcircuits.tarangini.feature.library.permission.AudioPermissionGate
+import com.siliconcircuits.tarangini.feature.library.playlist.PlaylistsTab
 
 /** The lists of the Library tab. The order here is the order of the tabs on screen. */
 internal enum class LibraryTab(val title: Int) {
@@ -63,6 +65,7 @@ internal enum class LibraryTab(val title: Int) {
     ALBUMS(R.string.library_tab_albums),
     ARTISTS(R.string.library_tab_artists),
     FOLDERS(R.string.library_tab_folders),
+    PLAYLISTS(R.string.library_tab_playlists),
 }
 
 /**
@@ -99,12 +102,15 @@ internal fun LibraryScreen(
     onOpenAlbum: (Album) -> Unit,
     onOpenArtist: (Artist) -> Unit,
     onOpenFolder: (Folder) -> Unit,
+    onOpenPlaylist: (Playlist) -> Unit,
     onSearch: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // The lists are their own function, so the ViewModel is made only once the permission is there.
     // Nothing is read or scanned before.
-    AudioPermissionGate(modifier = modifier) { LibraryLists(onOpenAlbum, onOpenArtist, onOpenFolder, onSearch) }
+    AudioPermissionGate(modifier = modifier) {
+        LibraryLists(onOpenAlbum, onOpenArtist, onOpenFolder, onOpenPlaylist, onSearch)
+    }
 }
 
 @Composable
@@ -112,6 +118,7 @@ private fun LibraryLists(
     onOpenAlbum: (Album) -> Unit,
     onOpenArtist: (Artist) -> Unit,
     onOpenFolder: (Folder) -> Unit,
+    onOpenPlaylist: (Playlist) -> Unit,
     onSearch: () -> Unit,
     viewModel: LibraryViewModel = hiltViewModel(),
 ) {
@@ -131,7 +138,7 @@ private fun LibraryLists(
             onSearch = onSearch,
         )
     }
-    LibraryContent(state, viewModel.songActions, actions)
+    LibraryContent(state, viewModel.songActions, actions, playlists = { PlaylistsTab(onOpenPlaylist) })
 }
 
 @OptIn(ExperimentalMaterial3Api::class) // TopAppBar and the tab row are still marked experimental in Material 3.
@@ -142,6 +149,7 @@ internal fun LibraryContent(
     actions: LibraryActions,
     modifier: Modifier = Modifier,
     firstTab: LibraryTab = LibraryTab.SONGS,
+    playlists: @Composable () -> Unit = {},
 ) {
     var tab by rememberSaveable { mutableStateOf(firstTab) }
     // One scroll place per tab, kept here, so a tab comes back where it was left.
@@ -210,6 +218,9 @@ internal fun LibraryContent(
                         }
                     }
                 }
+
+                // The playlists have their own state, so a test of the other tabs needs none of it.
+                LibraryTab.PLAYLISTS -> playlists()
             }
         }
     }

@@ -40,6 +40,7 @@ import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepositor
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryLetters
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakePlayHistory
+import com.siliconcircuits.tarangini.core.testing.library.FakePlaylistRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeSearchRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeSongLookup
 import com.siliconcircuits.tarangini.core.testing.library.testSong
@@ -88,7 +89,7 @@ class PlaybackSessionCallbackTest {
         resumption: suspend () -> MediaItemsWithStartPosition?,
     ): PlaybackSessionCallback {
         val items = BrowseItems(labels)
-        val tree = BrowseTree(library, FakeLibraryLetters(this.library), items, favourites, history)
+        val tree = BrowseTree(library, FakeLibraryLetters(this.library), items, favourites, history, playlists)
         val carSearch = CarSearch(search, library, items)
         val carPlay = CarPlay(MainScope(), tree, carSearch, library, resumption)
         val problems = CarProblems(
@@ -171,7 +172,7 @@ class PlaybackSessionCallbackTest {
         assertEquals(MediaId.Root.encode(), root.value?.mediaId)
         assertEquals(true, root.value?.mediaMetadata?.isBrowsable)
         assertEquals(listOf("Library", "Favourites", "Recent"), tabs.map { it.mediaMetadata.title })
-        assertEquals(listOf("Songs", "Albums", "Artists", "Folders"), lists.map { it.mediaMetadata.title })
+        assertEquals(listOf("Songs", "Albums", "Artists", "Folders", "Playlists"), lists.map { it.mediaMetadata.title })
     }
 
     @Test
@@ -525,7 +526,7 @@ class PlaybackSessionCallbackTest {
         val sections = callback.onGetChildren(session, theCar, MediaId.Library.encode(), 0, 100, null).get()
 
         assertEquals(LibraryResult.RESULT_SUCCESS, sections.resultCode)
-        assertEquals(4, sections.value?.size)
+        assertEquals(5, sections.value?.size)
     }
 
     @Test
@@ -563,6 +564,8 @@ class PlaybackSessionCallbackTest {
         }
 }
 
+private val playlists = FakePlaylistRepository()
+
 private val labels =
     BrowseLabels(
         "Library", "Songs", "Albums", "Artists", "Folders", "No album", "No artist", null,
@@ -570,6 +573,7 @@ private val labels =
         favouritesIcon = null,
         recent = "Recent",
         recentIcon = null,
+        playlists = "Playlists",
     )
 
 private fun caller(packageName: String, uid: Int, trusted: Boolean): MediaSession.ControllerInfo =

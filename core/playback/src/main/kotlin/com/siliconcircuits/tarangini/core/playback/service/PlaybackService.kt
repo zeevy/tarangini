@@ -24,6 +24,7 @@ import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryLetters
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
 import com.siliconcircuits.tarangini.core.domain.repository.PlayHistory
+import com.siliconcircuits.tarangini.core.domain.repository.PlaylistRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SearchRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SongLookup
 import com.siliconcircuits.tarangini.core.domain.repository.StationStreams
@@ -32,6 +33,7 @@ import com.siliconcircuits.tarangini.core.playback.browse.BrowseItems
 import com.siliconcircuits.tarangini.core.playback.browse.BrowseTree
 import com.siliconcircuits.tarangini.core.playback.browse.CarSearch
 import com.siliconcircuits.tarangini.core.playback.browse.LibraryChangeNotices
+import com.siliconcircuits.tarangini.core.playback.browse.PersonalLists
 import com.siliconcircuits.tarangini.core.playback.browse.browseLabels
 import com.siliconcircuits.tarangini.core.playback.di.PlaybackCoroutineScope
 import com.siliconcircuits.tarangini.core.playback.mapper.LibraryTexts
@@ -81,6 +83,8 @@ internal class PlaybackService : MediaLibraryService() {
         fun favouriteRepository(): FavouriteRepository
 
         fun playHistory(): PlayHistory
+
+        fun playlistRepository(): PlaylistRepository
     }
 
     /** What the service takes from the app. The system makes a service, so nothing can be handed to its constructor. */
@@ -138,8 +142,7 @@ internal class PlaybackService : MediaLibraryService() {
         // Int.MAX_VALUE as the number of rows means "not known": the car reads the list again and counts itself.
         notices = LibraryChangeNotices(
             app.libraryRepository(),
-            app.favouriteRepository(),
-            app.playHistory(),
+            PersonalLists(app.favouriteRepository(), app.playHistory(), app.playlistRepository()),
             app.playbackScope(),
             callback.opened::all,
         ) { listId ->
@@ -153,6 +156,7 @@ internal class PlaybackService : MediaLibraryService() {
         items,
         app.favouriteRepository(),
         app.playHistory(),
+        app.playlistRepository(),
     )
 
     /** Writes a song into the play history once it was heard for some seconds. A stream is no song and is left out. */

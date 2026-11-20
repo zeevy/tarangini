@@ -11,6 +11,7 @@ import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepositor
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryLetters
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakePlayHistory
+import com.siliconcircuits.tarangini.core.testing.library.FakePlaylistRepository
 import com.siliconcircuits.tarangini.core.testing.library.testAlbum
 import com.siliconcircuits.tarangini.core.testing.library.testArtist
 import com.siliconcircuits.tarangini.core.testing.library.testFolder
@@ -29,6 +30,7 @@ import org.robolectric.RobolectricTestRunner
 class BrowseTreeTest {
     private val favourites = FakeFavouriteRepository()
     private val history = FakePlayHistory()
+    private val playlists = FakePlaylistRepository()
     private val library = FakeLibraryRepository()
     private val labels =
         BrowseLabels(
@@ -37,8 +39,10 @@ class BrowseTreeTest {
             favouritesIcon = null,
             recent = "Recent",
             recentIcon = null,
+            playlists = "Playlists",
         )
-    private val tree = BrowseTree(library, FakeLibraryLetters(library), BrowseItems(labels), favourites, history)
+    private val tree =
+        BrowseTree(library, FakeLibraryLetters(library), BrowseItems(labels), favourites, history, playlists)
 
     private suspend fun under(id: MediaId, tabLimit: Int = MAX_TABS): List<MediaItem> =
         requireNotNull(tree.children(id, tabLimit))
@@ -78,6 +82,24 @@ class BrowseTreeTest {
         assertEquals(listOf(1L, 2L) to 1, queue?.songs?.map { it.id } to queue?.index)
     }
 
+    @Test
+    fun `a playlist lists its songs in its order, each once, and a tap plays them from that song on`() = runTest {
+        library.songs = listOf(testSong(1, "One"), testSong(2, "Two"), testSong(3, "Three"))
+        playlists.known = library.songs
+        val id = requireNotNull(playlists.create("Drive"))
+        listOf(3L, 1L, 3L, 2L).forEach { playlists.add(id, it) }
+
+        val lists = under(MediaId.Playlists)
+        val rows = under(MediaId.Playlist(id))
+        val queue = tree.queue(MediaId.SongIn(1, MediaId.Playlist(id)))
+
+        assertEquals(listOf("Drive"), lists.titles())
+        assertEquals(listOf(MediaId.Playlist(id)), lists.ids())
+        assertEquals(listOf("Three", "One", "Two"), rows.titles())
+        assertEquals(listOf(3L, 1L, 2L) to 1, queue?.songs?.map { it.id } to queue?.index)
+        assertEquals(emptyList<String>(), under(MediaId.Playlist(999)).titles())
+    }
+
     private fun longLibrary() {
         val a = (1L..60L).map { testSong(it, title = "a song %03d".format(it)) }
         val b = (61L..110L).map { testSong(it, title = "B song %03d".format(it)) }
@@ -87,9 +109,9 @@ class BrowseTreeTest {
     }
 
     @Test
-    fun `the top shows the three tabs, and the Library shows its four lists`() = runTest {
+    fun `the top shows the three tabs, and the Library shows its five lists`() = runTest {
         assertEquals(listOf("Library", "Favourites", "Recent"), under(MediaId.Root).titles())
-        assertEquals(listOf("Songs", "Albums", "Artists", "Folders"), under(MediaId.Library).titles())
+        assertEquals(listOf("Songs", "Albums", "Artists", "Folders", "Playlists"), under(MediaId.Library).titles())
     }
 
     @Test

@@ -9,6 +9,7 @@ package com.siliconcircuits.tarangini.feature.library
 import androidx.lifecycle.SavedStateHandle
 import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
+import com.siliconcircuits.tarangini.core.testing.library.FakePlaylistRepository
 import com.siliconcircuits.tarangini.core.testing.library.testAlbum
 import com.siliconcircuits.tarangini.core.testing.library.testFolder
 import com.siliconcircuits.tarangini.core.testing.library.testSong
@@ -46,7 +47,8 @@ class DetailViewModelsTest {
     }
     private val playback = FakePlaybackController()
     private val favourites = FakeFavouriteRepository()
-    private val actions = SongActions(playback, FakePlaybackQueue(), favourites)
+    private val playlists = FakePlaylistRepository()
+    private val actions = SongActions(playback, FakePlaybackQueue(), favourites, playlists)
 
     @Test
     fun `an album shows its songs and plays them as the queue`() = runTest(mainDispatcher.dispatcher) {

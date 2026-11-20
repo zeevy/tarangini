@@ -8,14 +8,16 @@ package com.siliconcircuits.tarangini.core.data.di
 
 import com.siliconcircuits.tarangini.core.data.repository.DefaultFavouriteRepository
 import com.siliconcircuits.tarangini.core.data.repository.DefaultPlayHistory
+import com.siliconcircuits.tarangini.core.data.repository.DefaultPlaylistRepository
 import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
 import com.siliconcircuits.tarangini.core.domain.repository.PlayHistory
+import com.siliconcircuits.tarangini.core.domain.repository.PlaylistRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 
-/** Gives the screens and the playback service the lists a person makes by listening: favourites and history. */
+/** Gives the screens and the playback service the lists a person makes: favourites, history and playlists. */
 @Module
 @InstallIn(SingletonComponent::class)
 internal abstract class FavouritesModule {
@@ -24,4 +26,7 @@ internal abstract class FavouritesModule {
 
     @Binds
     abstract fun playHistory(history: DefaultPlayHistory): PlayHistory
+
+    @Binds
+    abstract fun playlistRepository(repository: DefaultPlaylistRepository): PlaylistRepository
 }

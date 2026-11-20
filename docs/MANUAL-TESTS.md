@@ -148,6 +148,10 @@ These need the Desktop Head Unit or a car. The steps are in [ANDROID-AUTO.md](AN
 | 91 | Play a song in the car and press the heart on the player screen of the car | The heart changes, and the song shows in the Favourites tab of the car and of the phone |
 | 92 | Play three songs for more than 10 seconds each and skip a fourth after 3 seconds, then open Recent in the car | The tab lists the three songs, the one heard last first. The skipped song is not there |
 | 93 | Tap a song in Recent in the car | The song plays with the recent songs as the queue |
+| 94 | Make a playlist, add three songs from the Library and one from now playing, then close the app from the recent apps and open it again | The playlist is there with its four songs in the order they were added |
+| 95 | In the playlist move a song to the top from its menu, remove another, then tap Play and after that Shuffle | The order changes at once, the removed song is gone, Play starts with the first song, and Shuffle starts in another order |
+| 96 | Delete a playlist: answer Cancel first, then Delete | Cancel keeps it. Delete removes it and goes back to the list of playlists. The songs are still in the Library |
+| 97 | Open Library, then Playlists in the car, open a playlist and tap its second song | The car lists the playlists and the songs in their order, and the song plays with the playlist as the queue |
 
 ## Results
 

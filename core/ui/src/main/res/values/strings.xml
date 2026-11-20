@@ -26,6 +26,11 @@
     <string name="song_add_favourite">Add to favourites</string>
     <string name="song_remove_favourite">Remove from favourites</string>
     <string name="song_is_favourite">Favourite</string>
+    <string name="song_add_to_playlist">Add to playlist</string>
+    <string name="playlist_new">New playlist</string>
+    <string name="playlist_name">Name</string>
+    <string name="playlist_create">Create</string>
+    <string name="action_cancel">Cancel</string>
     <string name="unknown_artist">Unknown artist</string>
     <string name="unknown_album">Unknown album</string>
     <string name="row_two_parts">%1$s · %2$s</string>
