@@ -27,6 +27,6 @@ The app is open core: a free public core and a closed premium module that only t
 
 ## Open points
 
-- A lawyer has not reviewed the agreement text, the dual licensing setup or the trademark note. This is check C9, and it must be done before the first outside contribution is merged.
+- The agreement text, the dual licensing setup and the trademark note are written by the maintainer, with no review by a lawyer, and none is planned. The agreement is final as version 1.0 (20 Nov 2026). It has the usual parts of such agreements: a licence and no transfer of copyright, the right to license under other terms, a patent licence, and what the contributor confirms. This closes check C9.
 - One merged contribution with no agreement makes the Play build a breach of that contributor's licence. The branch rule that requires the CLA check is the guard, once the bot is there.
 - Code of the owner that was public under MPL-2.0 before this change (19 Nov 2026, for a few hours) stays usable under MPL-2.0 by anyone who took a copy then.
