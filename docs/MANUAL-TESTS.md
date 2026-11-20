@@ -152,6 +152,9 @@ These need the Desktop Head Unit or a car. The steps are in [ANDROID-AUTO.md](AN
 | 95 | In the playlist move a song to the top from its menu, remove another, then tap Play and after that Shuffle | The order changes at once, the removed song is gone, Play starts with the first song, and Shuffle starts in another order |
 | 96 | Delete a playlist: answer Cancel first, then Delete | Cancel keeps it. Delete removes it and goes back to the list of playlists. The songs are still in the Library |
 | 97 | Open Library, then Playlists in the car, open a playlist and tap its second song | The car lists the playlists and the songs in their order, and the song plays with the playlist as the queue |
+| 98 | Install the app new and open it | Home shows the welcome text and "Open library", and no empty section. The button opens the Library tab |
+| 99 | Play a song for more than 10 seconds, pause it, and go to Home. Then close the app from the recent apps and open it again | Home shows "Continue listening" with the song and "Recently played" with it. After the restart both are still there, and the button goes on with the song |
+| 100 | With 10,000 songs in the library, open the app from the launcher | Home is on screen in under 1 second |
 
 ## Results
 

@@ -6,4 +6,12 @@
 
 plugins {
     id("tarangini.android.feature")
+    id("tarangini.android.hilt")
+}
+
+dependencies {
+    implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+
+    testImplementation(libs.kotlinx.coroutines.test)
 }
