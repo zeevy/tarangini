@@ -10,7 +10,7 @@ Closes #
 
 ## Screenshots
 
-<!-- For a change that people can see: light and dark. Delete this section otherwise. -->
+<!-- For a change that people can see. Delete this section otherwise. -->
 
 ## Checklist
 

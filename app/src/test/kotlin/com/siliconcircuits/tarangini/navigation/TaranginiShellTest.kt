@@ -40,7 +40,7 @@ class TaranginiShellTest {
     @Before
     fun showShell() {
         composeRule.setContent {
-            TaranginiTheme(dynamicColor = false) { TaranginiShell() }
+            TaranginiTheme { TaranginiShell() }
         }
     }
 

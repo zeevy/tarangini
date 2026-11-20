@@ -6,5 +6,8 @@
 -->
 <resources>
     <!-- Only the window before the first frame uses this. Every screen is drawn by the Compose theme. -->
-    <style name="Theme.Tarangini" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.Tarangini" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/window_background</item>
+    </style>
+    <color name="window_background">#06080F</color>
 </resources>

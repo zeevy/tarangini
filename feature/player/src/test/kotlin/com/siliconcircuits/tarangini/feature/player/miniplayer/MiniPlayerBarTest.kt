@@ -48,7 +48,7 @@ class MiniPlayerBarTest {
 
     private fun show(state: MiniPlayerUiState) {
         composeRule.setContent {
-            TaranginiTheme(dynamicColor = false) {
+            TaranginiTheme {
                 MiniPlayerBar(state, { done += "toggle" }, { done += "next" }, { done += "open" })
             }
         }

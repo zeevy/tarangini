@@ -76,7 +76,7 @@ The agreement has a version. If the text changes, the new version covers only wh
 ## The pull request
 
 - Fill in the pull request form. Link the issue with `Closes #<number>`.
-- Add screenshots for a change that people can see, in light and dark.
+- Add screenshots for a change that people can see.
 - A maintainer reviews it. Small pull requests are reviewed faster.
 
 ## Rules with ids
@@ -154,7 +154,7 @@ A change must never do these.
 | U6 | Every user facing text is a string resource, with plurals where a count shows. No text built by joining strings | Lint |
 | U7 | Colours, type, shapes and spacing come from the theme in `core:ui`. No hard-coded colour, `sp` or `dp` value for these in a feature | detekt, review |
 | U8 | Shared pieces (song row, station tile, empty and error states) live in `core:ui`. A feature does not keep a private copy | Review |
-| U9 | Every screen has loading, empty and error states, and works in light, dark, dynamic colour, at 320dp width and at the largest font size | Screenshot tests |
+| U9 | Every screen has loading, empty and error states, and works in the one dark look of the app, at 320dp width and at the largest font size | Screenshot tests |
 | U10 | Accessibility: a content description on every icon button, touch targets of at least 48dp, WCAG AA contrast, works with TalkBack | Lint, review |
 | U11 | Phone first and simple. No hover-only effects and no gesture that has no visible control. After a tap, the result is in view | Review |
 | U12 | A composable takes a `Modifier` as its first optional parameter and passes it to its root | detekt |
@@ -216,7 +216,7 @@ A change must never do these.
 | T1 | Every change ships with tests in the style of the tests next to it. A bug fix starts with a test that fails | Review |
 | T2 | Every ViewModel has a test for each state change and each event. Every use case, mapper, parser and codec has unit tests | Review |
 | T3 | Use the fakes in `core:testing`. Add a fake for every new repository interface. A mock is the last choice | Review |
-| T4 | Every screen has screenshot tests of its content composable in light and dark | CI |
+| T4 | Every screen has screenshot tests of its content composable | CI |
 | T5 | Tests do not sleep and do not touch the real network. Use the test dispatcher and recorded responses | Review |
 | T6 | Performance numbers in an issue are measured on a real phone, not guessed | PR checklist |
 

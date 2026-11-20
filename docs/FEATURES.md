@@ -120,8 +120,8 @@ The calls the app needs: `/json/stations/search` (`name`, `countrycode`, `langua
 | Feature | Description | Priority | Phone | Auto |
 |---|---|---|---|---|
 | Jetpack Compose and Material 3 | All screens in Compose | [MVP] | Yes | - |
-| Dynamic colour | Material You colours from the wallpaper (every supported phone is Android 12+), with a brand theme as an option | [MVP] | Yes | - |
-| Light and dark themes | Follow the system, or pick one | [MVP] | Yes | - |
+| One dark look | Dark screens with glass panels, white main buttons, one cyan accent and the Manrope font. The same look on the phone and in the car (decision D51) | [MVP] | Yes | - |
+| Light theme and wallpaper colours | Not built. The app is dark only (decision D51) | Not planned | - | - |
 | Mini player | Bar above the bottom navigation on every screen | [MVP] | Yes | - |
 | Full screen now playing | Large art, seek bar, queue, sleep timer, speed | [MVP] | Yes | - |
 | Home screen widget | Art, title, play and pause, next. Built with Jetpack Glance | [v1.1] | Yes | - |
@@ -371,7 +371,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 
 | # | Decision | Date | Effect |
 |---|---|---|---|
-| D1 | minSdk 31 (Android 12) | 19 Nov 2026 | Dynamic colour on every phone. Less old code. `READ_EXTERNAL_STORAGE` is still needed for API 31 and 32 only |
+| D1 | minSdk 31 (Android 12) | 19 Nov 2026 | Less old code. `READ_EXTERNAL_STORAGE` is still needed for API 31 and 32 only |
 | D2 | Android Auto only for MVP | 19 Nov 2026 | One APK for phone and car. Android Automotive OS stays in Future |
 | D3 | Users add stations (name and URL) or pick them from Radio Browser. We ship no station list of our own. Replaces the earlier "our own checked India list" choice | 19 Nov 2026 | Lower legal risk. The India section is only a Radio Browser filter |
 | D4 | Free core app with no ads | 19 Nov 2026 | No Play Billing in MVP or v1.1 |
@@ -421,6 +421,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D48 | Radio is out of the first release. The first release is the player for local files, on the phone and in Android Auto. The Radio tab is not shown and the radio screens are not part of the app; the radio code (streams, song titles, reconnect, stations of the user) stays in the repo for later | 20 Nov 2026 | The bottom bar has three tabs: Home, Library, Favourites. Favourites, recently played and Home cover songs only. The open radio issues are closed until radio work starts again |
 | D49 | The app shows in Android Auto. Android Auto and the Google app may browse and play; they are known by package name, the user id the system gives and the SHA-256 of their signing certificate. See [ADR 0025](adr/0025-android-auto-setup.md) | 20 Nov 2026 | The steps for the Desktop Head Unit are in [ANDROID-AUTO.md](ANDROID-AUTO.md). A new signing key of Google needs a new value in the list |
 | D50 | The car shows one tab, Library, with Songs, Albums, Artists and Folders. A list by name with more than 100 rows is shown by first letter, and no node gives more than 500 rows. A tap on a song plays the list it was shown in, from that song on. Favourites and Recent become tabs when they are built. See [ADR 0026](adr/0026-car-browse-tree.md) | 20 Nov 2026 | The car has no paging and a driver cannot scroll a long list |
+| D51 | The app has one look, and it is dark: glass panels on a near black background, white main buttons, one cyan accent, the Manrope font. The light theme, the indigo brand theme and the wallpaper colours are removed | 20 Nov 2026 | The main place of the app is the car, where a dark screen with large clear text is the safe choice by day and by night. One look means every screen is drawn and checked once, and the phone matches the car. See `docs/adr/0027-one-dark-look.md` |
 | D52 | A spoken "play ..." plays the first that fits, in this order: a song whose title has every word, then an artist, then an album, then the songs the search found by another text. When the assistant says an artist or an album was named, that kind is tried first. With no words the last queue goes on, and with no last queue 500 songs from the whole library play in a mixed order. Words that match nothing start nothing and the caller gets an error text | 20 Nov 2026 | A song title is what people name most, and an exact kind from the assistant is better than a guess. The car search and the spoken request use the search of the phone, so both find the same things. See `docs/adr/0028-car-search-and-voice.md` |
 
 ## 9. Checks before building
