@@ -37,10 +37,14 @@ import okhttp3.OkHttpClient
  */
 // The player is built with our own renderers factory, which is API that may still change.
 @OptIn(UnstableApi::class)
-internal fun createPlayer(context: Context, httpClient: () -> OkHttpClient): ExoPlayer {
+internal fun createPlayer(
+    context: Context,
+    sound: LastSound = LastSound(),
+    httpClient: () -> OkHttpClient,
+): ExoPlayer {
     val music = AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build()
     val retry = StreamRetryPolicy()
-    val player = ExoPlayer.Builder(context, GaplessRenderersFactory(context))
+    val player = ExoPlayer.Builder(context, GaplessRenderersFactory(context, sound))
         .setMediaSourceFactory(
             DefaultMediaSourceFactory(context)
                 .setDataSourceFactory(streamDataSourceFactory(context, httpClient))

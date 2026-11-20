@@ -101,7 +101,8 @@ Run with about 10,000 songs on a mid range phone.
 | 60 | Add one station each with an HLS (`.m3u8`), a `.pls` and a `.m3u` address and play them | Each one plays |
 | 61 | Edit a station, then remove it | The new name shows in the list. Remove asks first, and the station is gone after "Remove" |
 | 62 | Play a saved station, then press Next on a headset or in the car | The next saved station plays |
-| 63 | Play an MP3 that was cut short and still states the length of the whole song, with another song after it | About 4 seconds after its last sound the next song plays. The screen can be off |
+| 63 | Play an MP3 that was cut short and still states the length of the whole song, with another song after it | About 3 seconds after its last sound the next song plays. The screen can be off |
+| 64 | Play a song that has a silent passage of more than 5 seconds in it | The song plays through the passage to its end |
 
 ## Playback: resume
 
@@ -123,3 +124,4 @@ Write each run here: the date, the phone and Android version, the app version, t
 | 19 Nov 2026 | Emulator, Android 17 (API 37) | Trial build of the gapless change that writes the sound of the player to a file | None by ear: the emulator has no sound device. Measured for 16 and 17: no silence at the track changes and the wave goes on in step. Not tried: 18 | dev |
 | 20 Nov 2026 | Emulator, Android 17 (API 37) | Build of the automatic rescan change | None of the ones tried. Tried: 25 without a screen for the library, read from the database of the app (a copied song was in the library within 6 seconds with the app on screen, a deleted one was marked as gone). Partly tried: 26 (the rescan job is registered with the trigger for audio files and "battery not low", ran after a file was copied while the app was in the background, and asked for the next job). Not tried: 26 with the app process gone | dev |
 | 20 Nov 2026 | Pixel 6a, Android 17 (API 37) | Build of the change for files with less sound than they state | None of the ones tried. Tried: 63 with an MP3 of 60 seconds that states 138 seconds (the next song started at second 60, with the screen on and off; a song of 18 seconds after it played to its end, twice) | dev |
+| 20 Nov 2026 | Pixel 6a and emulator, Android 17 (API 37) | Build of the change that tells the end of a file by the sound of the decoder | None of the ones tried. Tried on the phone: 63 with two MP3 files, 60 seconds that state 138 and about a minute that states 281 (the next song started about 3 seconds after the last sound, also from a start inside the silent part; a file of 32 seconds with a right header played to its end). Tried on the emulator: 64 with an MP3 of 20 seconds whose seconds 6 to 14 are silent frames (it played to 19.97 seconds) | dev |

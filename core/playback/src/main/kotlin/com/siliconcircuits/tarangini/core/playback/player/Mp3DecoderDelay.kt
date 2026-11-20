@@ -21,7 +21,9 @@ import androidx.media3.exoplayer.Renderer
 import androidx.media3.exoplayer.audio.AudioRendererEventListener
 import androidx.media3.exoplayer.audio.AudioSink
 import androidx.media3.exoplayer.audio.MediaCodecAudioRenderer
+import androidx.media3.exoplayer.mediacodec.MediaCodecAdapter
 import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
+import java.nio.ByteBuffer
 
 /**
  * The samples an MP3 decoder gives out before the first real one. Media3 adds this number to the
@@ -54,7 +56,8 @@ internal fun Format.forDecoder(decoderName: String?): Format {
 /** Makes the renderers of the player. It differs from the default only in the audio renderer. */
 // A renderers factory is API that may still change.
 @OptIn(UnstableApi::class)
-internal class GaplessRenderersFactory(context: Context) : DefaultRenderersFactory(context) {
+internal class GaplessRenderersFactory(context: Context, private val sound: LastSound) :
+    DefaultRenderersFactory(context) {
     override fun buildAudioRenderers(
         context: Context,
         extensionRendererMode: Int,
@@ -73,13 +76,15 @@ internal class GaplessRenderersFactory(context: Context) : DefaultRenderersFacto
                 eventHandler,
                 eventListener,
                 audioSink,
+                sound,
             )
     }
 }
 
 /** The audio renderer of Media3, with the silence of each track set for the decoder that plays it. */
-// A renderer is API that may still change.
+// A renderer is API that may still change. Its parameters are the ones of the Media3 renderer, plus one.
 @OptIn(UnstableApi::class)
+@Suppress("LongParameterList")
 internal class GaplessAudioRenderer(
     context: Context,
     mediaCodecSelector: MediaCodecSelector,
@@ -87,6 +92,7 @@ internal class GaplessAudioRenderer(
     eventHandler: Handler,
     eventListener: AudioRendererEventListener,
     audioSink: AudioSink,
+    private val sound: LastSound,
 ) : MediaCodecAudioRenderer(
     context,
     mediaCodecSelector,
@@ -97,5 +103,36 @@ internal class GaplessAudioRenderer(
 ) {
     override fun onOutputFormatChanged(format: Format, mediaFormat: MediaFormat?) {
         super.onOutputFormatChanged(format.forDecoder(codecInfo?.name), mediaFormat)
+    }
+
+    // Called for every piece of sound the decoder gives, so it tells that the file still has sound.
+    @Suppress("LongParameterList")
+    override fun processOutputBuffer(
+        positionUs: Long,
+        elapsedRealtimeUs: Long,
+        codec: MediaCodecAdapter?,
+        buffer: ByteBuffer?,
+        bufferIndex: Int,
+        bufferFlags: Int,
+        sampleCount: Int,
+        bufferPresentationTimeUs: Long,
+        isDecodeOnlyBuffer: Boolean,
+        isLastBuffer: Boolean,
+        format: Format,
+    ): Boolean {
+        sound.heard()
+        return super.processOutputBuffer(
+            positionUs,
+            elapsedRealtimeUs,
+            codec,
+            buffer,
+            bufferIndex,
+            bufferFlags,
+            sampleCount,
+            bufferPresentationTimeUs,
+            isDecodeOnlyBuffer,
+            isLastBuffer,
+            format,
+        )
     }
 }
