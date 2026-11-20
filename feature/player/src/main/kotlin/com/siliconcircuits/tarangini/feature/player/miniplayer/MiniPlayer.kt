@@ -35,6 +35,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
 import com.siliconcircuits.tarangini.core.ui.component.AlbumArt
 import com.siliconcircuits.tarangini.core.ui.theme.Spacing
+import com.siliconcircuits.tarangini.feature.player.ItemTexts
 import com.siliconcircuits.tarangini.feature.player.R
 
 /**
@@ -80,21 +81,7 @@ internal fun MiniPlayerBar(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 AlbumArt(state.artworkUri)
-                Column(modifier = Modifier.weight(1f).padding(horizontal = Spacing.medium)) {
-                    Text(
-                        text = state.title ?: stringResource(CoreUiR.string.unknown_title),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.bodyLarge,
-                    )
-                    Text(
-                        text = state.artist ?: stringResource(CoreUiR.string.unknown_artist),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+                ItemTexts(state.title, state.artist, Modifier.weight(1f).padding(horizontal = Spacing.medium))
                 IconButton(onClick = onTogglePlay) {
                     Icon(
                         painter = painterResource(
@@ -126,7 +113,7 @@ private fun ProgressLine(state: MiniPlayerUiState) {
     val line = Modifier.fillMaxWidth().height(LINE_HEIGHT)
     when {
         state.isBuffering -> {
-            val loading = stringResource(R.string.mini_player_loading)
+            val loading = stringResource(R.string.player_loading)
             LinearProgressIndicator(modifier = line.semantics { contentDescription = loading })
         }
 

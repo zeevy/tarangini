@@ -1,0 +1,138 @@
+/*
+ * Copyright (C) Silicon Circuits and the Tarangini contributors. This file
+ * is part of Tarangini, free software under the GNU General Public License,
+ * version 3 only. See the LICENSE file. SPDX-License-Identifier: GPL-3.0-only
+ */
+
+package com.siliconcircuits.tarangini.feature.player.nowplaying
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
+import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
+import com.siliconcircuits.tarangini.core.domain.playback.PlaybackController
+import com.siliconcircuits.tarangini.core.domain.playback.PlaybackQueue
+import com.siliconcircuits.tarangini.feature.player.showsPause
+import com.siliconcircuits.tarangini.feature.player.togglePlay
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlin.math.abs
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
+
+/**
+ * What the now playing screen shows.
+ *
+ * @property showPause true when the play button pauses
+ * @property positionMs how far the item has played. After a seek it is the place asked for, until
+ *   the player is there
+ * @property durationMs the length of the item, or null for a live stream, which has no seek bar
+ */
+internal data class NowPlayingUiState(
+    val title: String?,
+    val artist: String?,
+    val album: String?,
+    val artworkUri: String?,
+    val showPause: Boolean,
+    val isBuffering: Boolean,
+    val positionMs: Long,
+    val durationMs: Long?,
+    val shuffle: Boolean,
+    val repeat: RepeatMode,
+) {
+    val isLive: Boolean get() = durationMs == null
+}
+
+/** The now playing screen: the current item with every control of the player. */
+@HiltViewModel
+internal class NowPlayingViewModel @Inject constructor(
+    private val playback: PlaybackController,
+    private val queue: PlaybackQueue,
+) : ViewModel() {
+    /**
+     * The place the last seek asked for, while the player is not there yet. The player goes on
+     * reporting the old place for a moment after a seek. Shown as it is, the thumb of the seek bar
+     * would jump back to the old place and then forward again.
+     */
+    private val seekTarget = MutableStateFlow<SeekTarget?>(null)
+    private var seekWait: Job? = null
+
+    /** What to show, or null when nothing is loaded. */
+    val state: StateFlow<NowPlayingUiState?> = combine(playback.state, seekTarget) { now, target ->
+        now.toUiState(target)
+    }
+        .distinctUntilChanged()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_AFTER_MS), playback.state.value.toUiState(null))
+
+    fun togglePlay() = playback.togglePlay()
+
+    fun next() = playback.next()
+
+    fun previous() = playback.previous()
+
+    /** Jumps to [positionMs] of the current item. */
+    fun seekTo(positionMs: Long) {
+        val before = playback.state.value
+        val itemId = before.currentItem?.id ?: return
+        seekTarget.value = SeekTarget(itemId, positionMs)
+        playback.seekTo(positionMs)
+        seekWait?.cancel()
+        seekWait = viewModelScope.launch {
+            // The wait has an end: a seek the player refuses must not freeze the seek bar. The place
+            // must also have changed, or a short seek would be taken as done before it started.
+            withTimeoutOrNull(SEEK_WAIT_MS) {
+                playback.state.first {
+                    it.positionMs != before.positionMs && abs(it.positionMs - positionMs) < NEAR_MS
+                }
+            }
+            seekTarget.value = null
+        }
+    }
+
+    fun toggleShuffle() = queue.setShuffle(!playback.state.value.shuffle)
+
+    /** Goes to the next repeat mode: off, all, one, and off again. */
+    fun cycleRepeat() = queue.setRepeat(
+        when (playback.state.value.repeat) {
+            RepeatMode.OFF -> RepeatMode.ALL
+            RepeatMode.ALL -> RepeatMode.ONE
+            RepeatMode.ONE -> RepeatMode.OFF
+        },
+    )
+
+    private companion object {
+        const val STOP_AFTER_MS = 5_000L
+        const val SEEK_WAIT_MS = 2_000L
+        const val NEAR_MS = 1_500L
+    }
+}
+
+/** The place a seek asked for, with the item it was asked in. */
+private data class SeekTarget(val itemId: String, val positionMs: Long)
+
+private fun PlaybackState.toUiState(seekTarget: SeekTarget?): NowPlayingUiState? {
+    val item = currentItem ?: return null
+    val length = durationMs?.takeIf { it > 0 }
+    // A place asked for in one item says nothing about the next one.
+    val position = seekTarget?.takeIf { it.itemId == item.id }?.positionMs ?: positionMs
+    return NowPlayingUiState(
+        title = item.title,
+        artist = item.artist,
+        album = item.album,
+        artworkUri = item.artworkUri,
+        showPause = showsPause,
+        isBuffering = isBuffering && showsPause,
+        positionMs = if (length == null) position else position.coerceIn(0, length),
+        durationMs = length,
+        shuffle = shuffle,
+        repeat = repeat,
+    )
+}

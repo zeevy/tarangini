@@ -16,7 +16,7 @@ import com.siliconcircuits.tarangini.feature.library.navigation.favouritesScreen
 import com.siliconcircuits.tarangini.feature.library.navigation.libraryGraph
 import com.siliconcircuits.tarangini.feature.library.navigation.navigateToAlbum
 import com.siliconcircuits.tarangini.feature.library.navigation.navigateToArtist
-import com.siliconcircuits.tarangini.feature.player.navigation.nowPlayingScreen
+import com.siliconcircuits.tarangini.feature.player.navigation.playerScreens
 import com.siliconcircuits.tarangini.feature.radio.navigation.radioScreen
 import com.siliconcircuits.tarangini.feature.search.navigation.navigateToSearch
 import com.siliconcircuits.tarangini.feature.search.navigation.searchScreen
@@ -37,6 +37,6 @@ internal fun TaranginiNavHost(navController: NavHostController, modifier: Modifi
         radioScreen()
         favouritesScreen()
         settingsScreen(onBackClick = navController::popBackStack)
-        nowPlayingScreen(onBackClick = navController::popBackStack)
+        playerScreens(navController)
     }
 }

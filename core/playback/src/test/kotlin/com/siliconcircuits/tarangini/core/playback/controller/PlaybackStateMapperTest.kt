@@ -116,6 +116,23 @@ class PlaybackStateMapperTest {
     }
 
     @Test
+    fun `an item the player has not opened yet has the length it was loaded with`() {
+        val loadedWith = MediaMetadata.Builder().setDurationMs(185_000).build()
+        val song = MediaItem.Builder().setMediaId("first").setMediaMetadata(loadedWith).build()
+        player.report { setPlaylist(listOf(FakePlayer.queued(song))) }
+
+        assertEquals(185_000L, player.toPlaybackState().durationMs)
+    }
+
+    @Test
+    fun `a live stream has no length, also when the player reports the length of the part it keeps`() {
+        val station = MediaItem.Builder().setMediaId("radio").build()
+        player.report { setPlaylist(listOf(FakePlayer.queued(station, durationMs = 30_000, live = true))) }
+
+        assertNull(player.toPlaybackState().durationMs)
+    }
+
+    @Test
     fun `shuffle and each repeat mode are shown`() {
         player.report { setShuffleModeEnabled(true).setRepeatMode(Player.REPEAT_MODE_ONE) }
         assertTrue(player.toPlaybackState().shuffle)

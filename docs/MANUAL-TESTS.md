@@ -82,6 +82,12 @@ Run with about 10,000 songs on a mid range phone.
 | 41 | Play a song and watch the mini player for a minute | The thin line grows evenly, and the picture, title and artist are those of the song |
 | 42 | Tap the mini player on Settings (gesture navigation on) | The now playing screen opens with no mini player. Back returns to Settings. The bar does not sit under the gesture bar |
 | 43 | Play the last song of a short list to its end, with repeat off. Then press play on the mini player | At the end the mini player and the notification both offer play. The press starts the last song again |
+| 44 | On now playing, drag the seek bar to the middle of a long song and let go | The sound goes on from that place at once. The thumb stays where it was let go and does not jump back |
+| 45 | Open the queue. Drag the third row to the top by its handle, then press Next | The row follows the finger and the others make room. Next plays the song that is now after the current one |
+| 46 | In the queue, swipe a row that is not playing to the side. Then swipe the row that plays | The first row goes and the music does not change. After the second swipe the next song plays |
+| 47 | Turn the phone on its side on now playing and on the queue, then back | The cover is beside the controls, every button can be reached, and the place of the seek bar and of the list is kept |
+| 48 | With TalkBack on, open the queue and use the actions of a row | "Move up", "Move down" and "Remove from the queue" are offered and work. The row that plays is read as "Playing now" |
+| 49 | Tap shuffle and repeat on now playing and look at the notification of a car or watch that shows them | The buttons show their state, repeat goes off, all, one, and the order of play follows |
 
 ## Playback: resume
 

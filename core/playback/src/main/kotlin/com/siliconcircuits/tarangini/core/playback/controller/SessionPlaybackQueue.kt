@@ -42,6 +42,15 @@ internal class SessionPlaybackQueue @Inject constructor(
         if (index in 0 until player.mediaItemCount) player.removeMediaItem(index)
     }
 
+    override fun playAt(index: Int) = send { player ->
+        if (index in 0 until player.mediaItemCount) {
+            player.seekToDefaultPosition(index)
+            // After an error or a stop the player is idle and must be prepared again before it can play.
+            if (player.playbackState == Player.STATE_IDLE) player.prepare()
+            player.play()
+        }
+    }
+
     override fun clear() {
         scope.launch {
             loader.cancel()

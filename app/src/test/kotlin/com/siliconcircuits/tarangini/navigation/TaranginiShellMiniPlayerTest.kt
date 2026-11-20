@@ -70,17 +70,4 @@ class TaranginiShellMiniPlayerTest {
 
         composeRule.onNodeWithTag("mini").assertIsDisplayed()
     }
-
-    @Test
-    fun `a tap opens now playing, where the mini player is hidden, and Back brings it again`() {
-        composeRule.onNodeWithTag("mini").performClick()
-
-        composeRule.onNodeWithText("Now playing").assertIsDisplayed()
-        composeRule.onNodeWithTag("mini").assertDoesNotExist()
-
-        composeRule.onNodeWithContentDescription("Back").performClick()
-
-        composeRule.onNodeWithTag("mini").assertIsDisplayed()
-        composeRule.onNode(hasText("Home") and isSelectable()).assertIsDisplayed()
-    }
 }

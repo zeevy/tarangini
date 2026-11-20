@@ -10,6 +10,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackController
+import com.siliconcircuits.tarangini.feature.player.showsPause
+import com.siliconcircuits.tarangini.feature.player.togglePlay
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
@@ -53,7 +55,7 @@ internal class MiniPlayerViewModel @Inject constructor(private val playback: Pla
 
     /** Pauses when play was asked for, else goes on with the current item. */
     fun togglePlay() {
-        if (state.value?.showPause == true) playback.pause() else playback.resume()
+        playback.togglePlay()
     }
 
     fun next() = playback.next()
@@ -66,16 +68,13 @@ internal class MiniPlayerViewModel @Inject constructor(private val playback: Pla
 private fun PlaybackState.toUiState(): MiniPlayerUiState? {
     val item = currentItem ?: return null
     val length = durationMs?.takeIf { it > 0 }
-    // After an error and at the end of the queue the player still says that play was asked for, but
-    // nothing plays. The notification offers play then, and so does the bar.
-    val wantsToPlay = playWhenReady && error == null && !isEnded
     return MiniPlayerUiState(
         title = item.title,
         artist = item.artist,
         artworkUri = item.artworkUri,
-        showPause = wantsToPlay,
+        showPause = showsPause,
         // A paused stream that still fills its buffer is at rest for the person.
-        isBuffering = isBuffering && wantsToPlay,
+        isBuffering = isBuffering && showsPause,
         // The line is 2 dp high and at most a screen wide, so steps of a thousandth are enough.
         // Without the rounding every tick of the position would draw the bar again.
         progress = length?.let {

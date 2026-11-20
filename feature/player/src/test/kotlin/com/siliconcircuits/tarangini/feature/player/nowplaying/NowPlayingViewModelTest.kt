@@ -1,0 +1,197 @@
+/*
+ * Copyright (C) Silicon Circuits and the Tarangini contributors. This file
+ * is part of Tarangini, free software under the GNU General Public License,
+ * version 3 only. See the LICENSE file. SPDX-License-Identifier: GPL-3.0-only
+ */
+
+package com.siliconcircuits.tarangini.feature.player.nowplaying
+
+import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
+import com.siliconcircuits.tarangini.core.domain.model.PlaybackItem
+import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
+import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
+import com.siliconcircuits.tarangini.core.testing.playback.FakePlaybackController
+import com.siliconcircuits.tarangini.core.testing.playback.FakePlaybackQueue
+import com.siliconcircuits.tarangini.feature.player.MainDispatcherRule
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Rule
+import org.junit.Test
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class NowPlayingViewModelTest {
+    @get:Rule
+    val mainDispatcher = MainDispatcherRule()
+
+    private val playback = FakePlaybackController()
+    private val queue = FakePlaybackQueue()
+    private val song = PlaybackItem("test:1", "Bhairavi", "Ravi", "Morning Ragas", "test:1/art")
+
+    private fun loaded(state: PlaybackState = PlaybackState()) = state.copy(queue = listOf(song), currentIndex = 0)
+
+    private fun TestScope.watched(): NowPlayingViewModel = NowPlayingViewModel(playback, queue).also { viewModel ->
+        backgroundScope.launch { viewModel.state.collect() }
+        runCurrent()
+    }
+
+    @Test
+    fun `nothing is shown while nothing is loaded`() = runTest(mainDispatcher.dispatcher) {
+        assertNull(watched().state.value)
+    }
+
+    @Test
+    fun `the current item shows with its texts, its place and its length`() = runTest(mainDispatcher.dispatcher) {
+        val viewModel = watched()
+
+        playback.state.value = loaded(
+            PlaybackState(playWhenReady = true, positionMs = 45_000, durationMs = 180_000, shuffle = true),
+        )
+        runCurrent()
+
+        assertEquals(
+            NowPlayingUiState(
+                title = "Bhairavi",
+                artist = "Ravi",
+                album = "Morning Ragas",
+                artworkUri = "test:1/art",
+                showPause = true,
+                isBuffering = false,
+                positionMs = 45_000,
+                durationMs = 180_000,
+                shuffle = true,
+                repeat = RepeatMode.OFF,
+            ),
+            viewModel.state.value,
+        )
+    }
+
+    @Test
+    fun `a stream with no length is live`() = runTest(mainDispatcher.dispatcher) {
+        val viewModel = watched()
+
+        playback.state.value = loaded(PlaybackState(playWhenReady = true, isBuffering = true, positionMs = 9_000))
+        runCurrent()
+
+        assertEquals(true, viewModel.state.value?.isLive)
+        assertEquals(true, viewModel.state.value?.isBuffering)
+    }
+
+    @Test
+    fun `after a seek the place asked for shows until the player is there`() = runTest(mainDispatcher.dispatcher) {
+        val viewModel = watched()
+        playback.state.value = loaded(PlaybackState(playWhenReady = true, positionMs = 10_000, durationMs = 180_000))
+        runCurrent()
+
+        viewModel.seekTo(120_000)
+        runCurrent()
+        assertEquals(listOf("seekTo 120000"), playback.commands)
+        assertEquals(120_000L, viewModel.state.value?.positionMs)
+
+        // The player still reports the old place for a moment. The screen must not go back to it.
+        playback.state.value = playback.state.value.copy(positionMs = 10_400)
+        runCurrent()
+        assertEquals(120_000L, viewModel.state.value?.positionMs)
+
+        playback.state.value = playback.state.value.copy(positionMs = 120_300)
+        runCurrent()
+        playback.state.value = playback.state.value.copy(positionMs = 123_000)
+        runCurrent()
+        assertEquals(123_000L, viewModel.state.value?.positionMs)
+    }
+
+    @Test
+    fun `a short seek shows the place asked for while the player still reports the old one`() =
+        runTest(mainDispatcher.dispatcher) {
+            val viewModel = watched()
+            playback.state.value = loaded(PlaybackState(positionMs = 10_000, durationMs = 180_000))
+            runCurrent()
+
+            viewModel.seekTo(10_800)
+            runCurrent()
+            assertEquals(10_800L, viewModel.state.value?.positionMs)
+
+            playback.state.value = playback.state.value.copy(positionMs = 10_900)
+            runCurrent()
+            assertEquals(10_900L, viewModel.state.value?.positionMs)
+        }
+
+    @Test
+    fun `the place asked for in one item is not shown for the next one`() = runTest(mainDispatcher.dispatcher) {
+        val viewModel = watched()
+        val next = PlaybackItem("test:2", "Yaman")
+        playback.state.value =
+            PlaybackState(queue = listOf(song, next), currentIndex = 0, positionMs = 10_000, durationMs = 180_000)
+        runCurrent()
+
+        viewModel.seekTo(170_000)
+        playback.state.value = playback.state.value.copy(currentIndex = 1, positionMs = 0)
+        runCurrent()
+
+        assertEquals("Yaman", viewModel.state.value?.title)
+        assertEquals(0L, viewModel.state.value?.positionMs)
+    }
+
+    @Test
+    fun `a seek the player does not follow is given up after a short time`() = runTest(mainDispatcher.dispatcher) {
+        val viewModel = watched()
+        playback.state.value = loaded(PlaybackState(positionMs = 10_000, durationMs = 180_000))
+        runCurrent()
+
+        viewModel.seekTo(120_000)
+        advanceTimeBy(3_000)
+
+        assertEquals(10_000L, viewModel.state.value?.positionMs)
+    }
+
+    @Test
+    fun `the place never shows past the end of the item`() = runTest(mainDispatcher.dispatcher) {
+        val viewModel = watched()
+
+        playback.state.value = loaded(PlaybackState(positionMs = 200_000, durationMs = 180_000))
+        runCurrent()
+
+        assertEquals(180_000L, viewModel.state.value?.positionMs)
+    }
+
+    @Test
+    fun `the play button offers play after an error, and each button sends its command`() =
+        runTest(mainDispatcher.dispatcher) {
+            val viewModel = watched()
+            playback.state.value = loaded(PlaybackState(playWhenReady = true, error = PlaybackError.CANNOT_PLAY))
+            runCurrent()
+            assertEquals(false, viewModel.state.value?.showPause)
+
+            viewModel.togglePlay()
+            viewModel.next()
+            viewModel.previous()
+
+            assertEquals(listOf("resume", "next", "previous"), playback.commands)
+        }
+
+    @Test
+    fun `shuffle turns on and off, and repeat goes from off to all to one and back`() =
+        runTest(mainDispatcher.dispatcher) {
+            val viewModel = watched()
+
+            viewModel.toggleShuffle()
+            playback.state.value = loaded(PlaybackState(shuffle = true))
+            viewModel.toggleShuffle()
+            viewModel.cycleRepeat()
+            playback.state.value = loaded(PlaybackState(repeat = RepeatMode.ALL))
+            viewModel.cycleRepeat()
+            playback.state.value = loaded(PlaybackState(repeat = RepeatMode.ONE))
+            viewModel.cycleRepeat()
+
+            assertEquals(
+                listOf("setShuffle true", "setShuffle false", "setRepeat ALL", "setRepeat ONE", "setRepeat OFF"),
+                queue.commands,
+            )
+        }
+}
