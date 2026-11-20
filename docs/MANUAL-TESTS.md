@@ -57,6 +57,19 @@ Run on a mid range phone. A scan is started from the library screen.
 | 28 | Play a song that has a cover picture, then one that has none. Pull down the notifications and look at the lock screen | The first shows its picture in the notification and on the lock screen. The second shows none, and nothing crashes |
 | 29 | When the library lists are there: with about 5,000 songs, scroll the songs list fast up and down | The list scrolls with no stutter. Pictures come in after a moment, and a song with no picture shows the music note |
 
+## Library: screens
+
+Run with about 10,000 songs on a mid range phone.
+
+| No. | Steps | Expected |
+|---|---|---|
+| 30 | Open the Library tab. Scroll the songs list to its end, fast, then do the same in Albums and Artists | Each list opens at once and scrolls with no stutter. New rows come in before the end is reached |
+| 31 | Tap a song in the middle of the songs list. Then open an album and tap its third song | The song plays. Next and Previous follow the order of the list that was on screen |
+| 32 | Choose "Shortest first" in the sort menu. Swipe the app away and open it again | The songs list is still in that order |
+| 33 | Open an artist, then one of its albums. Tap the Library tab in the bottom bar, go to Radio and come back | The Library tab is marked on all three screens. Coming back shows the screen that was open |
+| 34 | Switch TalkBack on. Swipe through the songs list, the menu of a song, the tabs and the sort menu | Every row says its title and artist, every button says what it does, and the sort menu says which order is on |
+| 35 | Install the app new. Open Library and allow the access | The songs show after a moment, with no restart of the app |
+
 ## Playback: resume
 
 | No. | Steps | Expected |

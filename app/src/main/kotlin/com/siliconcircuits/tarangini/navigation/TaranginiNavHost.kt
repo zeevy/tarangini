@@ -13,7 +13,7 @@ import androidx.navigation.compose.NavHost
 import com.siliconcircuits.tarangini.feature.home.navigation.HomeRoute
 import com.siliconcircuits.tarangini.feature.home.navigation.homeScreen
 import com.siliconcircuits.tarangini.feature.library.navigation.favouritesScreen
-import com.siliconcircuits.tarangini.feature.library.navigation.libraryScreen
+import com.siliconcircuits.tarangini.feature.library.navigation.libraryGraph
 import com.siliconcircuits.tarangini.feature.radio.navigation.radioScreen
 import com.siliconcircuits.tarangini.feature.settings.navigation.navigateToSettings
 import com.siliconcircuits.tarangini.feature.settings.navigation.settingsScreen
@@ -23,7 +23,7 @@ import com.siliconcircuits.tarangini.feature.settings.navigation.settingsScreen
 internal fun TaranginiNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
     NavHost(navController = navController, startDestination = HomeRoute, modifier = modifier) {
         homeScreen(onSettingsClick = navController::navigateToSettings)
-        libraryScreen()
+        libraryGraph(navController)
         radioScreen()
         favouritesScreen()
         settingsScreen(onBackClick = navController::popBackStack)

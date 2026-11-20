@@ -83,13 +83,14 @@ tarangini/
 │   ├── library/
 │   │   └── src/
 │   │       ├── main/kotlin/<base>/feature/library/
-│   │       │   ├── songs/
-│   │       │   │   ├── SongsScreen.kt     stateful entry + stateless content
-│   │       │   │   ├── SongsViewModel.kt
-│   │       │   │   └── SongsUiState.kt    state, events
-│   │       │   ├── albums/
-│   │       │   ├── artists/
-│   │       │   ├── folders/
+│   │       │   ├── LibraryScreen.kt       the four lists (songs, albums, artists, folders): stateful entry + stateless content
+│   │       │   ├── LibraryViewModel.kt
+│   │       │   ├── album/                 AlbumScreen.kt, AlbumViewModel.kt (one album)
+│   │       │   ├── artist/                one artist
+│   │       │   ├── folder/                one folder
+│   │       │   ├── list/                  PagedList (a long list read page by page), SongActions
+│   │       │   ├── component/             rows and frames only this feature uses
+│   │       │   ├── permission/            AudioPermissionGate
 │   │       │   ├── playlists/
 │   │       │   ├── favourites/
 │   │       │   └── navigation/            LibraryNavigation.kt (routes this feature offers)
