@@ -40,6 +40,9 @@ interface PlaybackQueue {
      */
     fun remove(index: Int)
 
+    /** Plays the item at place [index] from its start. A place that does not exist is ignored. */
+    fun playAt(index: Int)
+
     /** Empties the queue. Playback stops. */
     fun clear()
 

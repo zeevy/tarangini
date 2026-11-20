@@ -38,7 +38,14 @@ internal fun Player.toPlaybackState(knownQueue: List<PlaybackItem>? = null): Pla
         playWhenReady = playWhenReady,
         isBuffering = playbackState == Player.STATE_BUFFERING,
         positionMs = currentPosition.coerceAtLeast(0),
-        durationMs = duration.takeIf { it != C.TIME_UNSET && current != null },
+        // Before the player has opened the file it does not know the length. The library gave it with the texts.
+        // A live stream can report the length of the part it keeps. It has no end, so it has no length.
+        durationMs = if (isCurrentMediaItemLive) {
+            null
+        } else {
+            duration.takeIf { it != C.TIME_UNSET && current != null }
+                ?: currentMediaItem?.mediaMetadata?.durationMs?.takeIf { current != null }
+        },
         shuffle = shuffleModeEnabled,
         repeat = repeatMode.toRepeatMode(),
         isEnded = playbackState == Player.STATE_ENDED,

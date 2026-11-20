@@ -98,6 +98,20 @@ class SessionPlaybackQueueTest {
     }
 
     @Test
+    fun `an item of the queue plays from its start when it is picked, and a place that does not exist is ignored`() =
+        runTest {
+            fourSongsSecondPlaying()
+            val queue = queue()
+
+            queue.playAt(3)
+            queue.playAt(4)
+            queue.playAt(-1)
+            runCurrent()
+
+            assertEquals(listOf("seek to item 3 at 0", "play"), player.commands)
+        }
+
+    @Test
     fun `a move from or to a place that does not exist is ignored`() = runTest {
         fourSongsSecondPlaying()
         val queue = queue()

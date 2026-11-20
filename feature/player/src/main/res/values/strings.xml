@@ -7,5 +7,22 @@
 <resources>
     <string name="now_playing_title">Now playing</string>
     <string name="mini_player_open">Open the player</string>
-    <string name="mini_player_loading">Loading</string>
+    <string name="player_loading">Loading</string>
+    <string name="now_playing_empty_title">Nothing is playing</string>
+    <string name="now_playing_empty_text">Pick a song in the library to start.</string>
+    <string name="now_playing_position">Position in the song</string>
+    <string name="now_playing_position_state">%1$s of %2$s</string>
+    <string name="now_playing_live">Live</string>
+    <string name="now_playing_shuffle">Shuffle</string>
+    <string name="now_playing_repeat_off">Repeat is off</string>
+    <string name="now_playing_repeat_all">Repeat all</string>
+    <string name="now_playing_repeat_one">Repeat this song</string>
+    <string name="queue_title">Queue</string>
+    <string name="queue_open">Open the queue</string>
+    <string name="queue_empty_title">The queue is empty</string>
+    <string name="queue_empty_text">Songs you play show here.</string>
+    <string name="queue_move_up">Move up</string>
+    <string name="queue_move_down">Move down</string>
+    <string name="queue_remove">Remove from the queue</string>
+    <string name="queue_playing_now">Playing now</string>
 </resources>

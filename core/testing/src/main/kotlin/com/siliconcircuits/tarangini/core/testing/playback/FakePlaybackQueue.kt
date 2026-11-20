@@ -30,6 +30,10 @@ class FakePlaybackQueue : PlaybackQueue {
         commands += "remove $index"
     }
 
+    override fun playAt(index: Int) {
+        commands += "playAt $index"
+    }
+
     override fun clear() {
         commands += "clear"
     }

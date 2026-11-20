@@ -16,11 +16,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.siliconcircuits.tarangini.feature.player.navigation.NowPlayingRoute
+import com.siliconcircuits.tarangini.feature.player.navigation.isPlayerScreen
 import com.siliconcircuits.tarangini.feature.player.navigation.navigateToNowPlaying
 
 /**
@@ -42,7 +41,7 @@ internal fun TaranginiShell(
     val destination = backStackEntry?.destination
     val currentTab = destination?.topLevelDestination()
     // The now playing screen shows the same item with all its controls, so the bar would be a second copy.
-    val showMiniPlayer = destination?.hasRoute<NowPlayingRoute>() != true
+    val showMiniPlayer = destination?.isPlayerScreen() != true
 
     Scaffold(
         modifier = modifier,

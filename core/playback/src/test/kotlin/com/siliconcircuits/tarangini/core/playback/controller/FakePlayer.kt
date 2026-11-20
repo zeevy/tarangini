@@ -149,12 +149,17 @@ internal class FakePlayer : SimpleBasePlayer(Looper.getMainLooper()) {
 
     companion object {
         /** A queue entry for the playlist of the reported state. [tags] is what the player read from the file. */
-        fun queued(item: MediaItem, tags: MediaMetadata? = null, durationMs: Long? = null): MediaItemData =
-            MediaItemData.Builder(item.mediaId)
-                .setMediaItem(item)
-                .setMediaMetadata(tags)
-                .apply { if (durationMs != null) setDurationUs(durationMs * MICROS_IN_MILLI) }
-                .build()
+        fun queued(
+            item: MediaItem,
+            tags: MediaMetadata? = null,
+            durationMs: Long? = null,
+            live: Boolean = false,
+        ): MediaItemData = MediaItemData.Builder(item.mediaId)
+            .setMediaItem(item)
+            .setMediaMetadata(tags)
+            .apply { if (durationMs != null) setDurationUs(durationMs * MICROS_IN_MILLI) }
+            .apply { if (live) setLiveConfiguration(MediaItem.LiveConfiguration.UNSET) }
+            .build()
 
         fun queued(id: String): MediaItemData = queued(MediaItem.Builder().setMediaId(id).build())
 
