@@ -130,6 +130,15 @@ class NowPlayingContentTest {
     }
 
     @Test
+    fun `a station with no song title shows its name and no line for an artist`() {
+        show(song.copy(title = "Radio Mirchi", artist = null, album = null, durationMs = null))
+
+        composeRule.onNodeWithText("Radio Mirchi").assertIsDisplayed()
+        composeRule.onNodeWithText("Unknown artist").assertDoesNotExist()
+        composeRule.onNodeWithText("Live").assertIsDisplayed()
+    }
+
+    @Test
     fun `a station that waits for data says that it loads`() {
         show(song.copy(durationMs = null, isBuffering = true))
 

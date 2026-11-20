@@ -76,6 +76,15 @@ class MiniPlayerBarTest {
     }
 
     @Test
+    fun `a station with no song title shows its name and that it is live`() {
+        show(playing.copy(title = "Radio Mirchi", artist = null, progress = null, isStream = true))
+
+        composeRule.onNodeWithText("Radio Mirchi").assertIsDisplayed()
+        composeRule.onNodeWithText("Live").assertIsDisplayed()
+        composeRule.onNodeWithText("Unknown artist").assertDoesNotExist()
+    }
+
+    @Test
     fun `an item with no texts says so`() {
         show(playing.copy(title = null, artist = null))
 

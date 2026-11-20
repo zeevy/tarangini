@@ -13,6 +13,7 @@ import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import com.siliconcircuits.tarangini.core.playback.stream.StationTitles
 import com.siliconcircuits.tarangini.core.playback.stream.streamDataSourceFactory
 import okhttp3.OkHttpClient
 
@@ -28,7 +29,7 @@ import okhttp3.OkHttpClient
  * [GaplessRenderersFactory] makes that right for the MP3 decoder of Android.
  *
  * Radio streams (Icecast, Shoutcast, HLS and playlist files) play through the same player. They
- * are read with [streamDataSourceFactory].
+ * are read with [streamDataSourceFactory], and [StationTitles] shows the song title a station sends.
  *
  * @param httpClient gives the shared HTTP client when the first stream is opened
  */
@@ -46,5 +47,6 @@ internal fun createPlayer(context: Context, httpClient: () -> OkHttpClient): Exo
         .build()
     player.addListener(WakeModeSwitch(player))
     player.addListener(SkipMissingFile(player))
+    player.addListener(StationTitles(player))
     return player
 }
