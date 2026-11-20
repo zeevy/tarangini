@@ -3,14 +3,14 @@
 An Android media player for local MP3 and AAC files and for online radio, on the phone and in Android Auto. The free app has no ads, no account and no tracking.
 
 > [!NOTE]
-> The app is being built. Today it has the four tabs and the Settings screen, each with a placeholder. The list below is the plan, and [docs/FEATURES.md](docs/FEATURES.md) says what is done.
+> The app is being built. Today the Library tab, search, now playing and the queue work. The first release is the player for local files; online radio comes after it. The list below is the plan, and [docs/FEATURES.md](docs/FEATURES.md) says what is done.
 
 ## Features
 
 | Area | What the app will do |
 |---|---|
 | Local music | Plays `.mp3`, `.aac` and `.m4a` files from the phone. Browse by song, album, artist and folder. Gapless playback |
-| Online radio | Add a station by name and URL. Search in the public Radio Browser list is planned for the version after the first release. Icecast, Shoutcast and HLS streams. The song title is shown when the station sends it |
+| Online radio (after the first release) | Add a station by name and URL. Search in the public Radio Browser list is planned for the version after the first release. Icecast, Shoutcast and HLS streams. The song title is shown when the station sends it |
 | Android Auto | The same library, radio, favourites and recent lists in the car, with voice play |
 | Personal lists | Favourites, playlists, history and a sleep timer |
 | Sound | A 5 band equalizer |

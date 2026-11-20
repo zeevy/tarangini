@@ -418,6 +418,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D45 | A station is added with a name and a stream address. The address is checked in the form, in the store and by the player; a Test button tries it without playing. See [ADR 0023](adr/0023-user-stations.md) | 20 Nov 2026 | Only complete `http` and `https` addresses with no login are stored |
 | D46 | A file with less sound than its header states gives way to the next item about 3 seconds after its last sound, and so does a start inside that silence. The file is not changed. See [ADR 0024](adr/0024-file-shorter-than-stated.md) | 20 Nov 2026 | The player believes the header and would stay silent in the playing state until the stated end |
 | D47 | The seek bar on now playing has no handle. The end of the filled part shows the place, and the whole bar can be dragged | 20 Nov 2026 | The tall handle of Material 3 looked too heavy next to the cover and the buttons, and a dot on the bar did not look right either. The area that takes a touch stays 48 dp |
+| D48 | Radio is out of the first release. The first release is the player for local files, on the phone and in Android Auto. The Radio tab is not shown and the radio screens are not part of the app; the radio code (streams, song titles, reconnect, stations of the user) stays in the repo for later | 20 Nov 2026 | The bottom bar has three tabs: Home, Library, Favourites. Favourites, recently played and Home cover songs only. The open radio issues are closed until radio work starts again |
 
 ## 9. Checks before building
 
