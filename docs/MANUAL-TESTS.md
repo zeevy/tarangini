@@ -54,6 +54,8 @@ Run on a mid range phone. A scan is started from the library screen.
 | 25 | Open the app with the library showing. Copy a song to the phone from a computer | The song is in the library within a few seconds, with no tap |
 | 26 | Swipe the app away. Copy a song to the phone and delete another one. Wait 10 minutes and open the app | The new song is there and the deleted one is gone when the library shows |
 | 27 | When the search screen is there: with about 20,000 songs on the phone, type one letter, then a word, in the search field | The results change with no delay that is felt (under a tenth of a second) |
+| 28 | Play a song that has a cover picture, then one that has none. Pull down the notifications and look at the lock screen | The first shows its picture in the notification and on the lock screen. The second shows none, and nothing crashes |
+| 29 | When the library lists are there: with about 5,000 songs, scroll the songs list fast up and down | The list scrolls with no stutter. Pictures come in after a moment, and a song with no picture shows the music note |
 
 ## Playback: resume
 

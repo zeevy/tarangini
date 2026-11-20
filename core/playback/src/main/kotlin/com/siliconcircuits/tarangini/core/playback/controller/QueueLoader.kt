@@ -9,6 +9,7 @@ package com.siliconcircuits.tarangini.core.playback.controller
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.siliconcircuits.tarangini.core.playback.di.PlaybackCoroutineScope
+import com.siliconcircuits.tarangini.core.playback.mapper.playableItem
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.min
@@ -42,7 +43,7 @@ internal class QueueLoader @Inject constructor(
     /** Replaces the queue with the files and plays from [startIndex]. A load that still runs is given up. */
     fun replace(mediaUris: List<String>, startIndex: Int) {
         if (mediaUris.isEmpty()) return
-        val items = mediaUris.map(::toMediaItem)
+        val items = mediaUris.map(::playableItem)
         val start = startIndex.coerceIn(items.indices)
         cancel()
         start {
@@ -65,7 +66,7 @@ internal class QueueLoader @Inject constructor(
      */
     fun add(mediaUris: List<String>, place: (Player) -> Int) {
         if (mediaUris.isEmpty()) return
-        val items = mediaUris.map(::toMediaItem)
+        val items = mediaUris.map(::playableItem)
         val before = loads.lastOrNull()
         start {
             before?.join()
@@ -134,8 +135,6 @@ internal class QueueLoader @Inject constructor(
             waited += WAIT_STEP
         }
     }
-
-    private fun toMediaItem(uri: String): MediaItem = MediaItem.Builder().setMediaId(uri).setUri(uri).build()
 
     private companion object {
         /** Enough items to start with at once: the current one and what a tap on "next" needs. */

@@ -13,6 +13,7 @@ package com.siliconcircuits.tarangini.core.domain.model
  * @property mediaUri the address the player plays. It is also the id of the song in the queue
  * @property artist the artist name, or an empty text when the file names none
  * @property album the album title, or an empty text when the file names none
+ * @property artworkUri where to ask for the cover picture (see [artworkUriOf]), or null when there is no such place
  * @property dateAdded when the file came onto the phone, in milliseconds since 1970 UTC
  */
 data class Song(
@@ -28,4 +29,6 @@ data class Song(
     val discNumber: Int?,
     val year: Int?,
     val dateAdded: Long,
-)
+) {
+    val artworkUri: String? get() = artworkUriOf(mediaUri)
+}

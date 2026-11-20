@@ -43,6 +43,7 @@ class SongMediaItemTest {
         assertEquals("Morning", item.mediaMetadata.albumTitle)
         assertEquals(4, item.mediaMetadata.trackNumber)
         assertEquals(240_000L, item.mediaMetadata.durationMs)
+        assertEquals(song.artworkUri, item.mediaMetadata.artworkUri.toString())
         assertEquals(MediaMetadata.MEDIA_TYPE_MUSIC, item.mediaMetadata.mediaType)
         assertEquals(true, item.mediaMetadata.isPlayable)
         assertEquals(false, item.mediaMetadata.isBrowsable)
@@ -59,6 +60,21 @@ class SongMediaItemTest {
     @Test
     fun `a length the phone did not give is left out`() {
         assertNull(song.copy(durationMs = 0).toMediaItem().mediaMetadata.durationMs)
+    }
+
+    @Test
+    fun `an item made from an address alone asks for the cover picture of that song`() {
+        val item = playableItem(song.mediaUri)
+
+        assertEquals(song.mediaUri, item.mediaId)
+        assertEquals(song.mediaUri, item.localConfiguration?.uri.toString())
+        assertEquals(song.artworkUri, item.mediaMetadata.artworkUri.toString())
+        assertNull(item.mediaMetadata.title)
+    }
+
+    @Test
+    fun `an item for something that is not a local song asks for no picture`() {
+        assertNull(playableItem("https://example.org/stream").mediaMetadata.artworkUri)
     }
 
     @Test

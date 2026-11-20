@@ -10,6 +10,7 @@ import android.app.Application
 import androidx.work.Configuration
 import com.siliconcircuits.tarangini.core.domain.library.LibraryWatcher
 import com.siliconcircuits.tarangini.core.playback.controller.PlaybackScreenWatcher
+import com.siliconcircuits.tarangini.core.ui.image.installArtworkLoader
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -32,6 +33,7 @@ class TaranginiApp :
 
     override fun onCreate() {
         super.onCreate()
+        installArtworkLoader()
         // The playback connection is open while a screen is open, so it must hear of every screen from the first one.
         registerActivityLifecycleCallbacks(playbackScreenWatcher)
         // Every start of the app process brings the library in step: a screen, the playback service or the rescan job.

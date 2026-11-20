@@ -96,9 +96,10 @@ class RequestedMediaItemTest {
 
         val playable = loaded.toPlayable()
 
-        assertEquals(MediaItem.Builder().setMediaId("id").setUri(song).build(), playable)
+        // The only picture address is the one this app makes from the checked address of the song.
+        val ownArtwork = MediaMetadata.Builder().setArtworkUri(Uri.parse("$song/albumart")).build()
+        assertEquals(MediaItem.Builder().setMediaId("id").setUri(song).setMediaMetadata(ownArtwork).build(), playable)
         assertTrue(requireNotNull(playable.localConfiguration).subtitleConfigurations.isEmpty())
         assertNull(playable.localConfiguration?.adsConfiguration)
-        assertNull(playable.mediaMetadata.artworkUri)
     }
 }
