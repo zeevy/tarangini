@@ -6,7 +6,6 @@
 
 package com.siliconcircuits.tarangini.core.data.resume
 
-import android.content.ContentUris
 import android.net.Uri
 import android.provider.MediaStore
 import com.siliconcircuits.tarangini.core.data.di.IoDispatcher
@@ -14,6 +13,7 @@ import com.siliconcircuits.tarangini.core.data.local.dao.QueueDao
 import com.siliconcircuits.tarangini.core.data.local.entity.ResumeStateEntity
 import com.siliconcircuits.tarangini.core.data.local.entity.SongSource
 import com.siliconcircuits.tarangini.core.data.local.entity.StoredRepeatMode
+import com.siliconcircuits.tarangini.core.data.mediastore.localMediaUri
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
 import com.siliconcircuits.tarangini.core.domain.playback.ResumePlace
 import com.siliconcircuits.tarangini.core.domain.playback.ResumeStore
@@ -83,7 +83,7 @@ internal class RoomResumeStore @Inject constructor(
         val index = if (found < 0) 0 else found
         val samePlace = found >= 0 && files[found].position == state.queuePosition
         SavedPlayback(
-            mediaIds = files.map { mediaIdOf(it.sourceId) },
+            mediaIds = files.map { localMediaUri(it.sourceId) },
             place = ResumePlace(
                 index = index,
                 positionMs = if (samePlace) state.positionMs else 0,
@@ -115,8 +115,5 @@ internal class RoomResumeStore @Inject constructor(
                 uri.authority == MediaStore.AUTHORITY && number.isNotEmpty() && number.all(Char::isDigit)
             return number.takeIf { isMediaStoreItem }
         }
-
-        fun mediaIdOf(sourceId: String): String =
-            ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, sourceId.toLong()).toString()
     }
 }

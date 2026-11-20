@@ -59,7 +59,7 @@ The dependency rule: every arrow points to the domain. The domain depends on not
 Rules that follow from the table:
 
 - A feature module never depends on another feature module. Features meet only in the navigation graph in `app`.
-- A feature module never depends on `core:data` or `core:playback`. It gets its data through use cases and controls playback through `PlaybackController`, both from `core:domain`.
+- A feature module never depends on `core:data` or `core:playback`. It gets its data through the repository interfaces and use cases and controls playback through `PlaybackController`, both from `core:domain`.
 - `core:data` and `core:playback` never depend on each other. The playback service reads the library through the same domain repository interfaces as the UI.
 - A build check fails when a module breaks this table (rule A2 in `CONTRIBUTING.md`).
 

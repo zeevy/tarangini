@@ -13,6 +13,7 @@ import com.siliconcircuits.tarangini.core.data.local.FtsQuery
 import com.siliconcircuits.tarangini.core.data.local.entity.FolderEntity
 import com.siliconcircuits.tarangini.core.data.local.entity.SongEntity
 import com.siliconcircuits.tarangini.core.data.local.entity.SongSource
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Reads and writes the library index: artists, albums, folders, songs and
@@ -398,9 +399,10 @@ internal abstract class LibraryDao {
             JOIN albums al ON al.id = s.album_id
             WHERE s.album_id = :albumId AND s.missing_since IS NULL
             ORDER BY s.disc_number, s.track_number, s.title_key, s.id
+            LIMIT :limit OFFSET :offset
         """,
     )
-    abstract suspend fun songsOfAlbum(albumId: Long): List<SongRow>
+    abstract suspend fun songsOfAlbum(albumId: Long, limit: Int, offset: Int): List<SongRow>
 
     @Query(
         """
@@ -423,9 +425,18 @@ internal abstract class LibraryDao {
             JOIN albums al ON al.id = s.album_id
             WHERE s.folder_id = :folderId AND s.missing_since IS NULL
             ORDER BY s.file_name, s.id
+            LIMIT :limit OFFSET :offset
         """,
     )
-    abstract suspend fun songsInFolder(folderId: Long): List<SongRow>
+    abstract suspend fun songsInFolder(folderId: Long, limit: Int, offset: Int): List<SongRow>
+
+    /**
+     * True when the library has a song. Room reads it again after every
+     * write to the songs table, also when the answer stays the same, so it
+     * also tells a list that the library changed. It reads one row only.
+     */
+    @Query("SELECT EXISTS(SELECT 1 FROM songs)")
+    abstract fun hasSongs(): Flow<Boolean>
 
     /**
      * Songs whose title, artist or album matches [query]. Build the query

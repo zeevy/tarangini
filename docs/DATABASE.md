@@ -167,6 +167,7 @@ One DataStore (Preferences) file named `settings`, one instance for the whole ap
 | `min_track_seconds` | whole number | Shorter files are left out of the library |
 | `included_folders` | set of text | When not empty, only these folders are scanned. A folder is a whole path such as `external_primary/Music` and covers the folders inside it |
 | `excluded_folders` | set of text | Folders a scan skips |
+| `song_sort` | text | The order of the list of all songs: `TITLE`, `ARTIST`, `ALBUM`, `DATE_ADDED` or `DURATION`. A name the app does not know reads as `TITLE` |
 
 A key is added by the issue that first uses it.
 

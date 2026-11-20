@@ -147,7 +147,12 @@ class LibraryDaoTest {
         database.addSong("other", album = "Other")
         val albumId = library.songsByTitle(10, 0).first { it.song.title == "d1t1" }.song.albumId
 
-        assertEquals(listOf("d1t1", "d1t2", "d2t1"), library.songsOfAlbum(albumId).map { it.song.title })
+        assertEquals(
+            listOf("d1t1", "d1t2", "d2t1"),
+            library.songsOfAlbum(albumId, limit = 100, offset = 0).map {
+                it.song.title
+            },
+        )
     }
 
     @Test
@@ -172,7 +177,12 @@ class LibraryDaoTest {
 
         assertEquals(listOf("Music"), library.childFolders(null).map { it.name })
         assertEquals(listOf("New", "Old"), library.childFolders(music).map { it.name })
-        assertEquals(listOf("a.mp3", "b.mp3"), library.songsInFolder(old).map { it.song.fileName })
+        assertEquals(
+            listOf("a.mp3", "b.mp3"),
+            library.songsInFolder(old, limit = 10, offset = 0).map {
+                it.song.fileName
+            },
+        )
     }
 
     @Test
