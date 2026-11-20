@@ -47,11 +47,17 @@ internal abstract class PlaylistDao {
     @Query(
         """
             INSERT INTO playlist_items(playlist_id, song_id, position, added_at)
-            SELECT :playlistId, :songId, COALESCE(MAX(position), -1) + 1, :at
-            FROM playlist_items WHERE playlist_id = :playlistId
+            SELECT p.id, s.id,
+            (SELECT COALESCE(MAX(position), -1) + 1 FROM playlist_items WHERE playlist_id = p.id),
+            :at
+            FROM playlists p, songs s WHERE p.id = :playlistId AND s.id = :songId
         """,
     )
     abstract suspend fun addItem(playlistId: Long, songId: Long, at: Long): Long
+
+    /** The id of every place of a playlist in its order, also of a song whose file is gone. */
+    @Query("SELECT id FROM playlist_items WHERE playlist_id = :playlistId ORDER BY position, id")
+    abstract suspend fun itemIds(playlistId: Long): List<Long>
 
     @Query("DELETE FROM playlist_items WHERE id = :itemId")
     abstract suspend fun removeItem(itemId: Long)
