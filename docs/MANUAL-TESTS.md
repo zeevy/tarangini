@@ -191,6 +191,17 @@ These need the Desktop Head Unit or a car. The steps are in [ANDROID-AUTO.md](AN
 | 134 | Swipe the app away from the recent apps while paused, then tap play on the widget | The song played last goes on from its place, with the notification |
 | 135 | Switch the phone between the light and the dark look, and change the wallpaper | The widget follows both |
 
+## Equalizer
+
+Use wired headphones or a Bluetooth speaker, and a song with steady bass and voice.
+
+| No. | Steps | Expected |
+|---|---|---|
+| 136 | On two phones (one older or slower), play an album for 10 minutes with the equalizer off, then 10 minutes with Carnatic and bass boost 50 %. Read the CPU of Tarangini in the profiler of Android Studio, or `adb shell top`. Then the same with a radio stream | With the equalizer on the CPU is at most 2 % of one core more than with it off. Write the numbers in the results table |
+| 137 | Charge to full, play the same album for one hour with the screen off, once with the equalizer off and once on (bass boost 100 %). Read the battery use of the app in Settings | The use with the equalizer on is at most 5 % more than with it off. Write the numbers in the results table |
+| 138 | Open the equalizer from the menu of now playing, turn it on and move each band and the bass slider while the song plays, slowly and fast | Each change is heard within half a second. No click, pop or crackle. With every band and the bass at full, a loud song does not crackle |
+| 139 | Turn the equalizer on with a preset, play a gapless album (a live album or one with tracks that run into each other), then close the app and play from the car or from the notification | No gap or click between the tracks. The preset is still on after the app was closed, and the car hears it too |
+
 ## Results
 
 Write each run here: the date, the phone and Android version, the app version, the checks that failed, and who ran it.

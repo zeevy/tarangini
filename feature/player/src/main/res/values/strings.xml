@@ -41,4 +41,20 @@
     <string name="queue_move_down">Move down</string>
     <string name="queue_remove">Remove from the queue</string>
     <string name="queue_playing_now">Playing now</string>
+    <string name="now_playing_equalizer">Equalizer</string>
+    <string name="equalizer_title">Equalizer</string>
+    <string name="equalizer_on">Equalizer on</string>
+    <string name="equalizer_presets">Presets</string>
+    <string name="equalizer_preset_flat">Flat</string>
+    <string name="equalizer_preset_bass">Bass</string>
+    <string name="equalizer_preset_vocal">Vocal</string>
+    <string name="equalizer_preset_classical">Classical</string>
+    <string name="equalizer_preset_carnatic">Carnatic</string>
+    <string name="equalizer_preset_bollywood">Bollywood</string>
+    <string name="equalizer_bands">Bands</string>
+    <string name="equalizer_band_hz">%1$d Hz</string>
+    <string name="equalizer_band_khz">%1$s kHz</string>
+    <string name="equalizer_gain">%1$s dB</string>
+    <string name="equalizer_bass">Bass boost</string>
+    <string name="equalizer_bass_value">%1$d %%</string>
 </resources>

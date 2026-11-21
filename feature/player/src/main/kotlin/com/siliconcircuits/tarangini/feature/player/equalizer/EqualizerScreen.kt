@@ -1,0 +1,204 @@
+/*
+ * Copyright (C) Silicon Circuits and the Tarangini contributors. This file
+ * is part of Tarangini, free software under the GNU General Public License,
+ * version 3 only. See the LICENSE file. SPDX-License-Identifier: GPL-3.0-only
+ */
+
+package com.siliconcircuits.tarangini.feature.player.equalizer
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.siliconcircuits.tarangini.core.domain.audio.EqualizerPreset
+import com.siliconcircuits.tarangini.core.domain.audio.EqualizerSettings
+import com.siliconcircuits.tarangini.core.domain.audio.MAX_BAND_GAIN_DB
+import com.siliconcircuits.tarangini.core.ui.component.BackButton
+import com.siliconcircuits.tarangini.core.ui.theme.Spacing
+import com.siliconcircuits.tarangini.core.ui.theme.glassBackground
+import com.siliconcircuits.tarangini.core.ui.theme.glassTopBarColors
+import com.siliconcircuits.tarangini.feature.player.R
+import kotlin.math.roundToInt
+
+/** The equalizer screen: on and off, the presets, a slider per band and the bass boost. */
+@Composable
+internal fun EqualizerScreen(
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: EqualizerViewModel = hiltViewModel(),
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val actions = EqualizerActions(viewModel::setOn, viewModel::pickPreset, viewModel::setBand, viewModel::setBassBoost)
+    EqualizerContent(state, actions, onBackClick, modifier)
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun EqualizerContent(
+    state: EqualizerUiState?,
+    actions: EqualizerActions,
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Scaffold(
+        modifier = modifier.glassBackground(),
+        containerColor = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onBackground,
+        topBar = {
+            TopAppBar(
+                colors = glassTopBarColors(),
+                title = { Text(stringResource(R.string.equalizer_title)) },
+                navigationIcon = { BackButton(onClick = onBackClick) },
+            )
+        },
+    ) { padding ->
+        if (state != null) {
+            Column(
+                modifier = Modifier.padding(padding).verticalScroll(rememberScrollState()).padding(Spacing.medium),
+                verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+            ) {
+                OnSwitch(state.settings.isOn, actions.onSetOn)
+                Presets(state.settings, actions.onPickPreset)
+                Text(stringResource(R.string.equalizer_bands), style = MaterialTheme.typography.titleMedium)
+                state.bandsHz.forEachIndexed { index, hz ->
+                    val gain = state.gains[index]
+                    LabelledSlider(
+                        label = bandName(hz),
+                        value = gainText(gain),
+                        position = gain,
+                        range = -MAX_BAND_GAIN_DB..MAX_BAND_GAIN_DB,
+                        isEnabled = state.settings.isOn,
+                    ) { actions.onSetBand(index, (it * 2).roundToInt() / 2f) }
+                }
+                val bass = state.settings.bassBoost
+                LabelledSlider(
+                    label = stringResource(R.string.equalizer_bass),
+                    value = stringResource(R.string.equalizer_bass_value, bass),
+                    position = bass.toFloat(),
+                    range = 0f..EqualizerSettings.MAX_BASS_PERCENT.toFloat(),
+                    isEnabled = state.settings.isOn,
+                ) { actions.onSetBassBoost(it.roundToInt()) }
+            }
+        }
+    }
+}
+
+/** The whole row turns the equalizer on and off, not only the switch. */
+@Composable
+private fun OnSwitch(isOn: Boolean, onSetOn: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().toggleable(value = isOn, role = Role.Switch, onValueChange = onSetOn),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            stringResource(R.string.equalizer_on),
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.titleMedium,
+        )
+        Switch(checked = isOn, onCheckedChange = null)
+    }
+}
+
+/** A chip per preset. After a band was moved by hand no chip is picked. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun Presets(settings: EqualizerSettings, onPick: (EqualizerPreset) -> Unit) {
+    Column {
+        Text(stringResource(R.string.equalizer_presets), style = MaterialTheme.typography.titleMedium)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.small)) {
+            EqualizerPreset.entries.forEach { preset ->
+                FilterChip(
+                    selected = settings.preset == preset,
+                    onClick = { onPick(preset) },
+                    enabled = settings.isOn,
+                    label = { Text(presetName(preset)) },
+                )
+            }
+        }
+    }
+}
+
+/** A name over a slider, with its value at the end of the line. At the largest font the two lines still fit. */
+@Composable
+private fun LabelledSlider(
+    label: String,
+    value: String,
+    position: Float,
+    range: ClosedFloatingPointRange<Float>,
+    isEnabled: Boolean,
+    onChange: (Float) -> Unit,
+) {
+    Column {
+        Row {
+            Text(label, modifier = Modifier.weight(1f))
+            Text(value)
+        }
+        Slider(
+            value = position,
+            onValueChange = onChange,
+            valueRange = range,
+            enabled = isEnabled,
+            modifier = Modifier.semantics {
+                contentDescription = label
+                stateDescription = value
+            },
+        )
+    }
+}
+
+@Composable
+private fun presetName(preset: EqualizerPreset): String = stringResource(
+    when (preset) {
+        EqualizerPreset.FLAT -> R.string.equalizer_preset_flat
+        EqualizerPreset.BASS -> R.string.equalizer_preset_bass
+        EqualizerPreset.VOCAL -> R.string.equalizer_preset_vocal
+        EqualizerPreset.CLASSICAL -> R.string.equalizer_preset_classical
+        EqualizerPreset.CARNATIC -> R.string.equalizer_preset_carnatic
+        EqualizerPreset.BOLLYWOOD -> R.string.equalizer_preset_bollywood
+    },
+)
+
+/** 60 Hz, 910 Hz, 3.6 kHz, 14 kHz. */
+@Composable
+private fun bandName(hz: Float): String = if (hz < KILO) {
+    stringResource(R.string.equalizer_band_hz, hz.roundToInt())
+} else {
+    val kilo = hz / KILO
+    val text = if (kilo % 1f == 0f) kilo.roundToInt().toString() else "%.1f".format(kilo)
+    stringResource(R.string.equalizer_band_khz, text)
+}
+
+/** +3 dB, 0 dB, -2.5 dB. */
+@Composable
+private fun gainText(gain: Float): String {
+    val number = if (gain % 1f == 0f) gain.roundToInt().toString() else "%.1f".format(gain)
+    return stringResource(R.string.equalizer_gain, if (gain > 0) "+$number" else number)
+}
+
+private const val KILO = 1_000f

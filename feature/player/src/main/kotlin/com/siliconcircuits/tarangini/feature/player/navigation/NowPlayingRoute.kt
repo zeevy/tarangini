@@ -15,3 +15,7 @@ data object NowPlayingRoute
 /** The queue. It opens from the now playing screen. */
 @Serializable
 internal data object QueueRoute
+
+/** The equalizer. It opens from the menu of the now playing screen. */
+@Serializable
+internal data object EqualizerRoute

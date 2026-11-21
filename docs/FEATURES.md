@@ -148,7 +148,7 @@ The calls the app needs: `/json/stations/search` (`name`, `countrycode`, `langua
 | Crossfade | Fade between tracks | [Future] | Yes | Applies |
 
 > [!WARNING]
-> Needs a short trial build before we commit. The equalizer is our own ExoPlayer audio processor (decision D12), so its CPU cost and sound quality must be measured on real phones. Media3 has no built-in crossfade or ReplayGain. Crossfade needs two players or a custom audio processor and may break gapless playback.
+> The equalizer is our own ExoPlayer audio processor (decision D12). Its trial build is a go (decision D76); the numbers on real phones are still to be measured. Media3 has no built-in crossfade or ReplayGain. Crossfade needs two players or a custom audio processor and may break gapless playback.
 
 ### 2.8 Personalization
 
@@ -447,6 +447,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D73 | Backup and restore to a file: favourites, playlists and library settings in one JSON file through the file picker. Songs are named by the path of their file. Restore asks "Add" or "Replace". The file is not trusted: size limit, list limits, version check | 21 Nov 2026 | No server of ours, so the copy is a file the person keeps. A path means the same on the next phone, an id does not. See `docs/adr/0044-backup-file.md` |
 | D74 | Lyrics from the tags of the file (`USLT` of MP3, the lyrics item of M4A), read while now playing shows the song and shown from its menu. No synced lyrics, nothing from the network, not in the car | 21 Nov 2026 | The readers of Media3 are there already, so no new library. See `docs/adr/0045-embedded-lyrics.md` |
 | D75 | Home screen widget with Glance in `feature:widget`: fed by the playback service through `NowPlayingCards`, play and pause through the media button receiver, next to the service, the look of the phone (Material You) | 21 Nov 2026 | Works when the app is not running, adds no second way into the player. See `docs/adr/0046-home-screen-widget.md` |
+| D76 | Our own equalizer: five bell filters and a low shelf for the bass in an audio processor of the player, turned down first so a full boost does not clip, with a fade of 20 ms on each change. Presets are curves, so they fit any number of bands. The trial numbers are a go | 21 Nov 2026 | The same sound on every phone and in the car. See `docs/adr/0047-equalizer.md` |
 
 ## 9. Checks before building
 
@@ -456,6 +457,6 @@ All open questions are answered. These points still need a check at the source o
 |---|---|---|
 | C2 | Our own check of the rules before the paid tier | Linking to public streams, showing station names, stream recording, and use of the Radio Browser data, whose licence its pages do not state. Read the Play policy and the terms of each source again, and ask the Radio Browser project about its data |
 | C4 | Exact alarm permission for the radio alarm | Play allows `USE_EXACT_ALARM` only for some app types |
-| C5 | Trial builds | Our own equalizer processor, the pause and rewind buffer for live radio, crossfade with gapless |
+| C5 | Trial builds | The pause and rewind buffer for live radio, crossfade with gapless. The equalizer processor was tried on 21 Nov 2026 and is a go (D76); its numbers on real phones are rows 136 and 137 of `docs/MANUAL-TESTS.md` |
 | C7 | Subscription prices | Monthly and yearly amounts |
 | C8 | Google Drive rules, if it is added later | Verification and yearly assessment cost |

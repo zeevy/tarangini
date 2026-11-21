@@ -7,6 +7,7 @@
 package com.siliconcircuits.tarangini.di
 
 import com.siliconcircuits.tarangini.core.domain.premium.CrashReporter
+import com.siliconcircuits.tarangini.core.domain.premium.EqualizerBands
 import com.siliconcircuits.tarangini.core.domain.premium.PremiumGate
 import dagger.Binds
 import dagger.Module
@@ -22,4 +23,7 @@ internal abstract class CorePremiumModule {
 
     @Binds
     abstract fun bindCrashReporter(reporter: NoCrashReporter): CrashReporter
+
+    @Binds
+    abstract fun bindEqualizerBands(bands: FiveEqualizerBands): EqualizerBands
 }

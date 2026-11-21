@@ -7,10 +7,13 @@
 package com.siliconcircuits.tarangini.core.playback
 
 import android.app.Application
+import com.siliconcircuits.tarangini.core.domain.audio.FIVE_BANDS_HZ
 import com.siliconcircuits.tarangini.core.domain.playback.NowPlayingCards
 import com.siliconcircuits.tarangini.core.domain.playback.ResumeStore
 import com.siliconcircuits.tarangini.core.domain.premium.CrashReporter
+import com.siliconcircuits.tarangini.core.domain.premium.EqualizerBands
 import com.siliconcircuits.tarangini.core.domain.repository.AudioAccess
+import com.siliconcircuits.tarangini.core.domain.repository.EqualizerRepository
 import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
 import com.siliconcircuits.tarangini.core.domain.repository.GenreRepository
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryLetters
@@ -32,6 +35,7 @@ import com.siliconcircuits.tarangini.core.testing.library.FakeSearchRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeSongLookup
 import com.siliconcircuits.tarangini.core.testing.playback.FakeResumeStore
 import com.siliconcircuits.tarangini.core.testing.premium.FakeCrashReporter
+import com.siliconcircuits.tarangini.core.testing.settings.FakeEqualizerRepository
 import com.siliconcircuits.tarangini.core.testing.station.FakeStationStreams
 import dagger.hilt.internal.GeneratedComponent
 import dagger.hilt.internal.GeneratedComponentManager
@@ -86,6 +90,10 @@ internal class TestPlaybackApp :
         override fun stationStreams(): StationStreams = FakeStationStreams()
 
         override fun crashReporter(): CrashReporter = FakeCrashReporter()
+
+        override fun equalizerRepository(): EqualizerRepository = FakeEqualizerRepository()
+
+        override fun equalizerBands(): EqualizerBands = EqualizerBands { FIVE_BANDS_HZ }
 
         override fun playbackScope(): CoroutineScope = scope
 

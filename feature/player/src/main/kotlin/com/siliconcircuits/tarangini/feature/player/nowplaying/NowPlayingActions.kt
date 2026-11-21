@@ -34,4 +34,5 @@ internal data class PlaybackOptionActions(
     val onSleepAfter: (Int) -> Unit = {},
     val onSleepAtEnd: () -> Unit = {},
     val onCancelSleep: () -> Unit = {},
+    val onOpenEqualizer: () -> Unit = {},
 )
