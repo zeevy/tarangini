@@ -22,6 +22,8 @@ You need JDK 21 and the Android SDK with platform 37. The steps are in the [READ
 
 Run all of them before you open a pull request. CI runs the same commands and they must pass. `./gradlew ktlintFormat` fixes most style problems by itself.
 
+CI also runs the end to end test of the main flows on an emulator. To run it yourself, start an emulator and run `./gradlew :app:connectedCoreDebugAndroidTest`. Use an emulator or a test phone, not your own phone: the test adds three short songs to the music of the device (and removes them), and leaves a favourite and a playlist in the app.
+
 ## Rules for a change
 
 The full list is in [Rules with ids](#rules-with-ids) at the end of this page, and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) says where code goes. The points that matter most:
