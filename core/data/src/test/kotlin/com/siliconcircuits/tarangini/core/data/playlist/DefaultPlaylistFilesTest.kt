@@ -125,6 +125,35 @@ class DefaultPlaylistFilesTest {
     }
 
     @Test
+    fun `a name with letters outside a to z is found, and a line is shown without direction marks`() = runTest {
+        database.addSong("Été", sourceId = "9")
+        pickFile("Music/Été.mp3\r\nMusic/\u202Egone.mp3".toByteArray())
+
+        val done = files.importFrom(picked.toString()) as PlaylistImport.Done
+
+        assertEquals(listOf("Été"), titles(done.playlistId))
+        assertEquals(listOf("Music/gone.mp3"), done.notFound)
+    }
+
+    @Test
+    fun `a file in the Western code page is read`() = runTest {
+        database.addSong("Été", sourceId = "9")
+        pickFile("Music\\Été.mp3".toByteArray(Charsets.ISO_8859_1))
+
+        val done = files.importFrom(picked.toString()) as PlaylistImport.Done
+
+        assertEquals(listOf("Été"), titles(done.playlistId))
+    }
+
+    @Test
+    fun `a playlist with no file left on the phone is not exported`() = runTest {
+        val id = requireNotNull(playlists.create("Empty"))
+        resolver.registerOutputStream(picked, ByteArrayOutputStream())
+
+        assertFalse(files.exportTo(id, picked.toString()))
+    }
+
+    @Test
     fun `only an address of the file picker is opened`() = runTest {
         val id = drive()
 

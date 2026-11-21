@@ -24,7 +24,9 @@ import com.siliconcircuits.tarangini.core.domain.repository.PlaylistRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.InputStream
 import javax.inject.Inject
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 
 /**
@@ -41,10 +43,12 @@ internal class DefaultPlaylistFiles @Inject constructor(
 ) : PlaylistFiles {
     override suspend fun exportTo(playlistId: Long, target: String): Boolean = withContext(io) {
         runCatching {
-            val text = M3u.write(files.filesOf(playlistId).map { it.toM3uSong() })
-            val stream = pickedFile(target)?.let { context.contentResolver.openOutputStream(it, "wt") }
-            stream?.use { it.write(text.toByteArray()) } != null
-        }.getOrDefault(false)
+            val songs = files.filesOf(playlistId).map { it.toM3uSong() }
+            // A playlist with no file left on the phone would give an empty file that looks saved.
+            val stream = pickedFile(target).takeIf { songs.isNotEmpty() }
+                ?.let { context.contentResolver.openOutputStream(it, "wt") }
+            stream?.use { it.write(M3u.write(songs).toByteArray()) } != null
+        }.onFailure(::passOnCancel).getOrDefault(false)
     }
 
     override suspend fun importFrom(source: String): PlaylistImport = withContext(io) {
@@ -54,10 +58,19 @@ internal class DefaultPlaylistFiles @Inject constructor(
             when {
                 file == null || bytes == null -> PlaylistImport.Failed
                 bytes.size > M3u.MAX_BYTES -> PlaylistImport.TooLarge
-                else -> playlistOf(M3u.entries(bytes.decodeToString()), nameOf(file))
+                else -> playlistOf(M3u.entries(textOf(bytes)), nameOf(file))
             }
-        }.getOrDefault(PlaylistImport.Failed)
+        }.onFailure(::passOnCancel).getOrDefault(PlaylistImport.Failed)
     }
+
+    /** A cancelled call must end as cancelled, not as a failure that is told. */
+    private fun passOnCancel(problem: Throwable) {
+        if (problem is CancellationException) throw problem
+    }
+
+    /** The text of a file: UTF-8, or the Western code page many older playlist files are written in. */
+    private fun textOf(bytes: ByteArray): String =
+        bytes.decodeToString().takeIf { BROKEN_CHARACTER !in it } ?: bytes.toString(Charsets.ISO_8859_1)
 
     private fun pickedFile(address: String): Uri? = Uri.parse(address).takeIf { it.scheme == "content" }
 
@@ -74,8 +87,12 @@ internal class DefaultPlaylistFiles @Inject constructor(
     }
 
     private suspend fun playlistOf(entries: List<String>, name: String): PlaylistImport {
-        val known = entries.mapNotNull(M3u::fileNameOf).distinct().chunked(NAMES_PER_QUERY)
-            .flatMap { names -> files.filesNamed(names) }
+        // The table compares without regard to case only for the letters a to z. So each name is also
+        // asked for as the file writes it: "Été.mp3" is then found when the file writes it the same way.
+        val names = entries.flatMap { entry -> listOfNotNull(M3u.fileNameOf(entry), writtenNameOf(entry)) }.distinct()
+        val known = names.chunked(NAMES_PER_QUERY)
+            .flatMap { part -> files.filesNamed(part) }
+            .distinctBy { it.songId }
             .map { SongFile(it.songId, it.folderPath, it.fileName) }
             .groupBy { it.fileName.lowercase() }
         val found = entries.map { entry -> entry to M3u.match(entry, known[M3u.fileNameOf(entry)].orEmpty()) }
@@ -84,13 +101,17 @@ internal class DefaultPlaylistFiles @Inject constructor(
         return if (playlistId == null) {
             PlaylistImport.NothingFound
         } else {
-            playlists.addAll(playlistId, songIds)
+            // A playlist with nothing in it must not stay behind when the songs cannot be added.
+            runCatching { playlists.addAll(playlistId, songIds) }.onFailure { problem ->
+                withContext(NonCancellable) { playlists.delete(playlistId) }
+                throw problem
+            }
             PlaylistImport.Done(
                 playlistId = playlistId,
                 name = name,
                 matched = songIds.size,
                 total = entries.size,
-                notFound = found.filter { it.second == null }.map { it.first.take(MAX_SHOWN_LINE) }
+                notFound = found.filter { it.second == null }.map { shown(it.first).take(MAX_SHOWN_LINE) }
                     .take(PlaylistImport.MAX_NOT_FOUND),
             )
         }
@@ -100,12 +121,23 @@ internal class DefaultPlaylistFiles @Inject constructor(
     private fun nameOf(file: Uri): String {
         val shown = context.contentResolver.query(file, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
             ?.use { row -> if (row.moveToFirst()) row.getString(0) else null }
-        val name = shown.orEmpty().substringBeforeLast('.').filterNot(Char::isISOControl).trim().take(MAX_PLAYLIST_NAME)
+        val name = shown(shown.orEmpty().substringBeforeLast('.')).trim().take(MAX_PLAYLIST_NAME)
         return name.ifEmpty { context.getString(R.string.playlist_imported) }
     }
 
+    /** The file name as the line writes it, for a path with either kind of slash. */
+    private fun writtenNameOf(entry: String): String = entry.replace('\\', '/').substringAfterLast('/')
+
+    /**
+     * A text of a file as it may be shown: no control character, and no character that changes the
+     * direction of the text and so could make a line read as something else.
+     */
+    private fun shown(text: String): String =
+        text.filterNot { it.isISOControl() || Character.getType(it) == Character.FORMAT.toInt() }
+
     private companion object {
-        const val NAMES_PER_QUERY = 500
+        const val BROKEN_CHARACTER = '\uFFFD'
+        const val NAMES_PER_QUERY = 400
         const val MAX_SHOWN_LINE = 200
     }
 }

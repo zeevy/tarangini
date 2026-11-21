@@ -50,7 +50,8 @@ internal fun PlaylistsTab(onOpenPlaylist: (Playlist) -> Unit, viewModel: Playlis
         onRetry = viewModel::retry,
         files = PlaylistFileActions(
             imported = imported,
-            onImport = { picker.launch(PLAYLIST_FILE_TYPES) },
+            // A phone with no file picker gets no crash: nothing opens.
+            onImport = { runCatching { picker.launch(PLAYLIST_FILE_TYPES) } },
             onClose = viewModel.import::close,
         ),
     )

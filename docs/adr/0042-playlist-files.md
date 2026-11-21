@@ -12,7 +12,7 @@ People have playlists from other players and want to take the playlists of this 
 | Decision | Options looked at | Reason |
 |---|---|---|
 | Files are read and written through the file picker of the system (`OpenDocument`, `CreateDocument`) | A fixed folder on the storage. A share target | The picker needs no permission, and the person sees where the file goes |
-| Only a `content:` address is opened | Open any address | The address comes back through the app. A `file:` address could name a file of the app itself |
+| Only a `content:` address is opened | Open any address | The only address that reaches this code is the result of the picker. The check is a second guard: a `file:` address could name a file of the app itself |
 | A file over 1 MB is refused before a line is looked at. A line over 4096 characters is left out, and at most 5000 lines are used | No limits | The file is not trusted. A playlist of 5000 songs is about half the size limit |
 | A line is only ever compared with the files the library knows. Nothing from the file is opened, fetched or played | Add an unknown path or address as a new item | A file cannot bring anything into the app but an order of songs that are already there |
 | Matching: the song whose path has the most folders in common with the line, counted from the file name up. A path of a Windows computer and a relative path match that way. With only the file name in common, the song is taken when it is the one song with that name | Exact path only. First song with the name | Paths differ between devices. A guess between two songs with the same name would put a wrong song in |
@@ -23,5 +23,8 @@ People have playlists from other players and want to take the playlists of this 
 
 ## What follows
 
+- A file name is compared without regard to case for the letters a to z only, which is what the database can do. A name with other letters must be written in the file as it is on the phone.
+- A file that is not UTF-8 is read as the Western code page (ISO 8859-1). A line that starts with `#` is a comment, as the format says, also when it was meant as a file name.
+- An export of a playlist with no file left on the phone writes nothing and says it could not be saved.
 - Stream addresses in a file are listed as not found: the app has no radio in this release.
 - The checks that need a real phone are rows 124 and 125 of `docs/MANUAL-TESTS.md`.

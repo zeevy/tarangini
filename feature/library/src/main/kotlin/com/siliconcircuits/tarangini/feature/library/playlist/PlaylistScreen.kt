@@ -73,7 +73,8 @@ private fun LoadedPlaylist(onBack: () -> Unit, viewModel: PlaylistViewModel = hi
     }
     val files = PlaylistFileActions(
         exported = exported,
-        onExport = { picker.launch("${state.name}.m3u") },
+        // A phone with no file picker gets no crash: nothing opens.
+        onExport = { runCatching { picker.launch("${state.name}.m3u") } },
         onClose = viewModel.export::close,
     )
     PlaylistContent(state.name, songs, actions, onBack, files = files)
