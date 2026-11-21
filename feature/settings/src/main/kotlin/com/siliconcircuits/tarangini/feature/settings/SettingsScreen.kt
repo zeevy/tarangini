@@ -52,21 +52,29 @@ internal fun SettingsScreen(onBackClick: () -> Unit, modifier: Modifier = Modifi
     }
 }
 
-/** What Settings lists. The app puts it into the frame of Settings. */
+/**
+ * What Settings lists. The app puts it into the frame of Settings.
+ *
+ * @param onOpenLicences opens the open source licences screen
+ */
 @Composable
-fun SettingsSections(modifier: Modifier = Modifier) {
-    LoadedSettings(modifier)
+fun SettingsSections(onOpenLicences: () -> Unit, modifier: Modifier = Modifier) {
+    LoadedSettings(onOpenLicences, modifier)
 }
 
 @Composable
-private fun LoadedSettings(modifier: Modifier = Modifier, viewModel: SettingsViewModel = hiltViewModel()) {
+private fun LoadedSettings(
+    onOpenLicences: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: SettingsViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val links = LocalUriHandler.current
     val version = remember(context) {
         runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull().orEmpty()
     }
-    val actions = remember(viewModel, links) {
+    val actions = remember(viewModel, links, onOpenLicences) {
         SettingsActions(
             onSetMinTrackSeconds = viewModel::setMinTrackSeconds,
             onSetFolderHidden = viewModel::setFolderHidden,
@@ -74,6 +82,7 @@ private fun LoadedSettings(modifier: Modifier = Modifier, viewModel: SettingsVie
             onClearHistory = viewModel::clearHistory,
             // A phone with no browser cannot open the page. The address is on the row, so nothing else is said.
             onOpenSource = { runCatching { links.openUri(SOURCE_CODE) } },
+            onOpenLicences = onOpenLicences,
         )
     }
     SettingsContent(state, version, actions, modifier)

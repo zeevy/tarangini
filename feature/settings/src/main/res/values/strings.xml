@@ -39,6 +39,11 @@
     <string name="settings_version">Version</string>
     <string name="settings_source">Source code</string>
     <string name="settings_source_text">github.com/zeevy/tarangini</string>
+    <string name="settings_licences_text">The libraries in this app and their licences</string>
+    <string name="licences_title">Open source licences</string>
+    <string name="licences_own_title">Tarangini</string>
+    <string name="licences_own_text">Tarangini is free software under the GNU General Public License, version 3 only. It comes with no warranty. The source code is at github.com/zeevy/tarangini. The parts below ship inside the app; tap one to read its licence.</string>
+    <string name="licences_no_text">The text of this licence is not in the app. The page of the library has it.</string>
     <string name="settings_done">Done</string>
     <string name="settings_cancel">Cancel</string>
 </resources>

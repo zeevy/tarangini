@@ -41,6 +41,9 @@ android {
 // Fails the build when a library that ships in the app has a licence outside this list.
 // The app is GPL-3.0, but the Play build adds closed code, so no GPL library of others is allowed.
 licensee {
+    // The list of libraries goes into the app as the asset app/cash/licensee/artifacts.json. The
+    // open source licences screen reads it, so a new library shows there with no other step.
+    bundleAndroidAsset.set(true)
     allow("Apache-2.0")
     allow("MIT")
     allow("BSD-2-Clause")

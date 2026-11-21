@@ -24,5 +24,5 @@ The scanner has read three values from the settings file since it was written: t
 
 - A folder inside a hidden folder shows as hidden and cannot be changed by itself.
 - A link to a privacy text comes with the store listing, when the text has an address.
-- The open source licences get their own screen and a row here.
+- The open source licences have their own screen and a row here (`docs/adr/0035-open-source-licences.md`).
 - `PlaceholderScreen` is removed: every screen is built.
