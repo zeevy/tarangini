@@ -102,12 +102,9 @@ internal class MediaStoreAudioSource @Inject constructor(@ApplicationContext pri
     /**
      * A text value, or null when it is missing or blank. Tags and names are
      * written by whoever made the file, so they are cut to [MAX_TEXT] and
-     * lose their control characters before anything else sees them.
-     */
-
-    /**
-     * A text with no control characters. They are left out, or exchanged for [controlAs]: the
-     * newer tag format divides the genres of one tag by the zero character.
+     * lose their control characters before anything else sees them. A control
+     * character is left out, or exchanged for [controlAs]: the newer tag format
+     * divides the genres of one tag by the zero character.
      */
     private fun Cursor.text(column: String, controlAs: Char? = null): String? {
         val index = getColumnIndex(column)
