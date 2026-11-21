@@ -18,4 +18,26 @@ object TaranginiBuild {
     /** The Android namespace of a module: `:feature:library` gives `<base>.feature.library`, `:app` gives `<base>`. */
     fun namespaceFor(projectPath: String): String =
         if (projectPath == ":app") BASE_PACKAGE else BASE_PACKAGE + projectPath.replace(':', '.')
+
+    /**
+     * The version code of a version name of the form `major.minor.patch`: 1.4.2 gives 1004002.
+     * The code then grows with every release, which is what Android and the Play Store ask for.
+     * Minor and patch go up to 999. Any other form of name fails the build.
+     */
+    fun versionCodeOf(versionName: String): Int {
+        val parts = versionName.split('.').map { it.toIntOrNull() }
+        require(parts.size == VERSION_PARTS && parts.all { it != null && it >= 0 }) {
+            "The version name must be major.minor.patch, but is '$versionName'"
+        }
+        val (major, minor, patch) = parts.map { it ?: 0 }
+        require(minor <= MAX_PART && patch <= MAX_PART && major <= MAX_MAJOR) {
+            "A part of the version '$versionName' is too large"
+        }
+        return (major * PART_STEP + minor) * PART_STEP + patch
+    }
+
+    private const val VERSION_PARTS = 3
+    private const val MAX_PART = 999
+    private const val MAX_MAJOR = 2000
+    private const val PART_STEP = 1000
 }

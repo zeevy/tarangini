@@ -14,4 +14,5 @@ internal class SettingsActions(
     val onClearHistory: () -> Unit = {},
     val onOpenSource: () -> Unit = {},
     val onOpenLicences: () -> Unit = {},
+    val onOpenPrivacy: () -> Unit = {},
 )

@@ -14,6 +14,7 @@ import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import com.siliconcircuits.tarangini.core.domain.model.ScanSettings
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import org.junit.Assert.assertEquals
@@ -53,6 +54,7 @@ class SettingsContentTest {
         onRescan = { done += "rescan" },
         onClearHistory = { done += "clear" },
         onOpenSource = { done += "source" },
+        onOpenPrivacy = { done += "privacy" },
     )
     private val state = SettingsUiState(
         scan = ScanSettings(30, setOf("external_primary/Calls")),
@@ -73,8 +75,9 @@ class SettingsContentTest {
         composeRule.onNodeWithText("1.0").assertExists()
         composeRule.onNodeWithText("Rescan now").performClick()
         composeRule.onNodeWithText("Source code").performClick()
+        composeRule.onNodeWithText("Privacy policy").performScrollTo().performClick()
 
-        assertEquals(listOf("rescan", "source"), done)
+        assertEquals(listOf("rescan", "source", "privacy"), done)
     }
 
     @Test

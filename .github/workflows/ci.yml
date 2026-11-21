@@ -68,6 +68,11 @@ jobs:
       - name: Build the core debug app
         run: ./gradlew assembleCoreDebug --stacktrace
 
+      # R8 fails the build when a class it needs has no keep rule, so a library update that breaks
+      # the release build shows here and not at release time.
+      - name: Build the core release app
+        run: ./gradlew assembleCoreRelease --stacktrace
+
       - name: Upload the reports of a failed run
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

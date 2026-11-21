@@ -83,6 +83,7 @@ private fun LoadedSettings(
             // A phone with no browser cannot open the page. The address is on the row, so nothing else is said.
             onOpenSource = { runCatching { links.openUri(SOURCE_CODE) } },
             onOpenLicences = onOpenLicences,
+            onOpenPrivacy = { runCatching { links.openUri(PRIVACY) } },
         )
     }
     SettingsContent(state, version, actions, modifier)
@@ -90,3 +91,4 @@ private fun LoadedSettings(
 
 /** Where the source code of the app is. */
 private const val SOURCE_CODE = "https://github.com/zeevy/tarangini"
+private const val PRIVACY = "https://github.com/zeevy/tarangini/blob/main/docs/PRIVACY.md"

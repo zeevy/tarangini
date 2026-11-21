@@ -20,6 +20,16 @@ android {
         targetSdk = TaranginiBuild.TARGET_SDK
     }
 
+    buildTypes {
+        release {
+            // R8 removes code and resources nothing uses, and shortens names. The libraries bring
+            // their own keep rules. Rules of the app itself are in proguard-rules.pro.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+    }
+
     compileOptions {
         sourceCompatibility = TaranginiBuild.javaVersion
         targetCompatibility = TaranginiBuild.javaVersion

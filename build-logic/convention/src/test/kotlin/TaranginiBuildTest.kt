@@ -5,6 +5,8 @@
  */
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TaranginiBuildTest {
@@ -25,5 +27,21 @@ class TaranginiBuildTest {
     @Test
     fun `only the app module itself maps to the base package`() {
         assertEquals("com.siliconcircuits.tarangini.feature.app", TaranginiBuild.namespaceFor(":feature:app"))
+    }
+
+    @Test
+    fun `the version code grows with the version name`() {
+        assertEquals(1_000, TaranginiBuild.versionCodeOf("0.1.0"))
+        assertEquals(1_004_002, TaranginiBuild.versionCodeOf("1.4.2"))
+        assertEquals(1_999_999, TaranginiBuild.versionCodeOf("1.999.999"))
+        assertTrue(TaranginiBuild.versionCodeOf("1.0.0") > TaranginiBuild.versionCodeOf("0.999.999"))
+        assertTrue(TaranginiBuild.versionCodeOf("2000.999.999") > 0)
+    }
+
+    @Test
+    fun `a version name of another form fails the build`() {
+        listOf("1.0", "1.0.0.0", "1.0.x", "1.0.0-beta", "1.1000.0", "-1.0.0", "").forEach { name ->
+            assertThrows(name, IllegalArgumentException::class.java) { TaranginiBuild.versionCodeOf(name) }
+        }
     }
 }

@@ -1,0 +1,63 @@
+# Builds the core release app from a version tag and keeps it with the run.
+# The app is not signed here: the signed Play bundle is built from the private repo.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Build the core release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # A changed gradle-wrapper.jar must not run before it is checked.
+      - name: Check the Gradle wrapper
+        uses: gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          distribution: temurin
+          java-version: 21
+          # A hosted runner starts empty. This keeps the downloaded libraries between runs.
+          cache: gradle
+
+      - name: Find the Android SDK
+        # GitHub's runners come with the SDK and set ANDROID_HOME. The build downloads a missing platform.
+        run: |
+          test -d "${ANDROID_HOME:-}" || { echo "::error::No Android SDK on this runner (ANDROID_HOME is not set)"; exit 1; }
+
+      # The tag must be v<version of the app>, so a file can always be traced back to its commit.
+      - name: The tag matches the version of the app
+        run: |
+          VERSION=$(sed -n 's/^val appVersion = "\(.*\)"$/\1/p' app/build.gradle.kts)
+          test -n "$VERSION" || { echo "::error::No version found in app/build.gradle.kts"; exit 1; }
+          test "v$VERSION" = "$GITHUB_REF_NAME" || { echo "::error::Tag $GITHUB_REF_NAME, but the app is version $VERSION"; exit 1; }
+
+      - name: Tests, licences and the release build
+        run: ./gradlew test :app:licenseeCoreRelease assembleCoreRelease --stacktrace
+
+      - name: Size and checksum of the app
+        run: |
+          cd app/build/outputs/apk/core/release
+          ls -l *.apk
+          sha256sum *.apk | tee SHA256SUMS
+
+      - name: Keep the app and the R8 mapping file
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: tarangini-core-${{ github.ref_name }}
+          path: |
+            app/build/outputs/apk/core/release/*.apk
+            app/build/outputs/apk/core/release/SHA256SUMS
+            app/build/outputs/mapping/coreRelease/mapping.txt
+          retention-days: 90
+          if-no-files-found: error

@@ -329,8 +329,8 @@ We do not need `MANAGE_EXTERNAL_STORAGE`. Play rejects it for media players.
 
 ### 5.2 Play Store policy notes
 
-- **Target API level.** Play needs a recent target SDK for new apps and updates. Check the current required level at release time.
-- **Foreground service declaration.** For target SDK 34+, declare the `mediaPlayback` service type in Play Console with a short video of how it is used.
+- **Target API level.** Checked on 21 Nov 2026 (check C6): since 31 August 2026 a new app or an update must target Android 16 (API 36) or higher, and API 37 is asked from August 2027. The app targets 37. Source: https://support.google.com/googleplay/android-developer/answer/11926878
+- **Foreground service declaration.** For target SDK 34+, declare the `mediaPlayback` service type in Play Console with a short video of how it is used. The text of the declaration is in `docs/play/LISTING.md`.
 - **Data safety form.** Declare crash logs (Firebase Crashlytics). No usage analytics and no personal data.
 - **Content and copyright.** We play streams that stations make public. We do not host or record content in the free app. Station names and logos belong to the stations. We show no logo without permission and publish no station list of our own. Recording needs our own check of the copyright rules before it ships (C2).
 - **Families policy.** Do not target children, so we avoid the stricter rules.
@@ -434,6 +434,8 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D60 | Caught errors worth knowing about go to `CrashReporter`, which takes only a problem from a fixed list and a fixed name from the code, and no exception. The public build binds a version that does nothing. Reported today: a scan that got no file list from the phone, and a player error other than a file that is gone | 21 Nov 2026 | The message of an exception often holds a file path or an address. An interface that cannot take one cannot leak one. See `docs/adr/0036-crash-reporter.md` |
 | D61 | Accessibility is checked in the tests: the Compose test of each main screen runs the checks of the Accessibility Test Framework (labels, touch targets, contrast), and each main screen has a saved picture at the largest font on a 320 dp wide phone and one in landscape. With a large font the texts of a list row take two lines | 21 Nov 2026 | A fault then fails CI and does not wait for a manual run. See `docs/adr/0037-accessibility-checks.md` |
 | D62 | A debug build runs with StrictMode (log only) and with LeakCanary. A release build has neither | 21 Nov 2026 | A slow read on the main thread or a leak shows while the app is built and used, not after a release. See `docs/adr/0038-debug-checks.md` |
+| D63 | The release build is shrunk with R8 (code and resources). The version has one place, `appVersion` in the app build file; the version code is worked out from it (1.4.2 gives 1004002). A tag `v<version>` builds the unsigned core release in a workflow. The app has an adaptive icon with a one colour layer | 21 Nov 2026 | The release app is 5.7 MB against 50 MB unshrunk. A tag that does not match the version fails. See `docs/adr/0039-release-build.md` |
+| D64 | The privacy policy is `docs/PRIVACY.md` in this repository, and Settings links to it. The draft of the Play listing is `docs/play/LISTING.md` | 21 Nov 2026 | The policy changes with the code and its history is public. No web site is needed for it |
 
 ## 9. Checks before building
 
@@ -444,6 +446,5 @@ All open questions are answered. These points still need a check at the source o
 | C2 | Our own check of the rules before the paid tier | Linking to public streams, showing station names, stream recording, and use of the Radio Browser data, whose licence its pages do not state. Read the Play policy and the terms of each source again, and ask the Radio Browser project about its data |
 | C4 | Exact alarm permission for the radio alarm | Play allows `USE_EXACT_ALARM` only for some app types |
 | C5 | Trial builds | Our own equalizer processor, the pause and rewind buffer for live radio, crossfade with gapless |
-| C6 | Play target API level and foreground service declaration | Rules at release time |
 | C7 | Subscription prices | Monthly and yearly amounts |
 | C8 | Google Drive rules, if it is added later | Verification and yearly assessment cost |
