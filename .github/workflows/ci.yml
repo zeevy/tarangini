@@ -120,8 +120,13 @@ jobs:
           (yes || true) | "$tools/sdkmanager" --install "$image" emulator platform-tools > /dev/null
           echo no | "$tools/avdmanager" create avd --name ci --package "$image" --device pixel_6
           "$ANDROID_HOME/emulator/emulator" -avd ci -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim > "$RUNNER_TEMP/emulator.log" 2>&1 &
-          "$adb" wait-for-device
-          timeout 600 bash -c "until [ \"\$($adb shell getprop sys.boot_completed | tr -d '\r')\" = 1 ]; do sleep 5; done"
+          # Print the emulator's own log when it does not come up, so the cause shows in the job.
+          if ! timeout 300 "$adb" wait-for-device ||
+            ! timeout 600 bash -c "until [ \"\$($adb shell getprop sys.boot_completed | tr -d '\r')\" = 1 ]; do sleep 5; done"; then
+            ls -l /dev/kvm || true
+            tail -n 80 "$RUNNER_TEMP/emulator.log"
+            exit 1
+          fi
           for scale in window_animation_scale transition_animation_scale animator_duration_scale; do
             "$adb" shell settings put global "$scale" 0
           done
