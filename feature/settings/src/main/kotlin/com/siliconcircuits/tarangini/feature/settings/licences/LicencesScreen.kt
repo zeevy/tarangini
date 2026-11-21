@@ -29,6 +29,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -92,11 +94,23 @@ internal fun LicencesContent(
 
 @Composable
 private fun LicenceText(opened: OpenedLicence, modifier: Modifier = Modifier) {
-    Text(
-        text = opened.text ?: stringResource(R.string.licences_no_text),
-        style = MaterialTheme.typography.bodySmall,
-        modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(Spacing.medium),
-    )
+    Column(modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(Spacing.medium)) {
+        // The licence asks that the notice of a library goes with the app, so it comes first.
+        opened.notice?.let { notice ->
+            Text(
+                stringResource(R.string.licences_notice_title),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.semantics { heading() },
+            )
+            Text(notice, style = MaterialTheme.typography.bodySmall)
+            Text(
+                opened.title,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(top = Spacing.large).semantics { heading() },
+            )
+        }
+        Text(opened.text ?: stringResource(R.string.licences_no_text), style = MaterialTheme.typography.bodySmall)
+    }
 }
 
 @Composable

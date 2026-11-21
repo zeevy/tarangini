@@ -4,6 +4,8 @@
  * version 3 only. See the LICENSE file. SPDX-License-Identifier: GPL-3.0-only
  */
 
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
+
 plugins {
     id("com.android.application")
     id("tarangini.quality")
@@ -61,6 +63,30 @@ licensee {
     allow("MPL-2.0")
     // The list is the policy, so a licence that no library uses yet is not a problem.
     unusedAction(app.cash.licensee.UnusedAction.IGNORE)
+}
+
+// The NOTICE files of the libraries of each build go into the app as one asset. The open source
+// licences screen shows them, so a new library with such a file needs no other step.
+androidComponents {
+    onVariants { variant ->
+        val shipped = variant.runtimeConfiguration.incoming.artifactView {
+            componentFilter { it is ModuleComponentIdentifier }
+        }.artifacts
+        val collect = tasks.register<NoticeFilesTask>(
+            "collect${variant.name.replaceFirstChar(Char::uppercase)}Notices",
+        ) {
+            libraries.from(shipped.artifactFiles)
+            names.set(
+                shipped.resolvedArtifacts.map { all ->
+                    all.associate { artifact ->
+                        val library = artifact.id.componentIdentifier as ModuleComponentIdentifier
+                        artifact.file.absolutePath to "${library.group}:${library.module}"
+                    }
+                },
+            )
+        }
+        variant.sources.assets?.addGeneratedSourceDirectory(collect, NoticeFilesTask::assets)
+    }
 }
 
 // Public code must not name the premium package, whichever build is made.

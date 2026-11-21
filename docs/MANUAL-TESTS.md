@@ -183,6 +183,7 @@ These need the Desktop Head Unit or a car. The steps are in [ANDROID-AUTO.md](AN
 | 126 | With the release build on a phone, read the log while the app runs through the main flows | No line about cleartext traffic that was refused: the app itself asks for no plain `http` address |
 | 127 | On a phone with songs that have genre tags, some with two genres and some with none, open Library, Genres and a genre | Each genre shows with its number of songs, a song with two genres is under both, the songs with none are under "Unknown" at the end. A tap on a song plays the genre from that song on |
 | 128 | Install the build with genres over a build without them and open the app. Then open Library, Genres in the car | After the first scan the Genres list is filled; favourites and playlists are as before. The car shows Genres under Library and plays a genre |
+| 129 | In the release build open Settings, Open source licences, and tap "Jakarta Dependency Injection" (or another library with a notice) | The text starts with "Notice of the library" and the notice, then the licence text. A library with no notice shows only the licence |
 
 ## Results
 

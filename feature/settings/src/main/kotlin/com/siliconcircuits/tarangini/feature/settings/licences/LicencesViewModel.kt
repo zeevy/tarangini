@@ -24,8 +24,9 @@ import kotlinx.coroutines.launch
  * A licence text that is open.
  *
  * @property text the full text, or null when the app has none for this licence
+ * @property notice the notice of the library that was opened, shown above the licence, or null
  */
-internal data class OpenedLicence(val title: String, val text: String?)
+internal data class OpenedLicence(val title: String, val text: String?, val notice: String? = null)
 
 /**
  * What the licences screen shows.
@@ -57,7 +58,7 @@ internal class LicencesViewModel @Inject constructor(private val catalog: Licenc
         reading?.cancel()
         reading = viewModelScope.launch {
             val text = attempt { catalog.text(library.licence.id) }
-            shown.update { it.copy(opened = OpenedLicence(library.licence.name, text)) }
+            shown.update { it.copy(opened = OpenedLicence(library.licence.name, text, library.notice)) }
         }
     }
 

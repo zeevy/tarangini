@@ -443,6 +443,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D69 | Playlists go in and out as `.m3u` files through the file picker of the system. A line is matched to a library song by the end of its path, or by its file name when only one song has it. A file over 1 MB is refused | 21 Nov 2026 | The app needs no new permission, and a file from anywhere cannot name anything but songs of the library. See `docs/adr/0042-playlist-files.md` |
 | D70 | Plain `http` is off for the whole app while it has no radio | 21 Nov 2026 | Nothing in the first release needs it. It comes back with radio, for media streams. See [ADR 0039](adr/0039-release-build.md) |
 | D71 | Genres: read from the genre tag by the scan into two new tables (database version 3). A tag can name several genres, divided by ";" or ","; a song with no genre is under "Unknown". Genres is a list of the Library tab on the phone and in the car | 21 Nov 2026 | A song is under each of its genres with one join table, and the lists stay one query each. See `docs/adr/0043-genres.md` |
+| D72 | The `NOTICE` files of the libraries are collected by the build into one asset and shown on the licences screen above the licence text of their library | 21 Nov 2026 | Section 4(d) of the Apache licence asks that the content of such a file goes with the app. Read from the downloaded libraries at build time, a new library needs no step by hand. See `docs/adr/0035-open-source-licences.md` |
 
 ## 9. Checks before building
 
