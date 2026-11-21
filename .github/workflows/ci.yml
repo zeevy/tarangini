@@ -110,16 +110,25 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
+      # The emulator is started with the tools of the SDK on the runner, so no outside action is needed.
+      - name: Start an emulator
+        run: |
+          tools="$ANDROID_HOME/cmdline-tools/latest/bin"
+          adb="$ANDROID_HOME/platform-tools/adb"
+          image="system-images;android-35;google_apis;x86_64"
+          # "yes" stops when sdkmanager closes the pipe; that is not a failure.
+          (yes || true) | "$tools/sdkmanager" --install "$image" emulator platform-tools > /dev/null
+          echo no | "$tools/avdmanager" create avd --name ci --package "$image" --device pixel_6
+          "$ANDROID_HOME/emulator/emulator" -avd ci -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim > "$RUNNER_TEMP/emulator.log" 2>&1 &
+          "$adb" wait-for-device
+          timeout 600 bash -c "until [ \"\$($adb shell getprop sys.boot_completed | tr -d '\r')\" = 1 ]; do sleep 5; done"
+          for scale in window_animation_scale transition_animation_scale animator_duration_scale; do
+            "$adb" shell settings put global "$scale" 0
+          done
+
       # The main flow of the real app: scan, play, favourite, new playlist. A failed test fails the job.
-      - name: Main flows on an emulator
-        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
-        with:
-          api-level: 35
-          arch: x86_64
-          target: google_apis
-          disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          script: ./gradlew :app:connectedCoreDebugAndroidTest --stacktrace
+      - name: Main flows on the emulator
+        run: ./gradlew :app:connectedCoreDebugAndroidTest --stacktrace
 
       - name: Upload the reports of a failed run
         if: failure()
