@@ -51,6 +51,7 @@ import com.siliconcircuits.tarangini.core.ui.theme.Spacing
 import com.siliconcircuits.tarangini.core.ui.theme.glassBackground
 import com.siliconcircuits.tarangini.core.ui.theme.glassTopBarColors
 import com.siliconcircuits.tarangini.feature.player.R
+import com.siliconcircuits.tarangini.feature.player.lyrics.LyricsViewModel
 
 /** The now playing screen: the cover, the texts, the seek bar and the buttons of the player. */
 @Composable
@@ -59,8 +60,10 @@ internal fun NowPlayingScreen(
     onOpenQueue: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: NowPlayingViewModel = hiltViewModel(),
+    lyricsViewModel: LyricsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val lyrics by lyricsViewModel.state.collectAsStateWithLifecycle()
     val actions = NowPlayingActions(
         onTogglePlay = viewModel::togglePlay,
         onNext = viewModel::next,
@@ -70,7 +73,16 @@ internal fun NowPlayingScreen(
         onCycleRepeat = viewModel::cycleRepeat,
         onToggleFavourite = viewModel::toggleFavourite,
     )
-    NowPlayingContent(state, actions, onBackClick, onOpenQueue, modifier, viewModel.playlistPick, viewModel.options)
+    NowPlayingContent(
+        state,
+        actions,
+        onBackClick,
+        onOpenQueue,
+        modifier,
+        viewModel.playlistPick,
+        viewModel.options,
+        lyrics,
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -83,6 +95,7 @@ internal fun NowPlayingContent(
     modifier: Modifier = Modifier,
     playlists: PlaylistPick? = null,
     options: PlaybackOptionActions = PlaybackOptionActions(),
+    lyrics: String? = null,
 ) {
     Scaffold(
         modifier = modifier.glassBackground(),
@@ -101,7 +114,7 @@ internal fun NowPlayingContent(
                             contentDescription = stringResource(R.string.queue_open),
                         )
                     }
-                    state?.let { now -> PlaybackOptionsMenu(now, options, playlists) }
+                    state?.let { now -> PlaybackOptionsMenu(now, options, playlists, lyrics) }
                 },
             )
         },

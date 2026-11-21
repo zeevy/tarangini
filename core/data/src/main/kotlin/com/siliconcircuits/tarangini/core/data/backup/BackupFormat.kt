@@ -9,6 +9,7 @@ package com.siliconcircuits.tarangini.core.data.backup
 import com.siliconcircuits.tarangini.core.domain.model.MAX_MIN_TRACK_SECONDS
 import com.siliconcircuits.tarangini.core.domain.model.SongSort
 import com.siliconcircuits.tarangini.core.domain.model.checkPlaylistName
+import com.siliconcircuits.tarangini.core.domain.text.isDirectionMark
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -129,15 +130,18 @@ internal object BackupFormat {
 
     /** The texts of a list that can be a path, each once, and never more than [limit]. */
     private fun paths(list: JSONArray?, limit: Int): List<String> = (0 until minOf(list?.length() ?: 0, limit))
-        .mapNotNull { index -> (list?.opt(index) as? String)?.let(::clean) }
+        .mapNotNull { index -> (list?.opt(index) as? String)?.let(::cleanPath) }
         .filter { it.isNotEmpty() && it.length <= MAX_PATH }
 
     private fun objects(list: JSONArray?, limit: Int): List<JSONObject> =
         (0 until minOf(list?.length() ?: 0, limit)).mapNotNull { index -> list?.optJSONObject(index) }
 
     /** No control character, and no character that changes the direction of the text of a name. */
-    private fun clean(text: String): String = text.filterNot {
-        it.isISOControl() ||
-            Character.getType(it) == Character.FORMAT.toInt()
-    }.trim()
+    private fun clean(text: String): String = text.filterNot { it.isISOControl() || it.isDirectionMark() }.trim()
+
+    /**
+     * A path loses only its control characters. Every other character can be part of a file name,
+     * and a path with one character less would not be found again.
+     */
+    private fun cleanPath(text: String): String = text.filterNot { it.isISOControl() }
 }

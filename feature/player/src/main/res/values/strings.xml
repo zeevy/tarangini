@@ -32,6 +32,7 @@
     <string name="now_playing_sleep_minutes">%1$d minutes</string>
     <string name="now_playing_sleep_end">At the end of this song</string>
     <string name="now_playing_sleep_off">Turn the timer off</string>
+    <string name="now_playing_lyrics">Lyrics</string>
     <string name="queue_title">Queue</string>
     <string name="queue_open">Open the queue</string>
     <string name="queue_empty_title">The queue is empty</string>

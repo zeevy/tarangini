@@ -20,6 +20,7 @@ import com.siliconcircuits.tarangini.core.domain.playlist.M3uSong
 import com.siliconcircuits.tarangini.core.domain.repository.PlaylistFiles
 import com.siliconcircuits.tarangini.core.domain.repository.PlaylistImport
 import com.siliconcircuits.tarangini.core.domain.repository.PlaylistRepository
+import com.siliconcircuits.tarangini.core.domain.text.isDirectionMark
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.InputStream
 import javax.inject.Inject
@@ -122,8 +123,7 @@ internal class DefaultPlaylistFiles @Inject constructor(
      * A text of a file as it may be shown: no control character, and no character that changes the
      * direction of the text and so could make a line read as something else.
      */
-    private fun shown(text: String): String =
-        text.filterNot { it.isISOControl() || Character.getType(it) == Character.FORMAT.toInt() }
+    private fun shown(text: String): String = text.filterNot { it.isISOControl() || it.isDirectionMark() }
 
     private companion object {
         const val BROKEN_CHARACTER = '\uFFFD'
