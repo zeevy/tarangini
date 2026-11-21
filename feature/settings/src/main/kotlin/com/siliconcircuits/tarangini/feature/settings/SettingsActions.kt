@@ -13,4 +13,5 @@ internal class SettingsActions(
     val onRescan: () -> Unit = {},
     val onClearHistory: () -> Unit = {},
     val onOpenSource: () -> Unit = {},
+    val onOpenLicences: () -> Unit = {},
 )

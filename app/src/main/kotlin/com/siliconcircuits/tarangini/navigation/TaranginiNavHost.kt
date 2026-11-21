@@ -23,6 +23,8 @@ import com.siliconcircuits.tarangini.feature.library.navigation.navigateToPlayli
 import com.siliconcircuits.tarangini.feature.player.navigation.playerScreens
 import com.siliconcircuits.tarangini.feature.search.navigation.navigateToSearch
 import com.siliconcircuits.tarangini.feature.search.navigation.searchScreen
+import com.siliconcircuits.tarangini.feature.settings.navigation.licencesScreen
+import com.siliconcircuits.tarangini.feature.settings.navigation.navigateToLicences
 import com.siliconcircuits.tarangini.feature.settings.navigation.navigateToSettings
 import com.siliconcircuits.tarangini.feature.settings.navigation.settingsScreen
 
@@ -32,7 +34,7 @@ internal fun TaranginiNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
     home: @Composable (HomeTargets) -> Unit = {},
-    settings: @Composable () -> Unit = {},
+    settings: @Composable (onOpenLicences: () -> Unit) -> Unit = {},
 ) {
     val targets = remember(navController) {
         // A second tap that comes while the screen already changes is dropped.
@@ -57,7 +59,8 @@ internal fun TaranginiNavHost(
             onOpenArtist = navController::navigateToArtist,
         )
         favouritesScreen()
-        settingsScreen(onBackClick = navController::popBackStack, content = settings)
+        settingsScreen(onBackClick = navController::popBackStack) { settings(navController::navigateToLicences) }
+        licencesScreen(onBack = navController::popBackStack)
         playerScreens(navController)
     }
 }

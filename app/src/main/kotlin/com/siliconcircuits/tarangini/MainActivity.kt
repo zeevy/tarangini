@@ -40,7 +40,7 @@ class MainActivity : ComponentActivity() {
                 TaranginiShell(
                     miniPlayer = { onOpen, modifier -> MiniPlayer(onOpen = onOpen, modifier = modifier) },
                     home = { targets -> HomeSections(targets.onOpenLibrary, targets.onOpenPlaylist) },
-                    settings = { SettingsSections() },
+                    settings = { onOpenLicences -> SettingsSections(onOpenLicences) },
                 )
             }
         }

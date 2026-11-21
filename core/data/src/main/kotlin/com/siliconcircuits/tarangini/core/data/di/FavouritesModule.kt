@@ -6,10 +6,12 @@
 
 package com.siliconcircuits.tarangini.core.data.di
 
+import com.siliconcircuits.tarangini.core.data.licence.DefaultLicenceCatalog
 import com.siliconcircuits.tarangini.core.data.repository.DefaultFavouriteRepository
 import com.siliconcircuits.tarangini.core.data.repository.DefaultPlayHistory
 import com.siliconcircuits.tarangini.core.data.repository.DefaultPlaylistRepository
 import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
+import com.siliconcircuits.tarangini.core.domain.repository.LicenceCatalog
 import com.siliconcircuits.tarangini.core.domain.repository.PlayHistory
 import com.siliconcircuits.tarangini.core.domain.repository.PlaylistRepository
 import dagger.Binds
@@ -29,4 +31,7 @@ internal abstract class FavouritesModule {
 
     @Binds
     abstract fun playlistRepository(repository: DefaultPlaylistRepository): PlaylistRepository
+
+    @Binds
+    abstract fun licenceCatalog(catalog: DefaultLicenceCatalog): LicenceCatalog
 }

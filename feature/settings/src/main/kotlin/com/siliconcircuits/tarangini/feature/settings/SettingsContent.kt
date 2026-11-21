@@ -90,6 +90,11 @@ internal fun SettingsContent(
             stringResource(R.string.settings_source_text),
             actions.onOpenSource,
         )
+        Row(
+            stringResource(R.string.licences_title),
+            stringResource(R.string.settings_licences_text),
+            actions.onOpenLicences,
+        )
     }
 }
 
