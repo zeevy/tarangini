@@ -30,6 +30,7 @@ ktlint = "1.8.0"
 detekt = "1.23.8"
 # 0.4.28 is the last release built for detekt 1.23. Later ones need detekt 2.
 composeRules = "0.4.28"
+leakcanary = "2.14"
 licensee = "1.14.1"
 
 [libraries]
@@ -90,6 +91,7 @@ kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 # Test
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+leakcanary-android = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanary" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 roborazzi = { group = "io.github.takahirom.roborazzi", name = "roborazzi", version.ref = "roborazzi" }
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }

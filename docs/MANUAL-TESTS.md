@@ -161,6 +161,12 @@ These need the Desktop Head Unit or a car. The steps are in [ANDROID-AUTO.md](AN
 | 104 | In Settings open "Open source licences". Scroll the list, open the licence of a library and of Manrope, scroll each text to its end, press Back | The list holds the libraries by name with version and licence. Each text opens and scrolls to its end. Back returns to the list, and Back again to Settings |
 | 105 | Switch TalkBack on. Go through Home, Favourites, a playlist, now playing, the mini player, Settings with its three dialogs and the licences screen by swipes | Every control is reached in a sensible order and says what it is and what it does. A row offers its menu entries as actions. Nothing is read twice and nothing is silent |
 | 106 | Set the font size and the display size of the phone to the largest. Open every screen, in portrait and in landscape | No text is cut in the middle of a letter or lies over another text. Every control can still be reached, by scrolling where needed |
+| 107 | Charge the phone to 100 percent. Play a queue of files for 4 hours with the screen off, on the phone speaker or headphones | Playback never stops by itself. Write down the battery percent used. No crash line and no ANR in the log |
+| 108 | While a song plays, take the audio permission away in the system settings. Then give it back | The app does not crash. The library shows the reason screen, and after the permission is back the songs are there with their favourites and playlists |
+| 109 | Play a song from a memory card or a USB drive, and remove the storage while it plays | The app does not crash. Playback goes to the next item that can be played or stops. The songs of that storage leave the lists and come back with it |
+| 110 | Open ten other large apps so the system ends this one in the background while it is paused. Open it again | The queue and the place are back, paused. Nothing is lost |
+| 111 | Install a debug build, use every screen for ten minutes and play a few songs. Read the log for "StrictMode" and watch for a LeakCanary notice | No LeakCanary notice. Every StrictMode line is from a library, or has its own issue |
+| 112 | Close the app from the recent apps. Tap its icon and time until the first screen can be used. Do it five times | Under 1.5 seconds each time on the test phone. Write the times down |
 
 ## Results
 
