@@ -13,8 +13,8 @@ Crash reports go through a closed source service, which may only be in the priva
 |---|---|---|
 | `CrashReporter.report(problem, kind)` takes a `ReportedProblem` from a fixed list and a fixed name from the code. It takes no exception | Pass the exception. Pass a free text | The message of an exception often holds a path or an address, and the error of a player names the file. What cannot be passed cannot leak, and no review has to catch it |
 | The public build binds `NoCrashReporter`, which does nothing | No binding in the public build | Every caller is the same in both builds |
-| The scanner reports a scan that got no file list from the phone, with the name of the failure | Also report a missing permission | The permission is the choice of the person, not a fault |
-| The playback service reports a player error with the name of its error code. A file that is gone is not reported | Report every error | The person removed that file, and the player skips it |
+| The scanner reports a scan that got no file list from the phone, with the name of the failure, once until a scan works again | Also report a missing permission. Report at every rescan | The permission is the choice of the person, not a fault. One fault is one report |
+| The playback service reports a player error with the name of its error code. Not reported: a file that is gone, a file shorter than stated, a live stream that fell behind, and a network that cannot be reached | Report every error | These are handled or only say the phone is offline. They would hide the real faults |
 
 ## What follows
 

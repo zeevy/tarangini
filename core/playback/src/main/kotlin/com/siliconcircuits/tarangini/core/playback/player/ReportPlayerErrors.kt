@@ -12,15 +12,27 @@ import com.siliconcircuits.tarangini.core.domain.premium.CrashReporter
 import com.siliconcircuits.tarangini.core.domain.premium.ReportedProblem
 
 /**
- * Tells the [CrashReporter] when the player gives up on an item. Only the name of the error code
- * goes out, never the message of the error: that can hold the address of the file.
+ * Tells the [CrashReporter] about a player error that points to a fault. Only the name of the
+ * error code goes out, never the message of the error: that can hold the address of the file.
  *
- * A file that is gone is not reported. The person removed it, and the player skips it.
+ * Not reported: a file that is gone (the person removed it), a file with less sound than its
+ * header states and a live stream that fell behind (both are handled), and a stream that cannot
+ * be reached (the phone is offline, or the station is).
  */
 internal class ReportPlayerErrors(private val crashes: CrashReporter) : Player.Listener {
     override fun onPlayerError(error: PlaybackException) {
-        if (error.errorCode != PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND) {
+        if (error.errorCode !in EXPECTED) {
             crashes.report(ReportedProblem.PLAYBACK_FAILED, error.errorCodeName)
         }
+    }
+
+    private companion object {
+        val EXPECTED = setOf(
+            PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND,
+            PlaybackException.ERROR_CODE_IO_READ_POSITION_OUT_OF_RANGE,
+            PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW,
+            PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED,
+            PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT,
+        )
     }
 }

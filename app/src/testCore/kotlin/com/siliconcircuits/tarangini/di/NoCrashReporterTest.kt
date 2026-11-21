@@ -18,7 +18,7 @@ import org.robolectric.RuntimeEnvironment
 @RunWith(RobolectricTestRunner::class)
 class NoCrashReporterTest {
     @Test
-    fun `the reporter of the public build takes every report and does nothing`() {
+    fun `the reporter of the public build takes every report and is built from nothing`() {
         val reporter = NoCrashReporter()
 
         ReportedProblem.entries.forEach { reporter.report(it, "ANY_KIND") }

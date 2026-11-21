@@ -247,6 +247,7 @@ class DefaultLibraryScannerTest {
         scanner.scan()
         source.files = null
 
+        scanner.scan()
         val outcome = scanner.scan()
 
         assertEquals(ScanOutcome.Failure(ScanFailure.STORAGE_UNAVAILABLE), outcome)

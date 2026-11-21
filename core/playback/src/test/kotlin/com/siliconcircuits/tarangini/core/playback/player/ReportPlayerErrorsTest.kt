@@ -30,8 +30,12 @@ class ReportPlayerErrorsTest {
     }
 
     @Test
-    fun `a file that is gone is not reported`() {
+    fun `an error that is handled, or only says the phone is offline, is not reported`() {
         failWith(PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND)
+        failWith(PlaybackException.ERROR_CODE_IO_READ_POSITION_OUT_OF_RANGE)
+        failWith(PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW)
+        failWith(PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED)
+        failWith(PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT)
 
         assertEquals(emptyList<Pair<ReportedProblem, String>>(), crashes.reports)
     }

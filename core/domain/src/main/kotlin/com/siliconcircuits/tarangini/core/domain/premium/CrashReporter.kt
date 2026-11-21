@@ -33,6 +33,6 @@ enum class ReportedProblem {
     /** The phone gave no list of its audio files, so the library could not be brought in step. */
     SCAN_FAILED,
 
-    /** The player gave up on an item. A file that is simply gone is not reported. */
+    /** The player failed on an item for a reason that is not expected, such as a file it cannot decode. */
     PLAYBACK_FAILED,
 }
