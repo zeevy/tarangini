@@ -18,6 +18,7 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionError
 import com.siliconcircuits.tarangini.core.domain.model.Page
 import com.siliconcircuits.tarangini.core.domain.model.SongSort
+import com.siliconcircuits.tarangini.core.domain.playback.NowPlayingCards
 import com.siliconcircuits.tarangini.core.domain.playback.ResumeStore
 import com.siliconcircuits.tarangini.core.domain.premium.CrashReporter
 import com.siliconcircuits.tarangini.core.domain.repository.AudioAccess
@@ -37,6 +38,7 @@ import com.siliconcircuits.tarangini.core.playback.browse.CarSearch
 import com.siliconcircuits.tarangini.core.playback.browse.LibraryChangeNotices
 import com.siliconcircuits.tarangini.core.playback.browse.PersonalLists
 import com.siliconcircuits.tarangini.core.playback.browse.browseLabels
+import com.siliconcircuits.tarangini.core.playback.card.NowPlayingFeed
 import com.siliconcircuits.tarangini.core.playback.di.PlaybackCoroutineScope
 import com.siliconcircuits.tarangini.core.playback.mapper.LibraryTexts
 import com.siliconcircuits.tarangini.core.playback.player.CountPlays
@@ -79,6 +81,7 @@ internal class PlaybackService : MediaLibraryService() {
     private var notices: LibraryChangeNotices? = null
     private var scope: CoroutineScope? = null
     private var sleep: DefaultSleepTimer? = null
+    private var feed: NowPlayingFeed? = null
 
     /** What the service needs for the lists the car shows. */
     interface CarDependencies {
@@ -115,6 +118,9 @@ internal class PlaybackService : MediaLibraryService() {
 
         fun sleepTimer(): DefaultSleepTimer
 
+        /** The views of the playback outside the app, such as the home screen widget. The set can be empty. */
+        fun nowPlayingCards(): Set<@JvmSuppressWildcards NowPlayingCards>
+
         @PlaybackCoroutineScope
         fun playbackScope(): CoroutineScope
     }
@@ -129,6 +135,7 @@ internal class PlaybackService : MediaLibraryService() {
         player.addListener(playCounter(app))
         player.addListener(ReportPlayerErrors(app.crashReporter()))
         player.addListener(ResetSpeed(player))
+        feed = NowPlayingFeed(player, app.nowPlayingCards(), app.playbackScope()).also(player::addListener)
         sleep = app.sleepTimer().also { timer -> timer.attach(player) }
         val texts = LibraryTexts(app.songLookup(), app.stationStreams())
         val resume = PlaybackResume(player, app.resumeStore(), app.playbackScope(), texts::addTo)
@@ -286,6 +293,8 @@ internal class PlaybackService : MediaLibraryService() {
         resume = null
         sleep?.detach()
         sleep = null
+        feed?.end()
+        feed = null
         session?.run {
             player.release()
             release()

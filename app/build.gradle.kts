@@ -41,6 +41,7 @@ dependencies {
     implementation(project(":feature:player"))
     implementation(project(":feature:search"))
     implementation(project(":feature:settings"))
+    implementation(project(":feature:widget"))
     implementation(project(":core:domain"))
     implementation(project(":core:data"))
     implementation(project(":core:playback"))

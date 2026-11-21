@@ -48,6 +48,7 @@ The dependency rule: every arrow points to the domain. The domain depends on not
 | `feature:player` | Android library | Mini player, now playing, queue, equalizer screens | `core:domain`, `core:ui` |
 | `feature:search` | Android library | Search screen | `core:domain`, `core:ui` |
 | `feature:settings` | Android library | Settings, folder picker, open source licences | `core:domain`, `core:ui` |
+| `feature:widget` | Android library | The home screen widget (Glance) | `core:domain`, `core:ui` |
 | `core:domain` | Kotlin JVM library | Models, use cases, repository and service interfaces | Nothing but Kotlin, coroutines and `javax.inject` |
 | `core:data` | Android library | Repository implementations and every data source | `core:domain` |
 | `core:playback` | Android library | `MediaLibraryService`, session callback, browse tree, audio processors, `PlaybackController` implementation | `core:domain` |

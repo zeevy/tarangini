@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (C) Silicon Circuits and the Tarangini contributors. This file
+  is part of Tarangini, free software under the GNU General Public License,
+  version 3 only. See the LICENSE file. SPDX-License-Identifier: GPL-3.0-only
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!--
+          The home screen widget. Not exported: the update requests come from the system, which reaches
+          it anyway. It only draws: the buttons go to the media button receiver and to the playback service.
+        -->
+        <receiver
+            android:name=".NowPlayingWidgetReceiver"
+            android:exported="false"
+            android:label="@string/widget_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/now_playing_widget" />
+        </receiver>
+    </application>
+</manifest>

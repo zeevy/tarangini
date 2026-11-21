@@ -7,6 +7,7 @@
 package com.siliconcircuits.tarangini.core.playback
 
 import android.app.Application
+import com.siliconcircuits.tarangini.core.domain.playback.NowPlayingCards
 import com.siliconcircuits.tarangini.core.domain.playback.ResumeStore
 import com.siliconcircuits.tarangini.core.domain.premium.CrashReporter
 import com.siliconcircuits.tarangini.core.domain.repository.AudioAccess
@@ -77,6 +78,8 @@ internal class TestPlaybackApp :
         override fun genreRepository(): GenreRepository = FakeGenreRepository()
 
         override fun audioAccess(): AudioAccess = AudioAccess { audioAllowed }
+
+        override fun nowPlayingCards(): Set<NowPlayingCards> = emptySet()
 
         override fun httpClient(): OkHttpClient = OkHttpClient()
 
