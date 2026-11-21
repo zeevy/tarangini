@@ -13,6 +13,7 @@ import com.siliconcircuits.tarangini.core.domain.repository.LicenceCatalog
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlin.coroutines.cancellation.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -41,6 +42,9 @@ internal class LicencesViewModel @Inject constructor(private val catalog: Licenc
 
     val state: StateFlow<LicencesUiState> = shown.asStateFlow()
 
+    // The read of a text that is on its way. A text that comes after Back must not open again.
+    private var reading: Job? = null
+
     init {
         viewModelScope.launch {
             val libraries = attempt { catalog.libraries() }.orEmpty()
@@ -50,14 +54,18 @@ internal class LicencesViewModel @Inject constructor(private val catalog: Licenc
 
     /** Opens the text of the licence of a library. */
     fun open(library: OpenSourceLibrary) {
-        viewModelScope.launch {
+        reading?.cancel()
+        reading = viewModelScope.launch {
             val text = attempt { catalog.text(library.licence.id) }
             shown.update { it.copy(opened = OpenedLicence(library.licence.name, text)) }
         }
     }
 
     /** Goes back to the list. */
-    fun close() = shown.update { it.copy(opened = null) }
+    fun close() {
+        reading?.cancel()
+        shown.update { it.copy(opened = null) }
+    }
 }
 
 /** The result, or null after a failure. A cancelled coroutine stays cancelled. */

@@ -32,10 +32,7 @@ class LicenceListTest {
     }
 
     @Test
-    fun `every licence the build allows has its text, and so has the font`() {
-        // The same ids as the allow list of the licence check in the application build plugin.
-        val allowed = listOf("Apache-2.0", "MIT", "BSD-2-Clause", "BSD-3-Clause", "MPL-2.0", "Manrope-OFL")
-
-        assertTrue("No text for ${allowed.filterNot(::hasText)}", allowed.all(::hasText))
+    fun `the font has its licence text`() {
+        assertTrue(hasText("Manrope-OFL"))
     }
 }

@@ -13,7 +13,7 @@ The app ships about 200 libraries, nearly all under Apache-2.0, and the Manrope 
 |---|---|---|
 | The list on the screen is the report of the licence check, put into the app as the asset `app/cash/licensee/artifacts.json` | A list kept by hand. A second plugin that writes its own list. The Google Play services licences plugin | The check and the screen read one list, so they cannot differ, and a new library shows with no other step. The Play services plugin brings a closed library, which the `core` build must not have |
 | Each licence text ships once, as `licences/<id>.txt` in the assets of `core:ui`, taken from the SPDX licence list | One text per library, downloaded at build time. A link to a web page | 200 libraries share a handful of texts. The build stays offline and the texts can be read with no network |
-| A test in the app fails when the list names a licence with no text file, and when a licence of the allow list has none | Trust the review | A library with a new licence then fails CI until its text is added |
+| A test in the app fails when the list names a licence with no text file. Only the texts in use ship: Apache-2.0, BSD-3-Clause with the copyright line of its one library, MPL-2.0 and the font licence | Ship a text for every licence of the allow list | MIT and BSD ask for the copyright line of the library, which a template text does not have. So the first library under such a licence fails CI until its text, with that line, is added |
 | The font is added to the list in code | A hand written second list file | It is the one part that is not a library of the build |
 | A library with two licences is listed under the first | Show both | None of the libraries has two today, and the first is the one the check accepted |
 | The screen starts with the notice of the app: GPL-3.0 (version 3 only), no warranty, and where the source is | A separate "About" screen | The first plan named an MPL-2.0 notice. The core is under GPL-3.0 since decision D31, so the notice says that |
@@ -24,5 +24,7 @@ The app ships about 200 libraries, nearly all under Apache-2.0, and the Manrope 
 
 - A debug build lists its debug only libraries as well. The Play build lists what that build ships.
 - Turning the asset on makes the build read the description file of every library of each build type, so those files are in `gradle/verification-metadata.xml`.
-- A library under a licence that is new to the app needs three steps: the id in the allow list of the application build plugin, the text as `core/ui/src/main/assets/licences/<id>.txt`, and the id in `LicenceListTest`.
+- A library under a licence that is new to the app needs the id in the allow list of the application build plugin (if it is not there) and the text as `core/ui/src/main/assets/licences/<id>.txt`, with the copyright line of the library where the licence asks for it.
+- The licence check now runs before the assets of every build are merged. The Play build therefore does not assemble until its closed libraries are allowed or left out in the check on purpose.
+- The NOTICE files of the Apache-2.0 libraries are not collected yet.
 - The id of a licence is checked against a plain pattern before it becomes part of a file name.
