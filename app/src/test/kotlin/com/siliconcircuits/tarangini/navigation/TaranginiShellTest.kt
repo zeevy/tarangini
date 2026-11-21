@@ -15,9 +15,9 @@ import androidx.compose.ui.test.isSelectable
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
+import com.siliconcircuits.tarangini.core.testing.RegisterComponentActivityRule
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import com.siliconcircuits.tarangini.testing.NoPlaybackServiceRule
-import com.siliconcircuits.tarangini.testing.RegisterComponentActivityRule
 import com.siliconcircuits.tarangini.testing.checkAccessibility
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

@@ -7,6 +7,7 @@
 package com.siliconcircuits.tarangini.navigation
 
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.siliconcircuits.tarangini.core.testing.savedPicture
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import com.siliconcircuits.tarangini.testing.NoPlaybackServiceRule
 import java.io.File
@@ -37,9 +38,7 @@ class TaranginiShellScreenshotTest {
     }
 
     private fun capture(name: String) {
-        val picture = File("src/test/screenshots/$name.png")
-        // Without this, a test with no saved picture passes: there is nothing to compare with.
-        assertTrue("No saved picture $picture. Run the tests with -PrecordScreenshots.", recording || picture.exists())
+        val picture = savedPicture("$name")
         captureRoboImage(picture.path) {
             TaranginiTheme { TaranginiShell() }
         }
@@ -49,4 +48,3 @@ class TaranginiShellScreenshotTest {
 private const val PHONE = "w390dp-h844dp-xhdpi"
 private const val SMALL_PHONE = "w320dp-h640dp-xhdpi"
 private const val LARGEST_FONT_SCALE = 2f
-private val recording = System.getProperty("roborazzi.test.record").toBoolean()

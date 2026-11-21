@@ -13,9 +13,11 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onRoot
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.siliconcircuits.tarangini.core.domain.model.SearchResults
+import com.siliconcircuits.tarangini.core.testing.RegisterComponentActivityRule
 import com.siliconcircuits.tarangini.core.testing.library.testAlbum
 import com.siliconcircuits.tarangini.core.testing.library.testArtist
 import com.siliconcircuits.tarangini.core.testing.library.testSong
+import com.siliconcircuits.tarangini.core.testing.savedPicture
 import com.siliconcircuits.tarangini.core.ui.component.SongRowActions
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import java.io.File
@@ -37,16 +39,9 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(qualifiers = "w320dp-h640dp-xhdpi")
 class SearchScreenshotTest {
-    private val app: Application = RuntimeEnvironment.getApplication()
     private val composeRule = createAndroidComposeRule<ComponentActivity>()
 
-    /** The manifest of a library has no activity, so the plain one is added before Compose starts it. */
-    private val registerActivity = object : TestWatcher() {
-        override fun starting(description: Description) {
-            shadowOf(app.packageManager)
-                .addActivityIfNotPresent(ComponentName(app.packageName, ComponentActivity::class.java.name))
-        }
-    }
+    private val registerActivity = RegisterComponentActivityRule()
 
     @get:Rule
     val rules: RuleChain = RuleChain.outerRule(registerActivity).around(composeRule)
@@ -82,9 +77,7 @@ class SearchScreenshotTest {
     fun `results on a wide screen`() = capture("search_results_wide", SearchUiState("mor", results))
 
     private fun capture(name: String, state: SearchUiState) {
-        val picture = File("src/test/screenshots/$name.png")
-        // Without this, a test with no saved picture passes: there is nothing to compare with.
-        assertTrue("No saved picture $picture. Run the tests with -PrecordScreenshots.", recording || picture.exists())
+        val picture = savedPicture("$name")
         // The cursor of the empty field blinks. The clock is held, so the picture is of one fixed
         // moment and does not depend on how fast the test ran.
         composeRule.mainClock.autoAdvance = false
@@ -97,5 +90,3 @@ class SearchScreenshotTest {
         composeRule.onRoot().captureRoboImage(picture.path)
     }
 }
-
-private val recording = System.getProperty("roborazzi.test.record").toBoolean()

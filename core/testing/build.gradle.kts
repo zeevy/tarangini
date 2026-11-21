@@ -5,9 +5,13 @@
  */
 
 plugins {
-    id("tarangini.kotlin.library")
+    id("tarangini.android.library")
 }
 
 dependencies {
     api(project(":core:domain"))
+    // Test rules: the main dispatcher, the plain activity for Compose tests.
+    api(libs.junit)
+    api(libs.kotlinx.coroutines.test)
+    implementation(libs.robolectric)
 }

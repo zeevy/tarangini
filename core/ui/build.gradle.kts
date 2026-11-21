@@ -14,4 +14,5 @@ dependencies {
     implementation(libs.coil.compose)
 
     testImplementation(libs.coil.test)
+    testImplementation(project(":core:testing"))
 }

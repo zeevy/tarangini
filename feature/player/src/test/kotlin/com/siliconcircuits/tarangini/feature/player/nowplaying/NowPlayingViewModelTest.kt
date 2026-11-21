@@ -12,6 +12,7 @@ import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
 import com.siliconcircuits.tarangini.core.domain.model.SleepState
 import com.siliconcircuits.tarangini.core.domain.model.Song
+import com.siliconcircuits.tarangini.core.testing.MainDispatcherRule
 import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakePlaylistRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeSongLookup
@@ -19,7 +20,6 @@ import com.siliconcircuits.tarangini.core.testing.library.testSong
 import com.siliconcircuits.tarangini.core.testing.playback.FakePlaybackController
 import com.siliconcircuits.tarangini.core.testing.playback.FakePlaybackQueue
 import com.siliconcircuits.tarangini.core.testing.playback.FakeSleepTimer
-import com.siliconcircuits.tarangini.feature.player.MainDispatcherRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch

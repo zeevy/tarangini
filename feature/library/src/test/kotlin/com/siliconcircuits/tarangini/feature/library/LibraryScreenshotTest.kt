@@ -16,6 +16,7 @@ import com.siliconcircuits.tarangini.core.testing.library.testAlbum
 import com.siliconcircuits.tarangini.core.testing.library.testArtist
 import com.siliconcircuits.tarangini.core.testing.library.testFolder
 import com.siliconcircuits.tarangini.core.testing.library.testSong
+import com.siliconcircuits.tarangini.core.testing.savedPicture
 import com.siliconcircuits.tarangini.core.ui.component.SongRowActions
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import com.siliconcircuits.tarangini.feature.library.album.AlbumContent
@@ -187,16 +188,9 @@ class LibraryScreenshotTest {
     }
 
     private fun shot(name: String, screen: @Composable () -> Unit) {
-        val picture = File("src/test/screenshots/$name.png")
-        // Without this, a test with no saved picture passes: there is nothing to compare with.
-        assertTrue(
-            "No saved picture $picture. Run the tests with -PrecordScreenshots.",
-            recording || picture.exists(),
-        )
+        val picture = savedPicture("$name")
         captureRoboImage(picture.path) {
             TaranginiTheme { screen() }
         }
     }
 }
-
-private val recording = System.getProperty("roborazzi.test.record").toBoolean()

@@ -20,9 +20,9 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import com.siliconcircuits.tarangini.core.testing.RegisterComponentActivityRule
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import com.siliconcircuits.tarangini.testing.NoPlaybackServiceRule
-import com.siliconcircuits.tarangini.testing.RegisterComponentActivityRule
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule

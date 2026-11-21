@@ -21,10 +21,12 @@ import com.github.takahirom.roborazzi.captureScreenRoboImage
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackItem
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
+import com.siliconcircuits.tarangini.core.testing.MainDispatcherRule
+import com.siliconcircuits.tarangini.core.testing.RegisterComponentActivityRule
 import com.siliconcircuits.tarangini.core.testing.library.FakeSongLyrics
 import com.siliconcircuits.tarangini.core.testing.playback.FakePlaybackController
+import com.siliconcircuits.tarangini.core.testing.savedPicture
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
-import com.siliconcircuits.tarangini.feature.player.MainDispatcherRule
 import com.siliconcircuits.tarangini.feature.player.nowplaying.NowPlayingActions
 import com.siliconcircuits.tarangini.feature.player.nowplaying.NowPlayingContent
 import com.siliconcircuits.tarangini.feature.player.nowplaying.NowPlayingUiState
@@ -54,16 +56,9 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(qualifiers = "w360dp-h800dp-xhdpi")
 class LyricsTest {
-    private val app: Application = RuntimeEnvironment.getApplication()
     private val composeRule = createAndroidComposeRule<ComponentActivity>()
 
-    /** The manifest of a library has no activity, so the plain one is added before Compose starts it. */
-    private val registerActivity = object : TestWatcher() {
-        override fun starting(description: Description) {
-            shadowOf(app.packageManager)
-                .addActivityIfNotPresent(ComponentName(app.packageName, ComponentActivity::class.java.name))
-        }
-    }
+    private val registerActivity = RegisterComponentActivityRule()
 
     @get:Rule
     val rules: RuleChain = RuleChain.outerRule(registerActivity).around(composeRule)
@@ -187,9 +182,7 @@ class LyricsTest {
 
     @Test
     fun `the open lyrics with the largest font`() {
-        val picture = File("src/test/screenshots/now_playing_lyrics_largest_font.png")
-        // Without this, a test with no saved picture passes: there is nothing to compare with.
-        assertTrue("No saved picture $picture. Run the tests with -PrecordScreenshots.", recording || picture.exists())
+        val picture = savedPicture("now_playing_lyrics_largest_font")
         RuntimeEnvironment.setFontScale(LARGEST_FONT)
         show(List(LONG_LYRICS_LINES) { "Line ${it + 1} of a long song" }.joinToString("\n"))
         openMenu()
@@ -204,6 +197,5 @@ class LyricsTest {
         const val LYRICS = "First line\nSecond line"
         const val LARGEST_FONT = 2f
         const val LONG_LYRICS_LINES = 40
-        val recording = System.getProperty("roborazzi.test.record").toBoolean()
     }
 }

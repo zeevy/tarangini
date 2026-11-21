@@ -11,6 +11,7 @@ import com.github.takahirom.roborazzi.captureRoboImage
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackItem
 import com.siliconcircuits.tarangini.core.domain.model.Playlist
 import com.siliconcircuits.tarangini.core.testing.library.testSong
+import com.siliconcircuits.tarangini.core.testing.savedPicture
 import com.siliconcircuits.tarangini.core.ui.component.SongRowActions
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import java.io.File
@@ -73,13 +74,9 @@ class HomeScreenshotTest {
     }
 
     private fun shot(name: String, body: @Composable () -> Unit) {
-        val picture = File("src/test/screenshots/$name.png")
-        // Without this, a test with no saved picture passes: there is nothing to compare with.
-        assertTrue("No saved picture $picture. Run the tests with -PrecordScreenshots.", recording || picture.exists())
+        val picture = savedPicture("$name")
         captureRoboImage(picture.path) {
             TaranginiTheme { HomeScreen(onSettingsClick = {}) { body() } }
         }
     }
 }
-
-private val recording = System.getProperty("roborazzi.test.record").toBoolean()

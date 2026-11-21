@@ -11,6 +11,7 @@ import com.siliconcircuits.tarangini.core.domain.library.ScanOutcome
 import com.siliconcircuits.tarangini.core.domain.library.ScanState
 import com.siliconcircuits.tarangini.core.domain.library.ScanSummary
 import com.siliconcircuits.tarangini.core.domain.model.ScanSettings
+import com.siliconcircuits.tarangini.core.testing.savedPicture
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import com.siliconcircuits.tarangini.feature.settings.backup.BackupActions
 import com.siliconcircuits.tarangini.feature.settings.backup.BackupContent
@@ -51,9 +52,7 @@ class SettingsScreenshotTest {
     fun `on a wide screen`() = shot("settings_set_wide", set)
 
     private fun shot(name: String, state: SettingsUiState) {
-        val picture = File("src/test/screenshots/$name.png")
-        // Without this, a test with no saved picture passes: there is nothing to compare with.
-        assertTrue("No saved picture $picture. Run the tests with -PrecordScreenshots.", recording || picture.exists())
+        val picture = savedPicture("$name")
         captureRoboImage(picture.path) {
             TaranginiTheme {
                 SettingsScreen(onBackClick = {}) {
@@ -65,5 +64,3 @@ class SettingsScreenshotTest {
         }
     }
 }
-
-private val recording = System.getProperty("roborazzi.test.record").toBoolean()

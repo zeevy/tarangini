@@ -21,10 +21,12 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import com.github.takahirom.roborazzi.captureScreenRoboImage
 import com.siliconcircuits.tarangini.core.domain.repository.BackupRestore
+import com.siliconcircuits.tarangini.core.testing.MainDispatcherRule
+import com.siliconcircuits.tarangini.core.testing.RegisterComponentActivityRule
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryScanner
+import com.siliconcircuits.tarangini.core.testing.savedPicture
 import com.siliconcircuits.tarangini.core.testing.settings.FakeBackupFiles
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
-import com.siliconcircuits.tarangini.feature.settings.MainDispatcherRule
 import com.siliconcircuits.tarangini.feature.settings.SettingsActions
 import com.siliconcircuits.tarangini.feature.settings.SettingsContent
 import com.siliconcircuits.tarangini.feature.settings.SettingsScreen
@@ -50,16 +52,9 @@ import org.robolectric.annotation.GraphicsMode
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class BackupTest {
-    private val app: Application = RuntimeEnvironment.getApplication()
     private val composeRule = createAndroidComposeRule<ComponentActivity>()
 
-    /** The manifest of a library has no activity, so the plain one is added before Compose starts it. */
-    private val registerActivity = object : TestWatcher() {
-        override fun starting(description: Description) {
-            shadowOf(app.packageManager)
-                .addActivityIfNotPresent(ComponentName(app.packageName, ComponentActivity::class.java.name))
-        }
-    }
+    private val registerActivity = RegisterComponentActivityRule()
 
     @get:Rule
     val rules: RuleChain = RuleChain.outerRule(registerActivity).around(composeRule)
@@ -206,9 +201,7 @@ class BackupTest {
 
     @Test
     fun `the question how to restore with the largest font`() {
-        val picture = File("src/test/screenshots/settings_restore_question_largest_font.png")
-        // Without this, a test with no saved picture passes: there is nothing to compare with.
-        assertTrue("No saved picture $picture. Run the tests with -PrecordScreenshots.", recording || picture.exists())
+        val picture = savedPicture("settings_restore_question_largest_font")
         RuntimeEnvironment.setFontScale(LARGEST_FONT)
         show(asksHow = true)
         // The dialog opens in a later frame than the content.
@@ -219,4 +212,3 @@ class BackupTest {
 }
 
 private const val LARGEST_FONT = 2f
-private val recording = System.getProperty("roborazzi.test.record").toBoolean()

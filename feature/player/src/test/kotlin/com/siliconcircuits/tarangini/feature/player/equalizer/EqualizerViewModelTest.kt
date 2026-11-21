@@ -11,10 +11,10 @@ import com.siliconcircuits.tarangini.core.domain.audio.EqualizerSettings
 import com.siliconcircuits.tarangini.core.domain.audio.FIVE_BANDS_HZ
 import com.siliconcircuits.tarangini.core.domain.audio.VolumeLevelling
 import com.siliconcircuits.tarangini.core.domain.premium.EqualizerBands
+import com.siliconcircuits.tarangini.core.testing.MainDispatcherRule
 import com.siliconcircuits.tarangini.core.testing.library.FakeGenreRepository
 import com.siliconcircuits.tarangini.core.testing.library.testSong
 import com.siliconcircuits.tarangini.core.testing.settings.FakeEqualizerRepository
-import com.siliconcircuits.tarangini.feature.player.MainDispatcherRule
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runCurrent
