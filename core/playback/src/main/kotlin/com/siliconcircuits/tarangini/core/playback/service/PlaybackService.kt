@@ -41,6 +41,7 @@ import com.siliconcircuits.tarangini.core.playback.mapper.LibraryTexts
 import com.siliconcircuits.tarangini.core.playback.player.CountPlays
 import com.siliconcircuits.tarangini.core.playback.player.LastSound
 import com.siliconcircuits.tarangini.core.playback.player.ReportPlayerErrors
+import com.siliconcircuits.tarangini.core.playback.player.ResetSpeed
 import com.siliconcircuits.tarangini.core.playback.player.SkipSilentEnd
 import com.siliconcircuits.tarangini.core.playback.player.createPlayer
 import com.siliconcircuits.tarangini.core.playback.resume.PlaybackResume
@@ -54,6 +55,7 @@ import com.siliconcircuits.tarangini.core.playback.session.NothingToPlay
 import com.siliconcircuits.tarangini.core.playback.session.PlaybackSessionCallback
 import com.siliconcircuits.tarangini.core.playback.session.SessionButtons
 import com.siliconcircuits.tarangini.core.playback.session.modeLabels
+import com.siliconcircuits.tarangini.core.playback.sleep.DefaultSleepTimer
 import com.siliconcircuits.tarangini.core.playback.stream.StreamFailover
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -75,6 +77,7 @@ internal class PlaybackService : MediaLibraryService() {
     private var favouriteButton: Job? = null
     private var notices: LibraryChangeNotices? = null
     private var scope: CoroutineScope? = null
+    private var sleep: DefaultSleepTimer? = null
 
     /** What the service needs for the lists the car shows. */
     interface CarDependencies {
@@ -107,6 +110,8 @@ internal class PlaybackService : MediaLibraryService() {
 
         fun crashReporter(): CrashReporter
 
+        fun sleepTimer(): DefaultSleepTimer
+
         @PlaybackCoroutineScope
         fun playbackScope(): CoroutineScope
     }
@@ -120,6 +125,8 @@ internal class PlaybackService : MediaLibraryService() {
         player.addListener(SkipSilentEnd(player, sound, app.playbackScope()))
         player.addListener(playCounter(app))
         player.addListener(ReportPlayerErrors(app.crashReporter()))
+        player.addListener(ResetSpeed(player))
+        sleep = app.sleepTimer().also { timer -> timer.attach(player) }
         val texts = LibraryTexts(app.songLookup(), app.stationStreams())
         val resume = PlaybackResume(player, app.resumeStore(), app.playbackScope(), texts::addTo)
         scope = app.playbackScope()
@@ -273,6 +280,8 @@ internal class PlaybackService : MediaLibraryService() {
         notices = null
         resume?.end()
         resume = null
+        sleep?.detach()
+        sleep = null
         session?.run {
             player.release()
             release()

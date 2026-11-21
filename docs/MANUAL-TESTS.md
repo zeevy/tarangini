@@ -174,6 +174,8 @@ These need the Desktop Head Unit or a car. The steps are in [ANDROID-AUTO.md](AN
 | 117 | In Android Auto open Library, Albums | The albums show as a grid of covers (a head unit may still choose a list) |
 | 118 | Play a song, pause it, and restart the phone. Pull down the quick settings without opening the app | The media panel shows the last song. Play starts it at the saved place, with the queue as it was |
 | 119 | Play one song three times and two others once, each for more than 10 seconds. Open Home, then the Most played tab in Android Auto. Run "Rescan" in Settings and look again | Both lists start with the song played three times. After the rescan the lists are the same |
+| 120 | Play a queue. In the menu of now playing set the sleep timer to 15 minutes, switch the screen off and wait. Then set "At the end of this song" and wait for the song to end | After 15 minutes the sound fades for a few seconds and stops; the next play is at full volume. With the second choice the song plays to its end and the next one does not start. A timer that is turned off stops nothing |
+| 121 | Play a long recording and set the speed to 0.5x, 1.5x and 2x. Then play another album from the Library | Each speed plays with the natural pitch of the voice. The new album starts at 1x |
 
 ## Results
 

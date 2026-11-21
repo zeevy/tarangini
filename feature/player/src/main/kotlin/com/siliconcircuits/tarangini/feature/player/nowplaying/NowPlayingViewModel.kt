@@ -11,8 +11,10 @@ import androidx.lifecycle.viewModelScope
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
+import com.siliconcircuits.tarangini.core.domain.model.SleepState
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackController
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackQueue
+import com.siliconcircuits.tarangini.core.domain.playback.SleepTimer
 import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
 import com.siliconcircuits.tarangini.core.domain.repository.PlaylistRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SongLookup
@@ -61,6 +63,8 @@ internal data class NowPlayingUiState(
     val error: PlaybackError? = null,
     val isFavourite: Boolean? = null,
     val songId: Long? = null,
+    val speed: Float = 1f,
+    val sleep: SleepState = SleepState.Off,
 ) {
     val isLive: Boolean get() = durationMs == null
 }
@@ -73,9 +77,18 @@ internal class NowPlayingViewModel @Inject constructor(
     private val favourites: FavouriteRepository,
     private val songs: SongLookup,
     playlists: PlaylistRepository,
+    sleep: SleepTimer,
 ) : ViewModel() {
     /** What "Add to playlist" needs. */
     val playlistPick: PlaylistPick = playlists.pickIn(viewModelScope)
+
+    /** The speed and the sleep timer. They belong to the player, so they stay when this screen closes. */
+    val options = PlaybackOptionActions(
+        onSetSpeed = playback::setSpeed,
+        onSleepAfter = sleep::stopAfter,
+        onSleepAtEnd = sleep::stopAtEndOfTrack,
+        onCancelSleep = sleep::cancel,
+    )
 
     /**
      * The place the last seek asked for, while the player is not there yet. The player goes on
@@ -89,15 +102,16 @@ internal class NowPlayingViewModel @Inject constructor(
     private val favourite = MutableStateFlow<FavouriteMark?>(null)
 
     /** What to show, or null when nothing is loaded. */
-    val state: StateFlow<NowPlayingUiState?> = combine(playback.state, seekTarget, favourite) { now, target, mark ->
-        now.toUiState(target, mark)
-    }
-        .distinctUntilChanged()
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(STOP_AFTER_MS),
-            playback.state.value.toUiState(null, null),
-        )
+    val state: StateFlow<NowPlayingUiState?> =
+        combine(playback.state, seekTarget, favourite, sleep.state) { now, target, mark, timer ->
+            now.toUiState(target, mark)?.copy(sleep = timer)
+        }
+            .distinctUntilChanged()
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(STOP_AFTER_MS),
+                playback.state.value.toUiState(null, null),
+            )
 
     init {
         viewModelScope.launch { watchFavourite() }
@@ -195,5 +209,6 @@ private fun PlaybackState.toUiState(seekTarget: SeekTarget?, mark: FavouriteMark
         // A mark read for one item says nothing about the next one.
         isFavourite = mark?.takeIf { it.itemId == item.id }?.on,
         songId = mark?.takeIf { it.itemId == item.id }?.songId,
+        speed = speed,
     )
 }

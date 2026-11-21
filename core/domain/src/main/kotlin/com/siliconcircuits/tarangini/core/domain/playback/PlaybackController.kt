@@ -46,4 +46,15 @@ interface PlaybackController {
 
     /** Goes to the start of the current item, or to the item before it in the first 3 seconds of the current one. */
     fun previous()
+
+    /**
+     * Sets how fast the queue plays, with the pitch kept. The value is held between [MIN_SPEED]
+     * and [MAX_SPEED]. A new queue starts at normal speed again.
+     */
+    fun setSpeed(speed: Float)
+
+    companion object {
+        const val MIN_SPEED = 0.5f
+        const val MAX_SPEED = 2f
+    }
 }

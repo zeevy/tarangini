@@ -19,6 +19,7 @@ import com.siliconcircuits.tarangini.core.domain.repository.SearchRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SongLookup
 import com.siliconcircuits.tarangini.core.domain.repository.StationStreams
 import com.siliconcircuits.tarangini.core.playback.service.PlaybackService
+import com.siliconcircuits.tarangini.core.playback.sleep.DefaultSleepTimer
 import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryLetters
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
@@ -52,6 +53,7 @@ internal class TestPlaybackApp :
     val playlists = FakePlaylistRepository()
     var audioAllowed = true
     private val scope = MainScope()
+    private val sleepTimer = DefaultSleepTimer(scope)
 
     override fun generatedComponent(): Any = object : PlaybackService.Dependencies, GeneratedComponent {
         override fun resumeStore(): ResumeStore = resumeStore
@@ -79,5 +81,7 @@ internal class TestPlaybackApp :
         override fun crashReporter(): CrashReporter = FakeCrashReporter()
 
         override fun playbackScope(): CoroutineScope = scope
+
+        override fun sleepTimer(): DefaultSleepTimer = sleepTimer
     }
 }

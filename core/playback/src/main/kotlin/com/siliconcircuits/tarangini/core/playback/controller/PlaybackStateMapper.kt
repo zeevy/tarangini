@@ -51,6 +51,7 @@ internal fun Player.toPlaybackState(knownQueue: List<PlaybackItem>? = null): Pla
         },
         shuffle = shuffleModeEnabled,
         repeat = repeatMode.toRepeatMode(),
+        speed = playbackParameters.speed,
         isEnded = playbackState == Player.STATE_ENDED,
         error = playerError?.toPlaybackError(),
     )

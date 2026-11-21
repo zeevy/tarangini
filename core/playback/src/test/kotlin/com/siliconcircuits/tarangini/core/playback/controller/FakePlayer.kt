@@ -10,6 +10,7 @@ import android.os.Looper
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.SimpleBasePlayer
 import androidx.media3.common.util.UnstableApi
@@ -103,6 +104,12 @@ internal class FakePlayer : SimpleBasePlayer(Looper.getMainLooper()) {
     override fun handleSetShuffleModeEnabled(shuffleModeEnabled: Boolean): ListenableFuture<*> {
         commands += "shuffle $shuffleModeEnabled"
         now = now.buildUpon().setShuffleModeEnabled(shuffleModeEnabled).build()
+        return Futures.immediateVoidFuture()
+    }
+
+    override fun handleSetPlaybackParameters(playbackParameters: PlaybackParameters): ListenableFuture<*> {
+        commands += "speed ${playbackParameters.speed} pitch ${playbackParameters.pitch}"
+        now = now.buildUpon().setPlaybackParameters(playbackParameters).build()
         return Futures.immediateVoidFuture()
     }
 

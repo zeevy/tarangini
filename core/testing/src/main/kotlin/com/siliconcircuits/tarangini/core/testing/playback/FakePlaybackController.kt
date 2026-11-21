@@ -47,4 +47,8 @@ class FakePlaybackController : PlaybackController {
     override fun previous() {
         commands += "previous"
     }
+
+    override fun setSpeed(speed: Float) {
+        commands += "setSpeed $speed"
+    }
 }

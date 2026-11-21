@@ -6,6 +6,7 @@
 
 package com.siliconcircuits.tarangini.core.playback.controller
 
+import android.os.Looper
 import androidx.annotation.OptIn
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -22,6 +23,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 
 // The fake player is built on API that Media3 may still change.
 @OptIn(UnstableApi::class)
@@ -326,5 +328,21 @@ class SessionPlaybackControllerTest {
         assertFalse(connector.lastReleased)
         newPlayer.report { setPlaylist(listOf(FakePlayer.queued("still here"))) }
         assertEquals("still here", controller.state.value.currentItem?.id)
+    }
+
+    @Test
+    fun `a speed is set with the pitch kept, held between half and double, and shows in the state`() = runTest {
+        val controller = connectedController()
+        player.playTwoSongs()
+
+        controller.setSpeed(1.5f)
+        controller.setSpeed(9f)
+        controller.setSpeed(0.1f)
+        // The commands are sent as their own piece of work; then the player tells its new state.
+        runCurrent()
+        player.report()
+
+        assertEquals(listOf("speed 1.5 pitch 1.0", "speed 2.0 pitch 1.0", "speed 0.5 pitch 1.0"), player.commands)
+        assertEquals(0.5f, controller.state.value.speed)
     }
 }
