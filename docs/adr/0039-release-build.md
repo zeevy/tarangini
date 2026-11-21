@@ -23,5 +23,5 @@ The public repository must give a release build that is small, correct and can b
 ## What follows
 
 - The release build was built and its size recorded. It was not started on a device here: the shrunk app must be run once through the main flows before a release (row 113 of `docs/MANUAL-TESTS.md`, and the end to end test when it exists).
-- Plain `http` is still allowed app wide for radio streams, which are out of the first release. Turning it off for the release is its own issue.
+- Plain `http` is off in the network security settings since 21 Nov 2026: the app has no radio in the first release, so nothing needs it. `NetworkSecurityTest` in the app fails when a rule allows it while the app has no radio. It comes back with radio, for media streams.
 - The Play build signs and uploads from the private repository.

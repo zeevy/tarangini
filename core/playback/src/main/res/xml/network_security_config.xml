@@ -5,11 +5,10 @@
   version 3 only. See the LICENSE file. SPDX-License-Identifier: GPL-3.0-only
 -->
 <!--
-  Many radio stations stream over plain http and have no https address, so plain http is allowed.
-  Android can allow it only for the whole app or for hosts that are known in advance, and a station
-  can be on any host. The rule that keeps the rest on https is in the code: everything that is not a
-  stream must use an https address.
+  Plain http is off. The app has no radio in this release, so nothing in it needs plain http.
+  Many radio stations stream over plain http only. When radio comes back, plain http comes back
+  with it for media streams, and the test NetworkSecurityTest in the app is changed with it.
 -->
 <network-security-config>
-    <base-config cleartextTrafficPermitted="true" />
+    <base-config cleartextTrafficPermitted="false" />
 </network-security-config>
