@@ -187,6 +187,9 @@ These need the Desktop Head Unit or a car. The steps are in [ANDROID-AUTO.md](AN
 | 130 | Mark some favourites, make two playlists, hide a folder. Settings, "Back up to a file", save it. Clear the data of the app (or install it on another phone with the same music), open Library and allow access, then Settings, "Restore from a file", "Add" | The picker opens both times. The result names the numbers. Favourites are in the same order, both playlists have their songs in order, the folder is hidden again |
 | 131 | With other favourites and one more playlist on the phone, restore the same file with "Replace". Then pick a photo or a text file as the backup | After "Replace" only the favourites and playlists of the file are left. The other file is refused with "This file is no backup of Tarangini." and nothing changes |
 | 132 | Play an MP3 file and an M4A file that have lyrics in their tags, then a file with none. Open the menu of now playing each time | The two files with lyrics have the line "Lyrics", and it opens the text with its line breaks; long lyrics scroll. The file with none has no such line |
+| 133 | Put the widget on the home screen in the small size and in the wide size. Play a song in the app, pause, go to the next song | Both sizes show the cover; the wide one also title and artist. The button shows pause and play in step with the app, and the next song shows within a second |
+| 134 | Swipe the app away from the recent apps while paused, then tap play on the widget | The song played last goes on from its place, with the notification |
+| 135 | Switch the phone between the light and the dark look, and change the wallpaper | The widget follows both |
 
 ## Results
 

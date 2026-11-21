@@ -9,6 +9,7 @@
 
 package com.siliconcircuits.tarangini.core.playback.di
 
+import com.siliconcircuits.tarangini.core.domain.playback.NowPlayingCards
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackController
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackQueue
 import com.siliconcircuits.tarangini.core.domain.playback.SleepTimer
@@ -26,6 +27,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dagger.multibindings.Multibinds
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -46,6 +48,10 @@ internal abstract class PlaybackModule {
 
     @Binds
     abstract fun sleepTimer(timer: DefaultSleepTimer): SleepTimer
+
+    /** The views of the playback outside the app. A feature adds its view to this set; with none it is empty. */
+    @Multibinds
+    abstract fun nowPlayingCards(): Set<NowPlayingCards>
 
     @Binds
     abstract fun songLyrics(lyrics: DefaultSongLyrics): SongLyrics

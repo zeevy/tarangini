@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (C) Silicon Circuits and the Tarangini contributors. This file
+  is part of Tarangini, free software under the GNU General Public License,
+  version 3 only. See the LICENSE file. SPDX-License-Identifier: GPL-3.0-only
+-->
+<resources>
+    <string name="widget_name">Now playing</string>
+    <string name="widget_description">Cover, title, play or pause and next</string>
+    <string name="widget_nothing_title">Nothing is playing</string>
+    <string name="widget_nothing_text">Tap play to go on</string>
+    <string name="widget_open">Open Tarangini</string>
+</resources>
