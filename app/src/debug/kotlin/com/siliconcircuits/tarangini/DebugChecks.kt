@@ -21,6 +21,7 @@ internal fun installDebugChecks() {
     StrictMode.setVmPolicy(
         StrictMode.VmPolicy.Builder()
             .detectLeakedClosableObjects()
+            .detectLeakedSqlLiteObjects()
             .detectLeakedRegistrationObjects()
             .detectActivityLeaks()
             .penaltyLog()

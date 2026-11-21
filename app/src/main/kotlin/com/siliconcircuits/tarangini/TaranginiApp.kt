@@ -32,8 +32,9 @@ class TaranginiApp :
     lateinit var libraryWatcher: LibraryWatcher
 
     override fun onCreate() {
-        super.onCreate()
+        // First, so the checks of a debug build also see what the start itself does.
         installDebugChecks()
+        super.onCreate()
         installArtworkLoader()
         // The playback connection is open while a screen is open, so it must hear of every screen from the first one.
         registerActivityLifecycleCallbacks(playbackScreenWatcher)

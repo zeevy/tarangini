@@ -19,7 +19,7 @@ The first release must be stable in daily use. Two kinds of fault do not show in
 ## What follows
 
 - The debug build lists LeakCanary on its open source licences screen. The release build does not have it.
-- LeakCanary asks for write access to shared files and for notifications. The debug manifest removes the write access, so its files stay in the folder of the app. The notification permission stays in the debug build, for its notice.
+- LeakCanary asks for write access to shared files and for notifications. The debug manifest of the app removes the write access, so its files stay in the folder of the app. The notification permission comes from the manifest of LeakCanary and stays in the debug build, for its notice.
 - LeakCanary does nothing in the JVM tests: it switches itself off when JUnit is on the class path.
 - A StrictMode line in the log of a debug build is a finding: fix it, or write down why it is from a library.
 - The long runs on a real phone are rows in `docs/MANUAL-TESTS.md`.
