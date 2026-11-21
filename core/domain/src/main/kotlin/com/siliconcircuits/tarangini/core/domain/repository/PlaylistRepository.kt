@@ -34,6 +34,9 @@ interface PlaylistRepository {
     /** Puts a song at the end of a playlist. A song or a playlist that is gone is left alone. */
     suspend fun add(playlistId: Long, songId: Long)
 
+    /** Adds the songs to the end of the playlist in the order given, as one change. A song may be in it twice. */
+    suspend fun addAll(playlistId: Long, songIds: List<Long>)
+
     /** Takes one place out of a playlist. */
     suspend fun remove(itemId: Long)
 

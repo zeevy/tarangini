@@ -29,6 +29,18 @@
     <string name="playlist_move_down">Move down</string>
     <string name="playlist_move_top">Move to top</string>
     <string name="playlist_move_end">Move to end</string>
+    <string name="playlist_import">Import a playlist file</string>
+    <string name="playlist_import_too_large">This file is too large to be a playlist file.</string>
+    <string name="playlist_import_nothing">No song of this file is in your library. No playlist was made.</string>
+    <string name="playlist_import_failed">The file could not be read.</string>
+    <plurals name="playlist_import_done">
+        <item quantity="one">%1$d of %2$d song was found in your library.</item>
+        <item quantity="other">%1$d of %2$d songs were found in your library.</item>
+    </plurals>
+    <string name="playlist_import_not_found">Not found:</string>
+    <string name="playlist_export">Export to a file</string>
+    <string name="playlist_export_done">The playlist file was saved.</string>
+    <string name="playlist_export_failed">The file could not be saved.</string>
     <string name="library_sort">Sort songs</string>
     <string name="library_sort_title">Title</string>
     <string name="library_sort_artist">Artist</string>

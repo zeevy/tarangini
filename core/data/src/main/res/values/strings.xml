@@ -7,4 +7,5 @@
 <resources>
     <string name="storage_phone">Phone storage</string>
     <string name="storage_card">Memory card</string>
+    <string name="playlist_imported">Imported playlist</string>
 </resources>

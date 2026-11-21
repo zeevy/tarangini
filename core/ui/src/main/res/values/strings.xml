@@ -30,6 +30,7 @@
     <string name="playlist_name">Name</string>
     <string name="playlist_create">Create</string>
     <string name="action_cancel">Cancel</string>
+    <string name="action_ok">OK</string>
     <string name="unknown_artist">Unknown artist</string>
     <string name="unknown_album">Unknown album</string>
     <string name="row_two_parts">%1$s · %2$s</string>

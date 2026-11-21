@@ -23,7 +23,7 @@ import org.robolectric.RobolectricTestRunner
 class DefaultPlaylistRepositoryTest {
     private val database = testDatabase()
     private var now = 1_000L
-    private val playlists = DefaultPlaylistRepository(database.playlistDao()) { now++ }
+    private val playlists = DefaultPlaylistRepository(database.playlistDao(), database.playlistFileDao()) { now++ }
 
     @After
     fun closeDatabase() = database.close()

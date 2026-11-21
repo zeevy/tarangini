@@ -6,6 +6,8 @@
 
 package com.siliconcircuits.tarangini.feature.library.playlist
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -29,22 +31,33 @@ import com.siliconcircuits.tarangini.core.domain.model.Playlist
 import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
 import com.siliconcircuits.tarangini.core.ui.component.PlaylistNameDialog
 import com.siliconcircuits.tarangini.core.ui.component.PlaylistRow
+import com.siliconcircuits.tarangini.feature.library.R
 import com.siliconcircuits.tarangini.feature.library.component.ListBody
 
 /** The Playlists page of the Library tab. */
 @Composable
 internal fun PlaylistsTab(onOpenPlaylist: (Playlist) -> Unit, viewModel: PlaylistsViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val imported by viewModel.import.result.collectAsStateWithLifecycle()
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { file ->
+        file?.let { viewModel.import.from(it.toString()) }
+    }
     PlaylistsContent(
         playlists = state.items.takeUnless { state.isLoading },
         onOpenPlaylist = onOpenPlaylist,
         onCreate = viewModel::create,
         failed = state.failed && state.items.isEmpty(),
         onRetry = viewModel::retry,
+        files = PlaylistFileActions(
+            imported = imported,
+            // A phone with no file picker gets no crash: nothing opens.
+            onImport = { runCatching { picker.launch(PLAYLIST_FILE_TYPES) } },
+            onClose = viewModel.import::close,
+        ),
     )
 }
 
-/** "New playlist" first, then every playlist by name. */
+/** "New playlist" and "Import a playlist file" first, then every playlist by name. */
 @Composable
 internal fun PlaylistsContent(
     playlists: List<Playlist>?,
@@ -53,7 +66,9 @@ internal fun PlaylistsContent(
     modifier: Modifier = Modifier,
     failed: Boolean = false,
     onRetry: () -> Unit = {},
+    files: PlaylistFileActions = PlaylistFileActions(),
 ) {
+    PlaylistFileResult(files)
     var naming by rememberSaveable { mutableStateOf(false) }
     if (naming) {
         PlaylistNameDialog(
@@ -73,6 +88,16 @@ internal fun PlaylistsContent(
                         Icon(painter = painterResource(CoreUiR.drawable.ic_add), contentDescription = null)
                     },
                     modifier = Modifier.clickable { naming = true },
+                )
+            }
+            item(key = "import") {
+                ListItem(
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    headlineContent = { Text(stringResource(R.string.playlist_import)) },
+                    leadingContent = {
+                        Icon(painter = painterResource(CoreUiR.drawable.ic_folder), contentDescription = null)
+                    },
+                    modifier = Modifier.clickable(onClick = files.onImport),
                 )
             }
             items(items = playlists.orEmpty(), key = Playlist::id) { playlist ->

@@ -37,6 +37,12 @@ class FakePlaylistRepository : PlaylistRepository {
     }
     private var nextId = 1L
 
+    /** Makes a change and tells the readers. */
+    private val change: (() -> Unit) -> Unit = { block ->
+        block()
+        version.value++
+    }
+
     override suspend fun playlists(): List<Playlist> =
         names.map { (id, name) -> Playlist(id, name, visible(id).size) }.sortedBy { it.name.lowercase() }
 
@@ -61,6 +67,10 @@ class FakePlaylistRepository : PlaylistRepository {
         if (playlistId in names) places[playlistId] = places[playlistId].orEmpty() + (nextId++ to songId)
     }
 
+    override suspend fun addAll(playlistId: Long, songIds: List<Long>) = change {
+        if (playlistId in names) places[playlistId] = places[playlistId].orEmpty() + songIds.map { nextId++ to it }
+    }
+
     override suspend fun remove(itemId: Long) = change {
         places.replaceAll { _, list -> list.filterNot { it.first == itemId } }
     }
@@ -74,10 +84,5 @@ class FakePlaylistRepository : PlaylistRepository {
         val rest = order - moved
         val at = rest.indexOfFirst { it.first == beforeItemId }.takeIf { it >= 0 } ?: rest.size
         places[playlistId] = rest.take(at) + moved + rest.drop(at)
-    }
-
-    private fun change(block: () -> Unit) {
-        block()
-        version.value++
     }
 }

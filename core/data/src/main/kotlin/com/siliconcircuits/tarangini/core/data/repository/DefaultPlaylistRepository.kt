@@ -7,6 +7,7 @@
 package com.siliconcircuits.tarangini.core.data.repository
 
 import com.siliconcircuits.tarangini.core.data.local.dao.PlaylistDao
+import com.siliconcircuits.tarangini.core.data.local.dao.PlaylistFileDao
 import com.siliconcircuits.tarangini.core.data.local.dao.PlaylistRow
 import com.siliconcircuits.tarangini.core.data.local.entity.PlaylistEntity
 import com.siliconcircuits.tarangini.core.data.mapper.toSong
@@ -27,6 +28,7 @@ import kotlinx.coroutines.flow.onSubscription
 @Singleton
 internal class DefaultPlaylistRepository @Inject constructor(
     private val playlists: PlaylistDao,
+    private val files: PlaylistFileDao,
     private val time: TimeSource,
 ) : PlaylistRepository {
     private val changed =
@@ -39,29 +41,36 @@ internal class DefaultPlaylistRepository @Inject constructor(
 
     override suspend fun create(name: String): Long? = checkPlaylistName(name)?.let { checked ->
         val now = time.nowMs()
-        playlists.insertPlaylist(PlaylistEntity(name = checked, createdAt = now, updatedAt = now)).also { tell() }
+        playlists.insertPlaylist(PlaylistEntity(name = checked, createdAt = now, updatedAt = now)).also {
+            changed.tryEmit(Unit)
+        }
     }
 
     override suspend fun rename(playlistId: Long, name: String): Boolean {
         val checked = checkPlaylistName(name) ?: return false
         playlists.renamePlaylist(playlistId, checked, time.nowMs())
-        tell()
+        changed.tryEmit(Unit)
         return true
     }
 
     override suspend fun delete(playlistId: Long) {
         playlists.deletePlaylist(playlistId)
-        tell()
+        changed.tryEmit(Unit)
     }
 
     override suspend fun add(playlistId: Long, songId: Long) {
         playlists.addItem(playlistId, songId, time.nowMs())
-        tell()
+        changed.tryEmit(Unit)
+    }
+
+    override suspend fun addAll(playlistId: Long, songIds: List<Long>) {
+        files.addItems(playlistId, songIds, time.nowMs())
+        changed.tryEmit(Unit)
     }
 
     override suspend fun remove(itemId: Long) {
         playlists.removeItem(itemId)
-        tell()
+        changed.tryEmit(Unit)
     }
 
     override suspend fun songs(playlistId: Long, page: Page): List<PlaylistSong> =
@@ -74,10 +83,6 @@ internal class DefaultPlaylistRepository @Inject constructor(
         // A place that is gone in the meantime counts as "the end".
         val at = rest.indexOf(beforeItemId).takeIf { it >= 0 } ?: rest.size
         playlists.setItemOrder(playlistId, rest.take(at) + itemId + rest.drop(at))
-        tell()
-    }
-
-    private fun tell() {
         changed.tryEmit(Unit)
     }
 }

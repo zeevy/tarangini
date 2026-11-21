@@ -9,6 +9,10 @@ package com.siliconcircuits.tarangini.feature.library.playlist
 import android.app.Application
 import android.content.ComponentName
 import androidx.activity.ComponentActivity
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -16,6 +20,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.siliconcircuits.tarangini.core.domain.model.Playlist
 import com.siliconcircuits.tarangini.core.domain.model.PlaylistSong
+import com.siliconcircuits.tarangini.core.domain.repository.PlaylistImport
 import com.siliconcircuits.tarangini.core.testing.library.testSong
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import com.siliconcircuits.tarangini.feature.library.checkAccessibility
@@ -122,6 +127,67 @@ class PlaylistContentTest {
         composeRule.onNodeWithText("Create").performClick()
 
         assertEquals(listOf("open Drive", "create Morning"), done)
+    }
+
+    @Test
+    fun `the list offers the import of a file and says how it ended`() {
+        val result = PlaylistImport.Done(1, "Evening", matched = 1, total = 2, notFound = listOf("Rock/gone.mp3"))
+        var shown by mutableStateOf<PlaylistImport?>(null)
+        composeRule.setContent {
+            TaranginiTheme {
+                PlaylistsContent(
+                    playlists = emptyList(),
+                    onOpenPlaylist = {},
+                    onCreate = {},
+                    files = PlaylistFileActions(
+                        imported = shown,
+                        onImport = { shown = result },
+                        onClose = { shown = null },
+                    ),
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Import a playlist file").performClick()
+
+        composeRule.onNodeWithText("1 of 2 songs were found in your library.").assertIsDisplayed()
+        composeRule.onNodeWithText("Rock/gone.mp3").assertIsDisplayed()
+
+        composeRule.onNodeWithText("OK").performClick()
+
+        composeRule.onNodeWithText("Rock/gone.mp3").assertDoesNotExist()
+    }
+
+    @Test
+    fun `a file that is refused says why`() {
+        composeRule.setContent {
+            TaranginiTheme {
+                PlaylistsContent(emptyList(), {}, {}, files = PlaylistFileActions(imported = PlaylistImport.TooLarge))
+            }
+        }
+
+        composeRule.onNodeWithText("This file is too large to be a playlist file.").assertIsDisplayed()
+    }
+
+    @Test
+    fun `the menu of a playlist exports it, and the result is told`() {
+        var asked = 0
+        composeRule.setContent {
+            TaranginiTheme {
+                PlaylistContent(
+                    "Drive",
+                    places,
+                    actions,
+                    onBack = {},
+                    files = PlaylistFileActions(exported = true.takeIf { asked > 0 }, onExport = { asked++ }),
+                )
+            }
+        }
+
+        composeRule.onNodeWithContentDescription("More options for the playlist").performClick()
+        composeRule.onNodeWithText("Export to a file").performClick()
+
+        assertEquals(1, asked)
     }
 
     @Test

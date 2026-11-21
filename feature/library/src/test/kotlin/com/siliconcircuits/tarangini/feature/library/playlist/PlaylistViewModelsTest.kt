@@ -7,7 +7,9 @@
 package com.siliconcircuits.tarangini.feature.library.playlist
 
 import androidx.lifecycle.SavedStateHandle
+import com.siliconcircuits.tarangini.core.domain.repository.PlaylistImport
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
+import com.siliconcircuits.tarangini.core.testing.library.FakePlaylistFiles
 import com.siliconcircuits.tarangini.core.testing.library.FakePlaylistRepository
 import com.siliconcircuits.tarangini.core.testing.library.testSong
 import com.siliconcircuits.tarangini.core.testing.playback.FakePlaybackController
@@ -28,19 +30,20 @@ class PlaylistViewModelsTest {
     private val library = FakeLibraryRepository().apply { songs = this@PlaylistViewModelsTest.songs }
     private val playlists = FakePlaylistRepository().apply { known = songs }
     private val playback = FakePlaybackController()
+    private val files = FakePlaylistFiles()
 
     private suspend fun TestScope.filled(): PlaylistViewModel {
         val id = requireNotNull(playlists.create("Drive"))
         songs.forEach { playlists.add(id, it.id) }
         val saved = SavedStateHandle(mapOf("playlistId" to id, "name" to "Drive"))
-        return PlaylistViewModel(saved, playlists, library, playback).also { advanceUntilIdle() }
+        return PlaylistViewModel(saved, playlists, library, playback, files).also { advanceUntilIdle() }
     }
 
     private fun PlaylistViewModel.titles() = songs.state.value.items.map { it.song.title }
 
     @Test
     fun `the list of playlists shows a new playlist, and a bad name makes none`() = runTest(mainDispatcher.dispatcher) {
-        val viewModel = PlaylistsViewModel(playlists, library)
+        val viewModel = PlaylistsViewModel(playlists, library, files)
 
         viewModel.create("Morning")
         viewModel.create("   ")
@@ -72,7 +75,7 @@ class PlaylistViewModelsTest {
             val id = requireNotNull(playlists.create("Long"))
             many.forEach { playlists.add(id, it.id) }
             val saved = SavedStateHandle(mapOf("playlistId" to id, "name" to "Long"))
-            val viewModel = PlaylistViewModel(saved, playlists, library, playback).also { advanceUntilIdle() }
+            val viewModel = PlaylistViewModel(saved, playlists, library, playback, files).also { advanceUntilIdle() }
             val rows = viewModel.songs.state.value.items
             val before = playlists.places.getValue(id)
 
@@ -140,5 +143,37 @@ class PlaylistViewModelsTest {
 
         assertEquals(PlaylistUiState("Night"), renamed)
         assertTrue(viewModel.state.value.isGone)
+    }
+
+    @Test
+    fun `a picked file is imported, and its result stays until it is read`() = runTest(mainDispatcher.dispatcher) {
+        val done = PlaylistImport.Done(7, "Drive", matched = 2, total = 3, notFound = listOf("x.mp3"))
+        files.importResult = done
+        val viewModel = PlaylistsViewModel(playlists, library, files)
+
+        viewModel.import.from("content://files/1")
+        advanceUntilIdle()
+
+        assertEquals(listOf("import content://files/1"), files.calls)
+        assertEquals(done, viewModel.import.result.value)
+
+        viewModel.import.close()
+
+        assertEquals(null, viewModel.import.result.value)
+    }
+
+    @Test
+    fun `a playlist is written to the picked file, and a failure is told`() = runTest(mainDispatcher.dispatcher) {
+        val viewModel = filled()
+
+        viewModel.export.to("content://files/2")
+        advanceUntilIdle()
+        val first = viewModel.export.result.value
+        files.exportWorks = false
+        viewModel.export.to("content://files/3")
+        advanceUntilIdle()
+
+        assertEquals(listOf(true, false), listOf(first, viewModel.export.result.value))
+        assertEquals(2, files.calls.count { it.startsWith("export ") })
     }
 }

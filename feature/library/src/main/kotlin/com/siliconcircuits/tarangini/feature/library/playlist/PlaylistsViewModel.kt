@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.siliconcircuits.tarangini.core.domain.model.Playlist
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
+import com.siliconcircuits.tarangini.core.domain.repository.PlaylistFiles
 import com.siliconcircuits.tarangini.core.domain.repository.PlaylistRepository
 import com.siliconcircuits.tarangini.feature.library.list.PagedItems
 import com.siliconcircuits.tarangini.feature.library.list.attempt
@@ -26,7 +27,11 @@ import kotlinx.coroutines.launch
 internal class PlaylistsViewModel @Inject constructor(
     private val playlists: PlaylistRepository,
     library: LibraryRepository,
+    files: PlaylistFiles,
 ) : ViewModel() {
+    /** Makes a playlist from a file. The new playlist shows in the list by itself. */
+    val import = PlaylistFileImport(viewModelScope, files)
+
     private val list = MutableStateFlow(PagedItems<Playlist>())
 
     /** Every playlist by name. It says "failed" only while there is nothing to show. */

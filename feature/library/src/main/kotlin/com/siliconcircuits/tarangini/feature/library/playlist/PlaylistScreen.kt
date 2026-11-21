@@ -6,6 +6,8 @@
 
 package com.siliconcircuits.tarangini.feature.library.playlist
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.AlertDialog
@@ -65,7 +67,17 @@ private fun LoadedPlaylist(onBack: () -> Unit, viewModel: PlaylistViewModel = hi
     // A playlist that is gone has no screen. This also closes it after its own "Delete".
     val close by rememberUpdatedState(onBack)
     LaunchedEffect(state.isGone) { if (state.isGone) close() }
-    PlaylistContent(state.name, songs, actions, onBack)
+    val exported by viewModel.export.result.collectAsStateWithLifecycle()
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(PLAYLIST_FILE_TYPE)) { file ->
+        file?.let { viewModel.export.to(it.toString()) }
+    }
+    val files = PlaylistFileActions(
+        exported = exported,
+        // A phone with no file picker gets no crash: nothing opens.
+        onExport = { runCatching { picker.launch("${state.name}.m3u") } },
+        onClose = viewModel.export::close,
+    )
+    PlaylistContent(state.name, songs, actions, onBack, files = files)
 }
 
 /** The songs of a playlist in order, with Play, Shuffle and a menu in the top bar. */
@@ -76,12 +88,14 @@ internal fun PlaylistContent(
     actions: PlaylistActions,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    files: PlaylistFileActions = PlaylistFileActions(),
 ) {
+    PlaylistFileResult(files)
     DetailScaffold(
         title = name,
         onBack = onBack,
         modifier = modifier,
-        actions = { PlaylistBarActions(name, hasSongs = songs.items.isNotEmpty(), actions) },
+        actions = { PlaylistBarActions(name, hasSongs = songs.items.isNotEmpty(), actions, files.onExport) },
     ) {
         ListBody(songs.isLoading, failed = songs.failed && songs.items.isEmpty(), onRetry = actions.onRetry) {
             if (songs.items.isEmpty()) {
@@ -109,7 +123,12 @@ private fun placeMenu(place: PlaylistSong, actions: PlaylistActions): List<Pair<
 )
 
 @Composable
-private fun RowScope.PlaylistBarActions(name: String, hasSongs: Boolean, actions: PlaylistActions) {
+private fun RowScope.PlaylistBarActions(
+    name: String,
+    hasSongs: Boolean,
+    actions: PlaylistActions,
+    onExport: () -> Unit,
+) {
     var menuOpen by remember { mutableStateOf(false) }
     var renaming by rememberSaveable { mutableStateOf(false) }
     var deleting by rememberSaveable { mutableStateOf(false) }
@@ -133,6 +152,15 @@ private fun RowScope.PlaylistBarActions(name: String, hasSongs: Boolean, actions
                     renaming = true
                 },
             )
+            if (hasSongs) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.playlist_export)) },
+                    onClick = {
+                        menuOpen = false
+                        onExport()
+                    },
+                )
+            }
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.playlist_delete)) },
                 onClick = {
