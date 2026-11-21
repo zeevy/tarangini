@@ -25,8 +25,9 @@ object TaranginiBuild {
      * Minor and patch go up to 999. Any other form of name fails the build.
      */
     fun versionCodeOf(versionName: String): Int {
-        val parts = versionName.split('.').map { it.toIntOrNull() }
-        require(parts.size == VERSION_PARTS && parts.all { it != null && it >= 0 }) {
+        // Plain numbers only, with no sign and no leading zero, so one version has one way to write it.
+        val parts = versionName.split('.').map { part -> part.takeIf(PART::matches)?.toIntOrNull() }
+        require(parts.size == VERSION_PARTS && parts.all { it != null }) {
             "The version name must be major.minor.patch, but is '$versionName'"
         }
         val (major, minor, patch) = parts.map { it ?: 0 }
@@ -36,6 +37,7 @@ object TaranginiBuild {
         return (major * PART_STEP + minor) * PART_STEP + patch
     }
 
+    private val PART = Regex("0|[1-9][0-9]{0,3}")
     private const val VERSION_PARTS = 3
     private const val MAX_PART = 999
     private const val MAX_MAJOR = 2000

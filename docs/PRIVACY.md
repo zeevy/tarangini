@@ -12,7 +12,7 @@ Tarangini is a music player for the audio files on your phone. This page says wh
 ## What leaves the phone
 
 - **The app built from this repository** sends nothing to us or to anyone else. It has no account, no ads and no usage statistics.
-- **The Play Store build** also sends a crash report when the app fails: the place in the code where it failed, the model of the phone and the Android version. A report holds no file names, no titles and nothing of your library. We use the reports only to fix faults.
+- **The Play Store build** also sends a crash report when the app fails: the place in the code where it failed, the model of the phone, the Android version, the state of the phone at that moment (free memory and storage, screen direction) and a random id of the installation. The id is not tied to your name or account. A report holds no file names, no titles and nothing of your library. We use the reports only to fix faults.
 - **Android Auto and voice assistants** get the titles of your songs and playlists when you browse or ask for music through them, because they show the lists. They are run by Google under its own policy.
 
 ## What we never do

@@ -11,7 +11,7 @@ The public repository must give a release build that is small, correct and can b
 
 | Decision | Options looked at | Reason |
 |---|---|---|
-| The release build type shrinks code and resources with R8, with the optimizing default rules | No shrinking. Shrinking without optimizing | 5.7 MB against 50 MB. The libraries bring their own keep rules, and R8 fails the build when a class it needs is missing |
+| The release build type shrinks code and resources with R8, with the optimizing default rules | No shrinking. Shrinking without optimizing | 5.7 MB against 50 MB. The libraries bring their own keep rules. The build only shows what R8 cannot resolve; a class reached by reflection and removed shows only when the app runs, which row 113 of the manual tests checks |
 | `app/proguard-rules.pro` only keeps line numbers and hides the file names | Keep rules for whole packages | A stack trace can be read with the mapping file. Nothing else was needed for the build |
 | CI builds the release app in every run | Build it only for a release | A library update that breaks R8 shows in its own pull request |
 | The version has one place, `appVersion`. The version code is `major * 1000000 + minor * 1000 + patch` | A version code kept by hand | It cannot be forgotten and always grows with the name |

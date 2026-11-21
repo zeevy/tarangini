@@ -68,8 +68,8 @@ jobs:
       - name: Build the core debug app
         run: ./gradlew assembleCoreDebug --stacktrace
 
-      # R8 fails the build when a class it needs has no keep rule, so a library update that breaks
-      # the release build shows here and not at release time.
+      # Shows a library update that R8 cannot build. It does not prove the shrunk app runs:
+      # that is a manual test until the end to end test exists.
       - name: Build the core release app
         run: ./gradlew assembleCoreRelease --stacktrace
 

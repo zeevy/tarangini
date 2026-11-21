@@ -33,7 +33,7 @@ Full description (4000 at most):
 | Category | Music & Audio |
 | Target API level | 37. Play asks for 36 or higher since 31 August 2026 (checked 21 Nov 2026) |
 | Foreground service type | `mediaPlayback`. Reason: the app plays audio while the screen is off or another app is open. The video shows: start a song, press Home, the song goes on with the media notification |
-| Data safety: data collected | Crash logs and diagnostics, in the Play build only. Not shared, not linked to the person, sent encrypted |
+| Data safety: data collected | Crash logs, diagnostics and "Device or other IDs" (the installation id of the crash reporter), in the Play build only. Not shared, not linked to the person, sent encrypted |
 | Data safety: everything else | Nothing collected. Audio files are read on the phone and never leave it |
 | Ads | No |
 | Target audience | 13 and over. Not for children |

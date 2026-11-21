@@ -35,12 +35,12 @@ class TaranginiBuildTest {
         assertEquals(1_004_002, TaranginiBuild.versionCodeOf("1.4.2"))
         assertEquals(1_999_999, TaranginiBuild.versionCodeOf("1.999.999"))
         assertTrue(TaranginiBuild.versionCodeOf("1.0.0") > TaranginiBuild.versionCodeOf("0.999.999"))
-        assertTrue(TaranginiBuild.versionCodeOf("2000.999.999") > 0)
+        assertEquals(2_000_999_999, TaranginiBuild.versionCodeOf("2000.999.999"))
     }
 
     @Test
     fun `a version name of another form fails the build`() {
-        listOf("1.0", "1.0.0.0", "1.0.x", "1.0.0-beta", "1.1000.0", "-1.0.0", "").forEach { name ->
+        listOf("1.0", "1.0.0.0", "1.0.x", "1.0.0-beta", "1.1000.0", "-1.0.0", "", "+1.0.0", "01.0.0", " 1.0.0", "1.-0.0", "2001.0.0").forEach { name ->
             assertThrows(name, IllegalArgumentException::class.java) { TaranginiBuild.versionCodeOf(name) }
         }
     }
