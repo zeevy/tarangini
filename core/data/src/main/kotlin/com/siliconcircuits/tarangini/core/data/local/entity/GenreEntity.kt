@@ -45,7 +45,8 @@ internal data class GenreEntity(
             onDelete = ForeignKey.CASCADE,
         ),
     ],
-    indices = [Index("genre_id")],
+    // With the song in the index, the songs of a genre are found without a read of the table.
+    indices = [Index("genre_id", "song_id")],
 )
 internal data class SongGenreEntity(
     @ColumnInfo(name = "song_id") val songId: Long,

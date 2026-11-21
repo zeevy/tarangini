@@ -29,7 +29,9 @@ internal object GenreTables : Migration(FROM_VERSION, TO_VERSION) {
                 "FOREIGN KEY(`song_id`) REFERENCES `songs`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , " +
                 "FOREIGN KEY(`genre_id`) REFERENCES `genres`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         )
-        connection.execSQL("CREATE INDEX IF NOT EXISTS `index_song_genres_genre_id` ON `song_genres` (`genre_id`)")
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_song_genres_genre_id_song_id` ON `song_genres` (`genre_id`, `song_id`)",
+        )
     }
 }
 

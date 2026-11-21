@@ -171,6 +171,23 @@ class MediaStoreAudioSourceTest {
     }
 
     @Test
+    fun `the genres of a tag that are divided by the zero character stay apart`() {
+        mediaIndexWith(
+            listOf(
+                mapOf(
+                    MediaStore.Audio.Media._ID to 9L,
+                    MediaStore.Audio.Media.DISPLAY_NAME to "a.mp3",
+                    MediaStore.Audio.Media.GENRE to "Rock\u0000Pop",
+                ),
+            ),
+        )
+
+        val file = checkNotNull(source.files()).single()
+
+        assertEquals(listOf("Rock", "Pop"), genreNames(file.genre))
+    }
+
+    @Test
     fun `no answer from the media index gives no list`() {
         mediaIndexWith(rows = null)
 

@@ -16,12 +16,15 @@ import com.siliconcircuits.tarangini.core.data.local.sortKey
  * So every song has a genre.
  */
 internal fun genreNames(tag: String?): List<String> = tag.orEmpty()
-    .split(';', ',', '\u0000')
+    .split(GENRE_DIVIDER, ',', '\u0000')
     .map { it.trim().take(MAX_GENRE_NAME) }
     .filter { it.isNotEmpty() }
     .distinctBy(::sortKey)
     .take(MAX_GENRES_PER_SONG)
     .ifEmpty { listOf("") }
+
+/** The sign that divides the genres of one tag. */
+internal const val GENRE_DIVIDER = ';'
 
 private const val MAX_GENRE_NAME = 100
 private const val MAX_GENRES_PER_SONG = 5

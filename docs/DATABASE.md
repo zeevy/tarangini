@@ -101,7 +101,7 @@ Every id is a whole number that the database gives and never uses again. Every t
 | `songs` | `id`, `source`, `source_id`, `title`, `title_key`, `artist_id`, `album_id`, `folder_id`, `file_name`, `mime_type`, `duration_ms`, `size_bytes`, `track_number`, `disc_number`, `year`, `date_added`, `date_modified`, `missing_since` | `source` with `source_id` | An artist, album or folder with songs cannot be removed |
 | `song_search` | row id (the song id), `title`, `artist`, `album` | - | Written and removed by the library DAO with the song, in one transaction. The vowel signs and other marks of the Indian scripts are part of a word (`SEARCH_TOKEN_CHARS`) |
 | `genres` | `id`, `name`, `name_key` | `name_key` unique | Written by the scan. The row with the empty name holds the songs with no genre tag. A genre with no song is removed |
-| `song_genres` | `song_id`, `genre_id` (both the key) | `genre_id` | One row per genre of a song. Removed with the song or the genre. A song with no row is one whose genre tag was never read |
+| `song_genres` | `song_id`, `genre_id` (both the key) | `genre_id, song_id` | One row per genre of a song. Removed with the song or the genre. A song with no row is one whose genre tag was never read |
 | `stations` | `id`, `source`, `radio_browser_uuid`, `name`, `homepage`, `country_code`, `language`, `tags`, `created_at`, `updated_at` | `radio_browser_uuid` when it is set | - |
 | `station_streams` | `id`, `station_id`, `position`, `url`, `codec`, `bitrate_kbps` | `station_id` with `position` | Goes with its station |
 | `favourite_songs` | `song_id` (key), `added_at` | One row per song | Goes with its song |

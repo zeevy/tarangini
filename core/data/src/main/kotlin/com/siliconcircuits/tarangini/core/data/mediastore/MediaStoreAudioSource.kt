@@ -94,7 +94,7 @@ internal class MediaStoreAudioSource @Inject constructor(@ApplicationContext pri
         trackNumber = leadingNumber(text(MediaStore.Audio.Media.CD_TRACK_NUMBER)),
         discNumber = leadingNumber(text(MediaStore.Audio.Media.DISC_NUMBER)),
         year = number(MediaStore.Audio.Media.YEAR)?.toInt()?.takeIf { it > 0 },
-        genre = tag(MediaStore.Audio.Media.GENRE),
+        genre = tag(MediaStore.Audio.Media.GENRE, controlAs = GENRE_DIVIDER),
         dateAdded = (number(MediaStore.Audio.Media.DATE_ADDED) ?: 0) * MS_PER_SECOND,
         dateModified = (number(MediaStore.Audio.Media.DATE_MODIFIED) ?: 0) * MS_PER_SECOND,
     )
@@ -104,14 +104,25 @@ internal class MediaStoreAudioSource @Inject constructor(@ApplicationContext pri
      * written by whoever made the file, so they are cut to [MAX_TEXT] and
      * lose their control characters before anything else sees them.
      */
-    private fun Cursor.text(column: String): String? {
+
+    /**
+     * A text with no control characters. They are left out, or exchanged for [controlAs]: the
+     * newer tag format divides the genres of one tag by the zero character.
+     */
+    private fun Cursor.text(column: String, controlAs: Char? = null): String? {
         val index = getColumnIndex(column)
         val raw = if (index < 0 || isNull(index)) null else getString(index)
-        return raw?.filterNot { it.isISOControl() }?.trim()?.take(MAX_TEXT)?.takeIf { it.isNotEmpty() }
+        val clean = if (controlAs == null) {
+            raw?.filterNot { it.isISOControl() }
+        } else {
+            raw?.map { if (it.isISOControl()) controlAs else it }?.joinToString("")
+        }
+        return clean?.trim()?.take(MAX_TEXT)?.takeIf { it.isNotEmpty() }
     }
 
     /** A tag value. MediaStore writes "<unknown>" where a file has no tag. */
-    private fun Cursor.tag(column: String): String? = text(column)?.takeIf { it != MediaStore.UNKNOWN_STRING }
+    private fun Cursor.tag(column: String, controlAs: Char? = null): String? =
+        text(column, controlAs)?.takeIf { it != MediaStore.UNKNOWN_STRING }
 
     private fun Cursor.number(column: String): Long? {
         val index = getColumnIndex(column)

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 3,
-    "identityHash": "f1316b60fe0c2b09cda818c46972a604",
+    "identityHash": "7dc5c2773482343fa8bfc7da4d77b709",
     "entities": [
       {
         "tableName": "albums",
@@ -814,13 +814,14 @@
         },
         "indices": [
           {
-            "name": "index_song_genres_genre_id",
+            "name": "index_song_genres_genre_id_song_id",
             "unique": false,
             "columnNames": [
-              "genre_id"
+              "genre_id",
+              "song_id"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_song_genres_genre_id` ON `${TABLE_NAME}` (`genre_id`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_song_genres_genre_id_song_id` ON `${TABLE_NAME}` (`genre_id`, `song_id`)"
           }
         ],
         "foreignKeys": [
@@ -1161,7 +1162,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f1316b60fe0c2b09cda818c46972a604')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7dc5c2773482343fa8bfc7da4d77b709')"
     ]
   }
 }
