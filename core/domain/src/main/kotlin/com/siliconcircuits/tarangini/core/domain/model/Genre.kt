@@ -11,5 +11,6 @@ package com.siliconcircuits.tarangini.core.domain.model
  *
  * @property name the name as the tags write it; empty for the songs with no genre tag
  * @property songCount how many songs of the genre can be played
+ * @property key the form the genre is known by; "Rock" and "rock" have the same. It stays after a rescan
  */
-data class Genre(val id: Long, val name: String, val songCount: Int)
+data class Genre(val id: Long, val name: String, val songCount: Int, val key: String = name)

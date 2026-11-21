@@ -75,12 +75,16 @@ enum class EqualizerPreset(private val curve: List<Float>) {
  * @property preset the preset that was picked last, or null after a band was moved by hand
  * @property ownGains the gain of each band in dB, used when [preset] is null
  * @property bassBoost the bass boost in percent, from 0 to 100
+ * @property genresOn true when a song of a genre in [genrePresets] plays with the preset of its genre
+ * @property genrePresets the preset for a genre, by [com.siliconcircuits.tarangini.core.domain.model.Genre.key]
  */
 data class EqualizerSettings(
     val isOn: Boolean = false,
     val preset: EqualizerPreset? = EqualizerPreset.FLAT,
     val ownGains: List<Float> = emptyList(),
     val bassBoost: Int = 0,
+    val genresOn: Boolean = false,
+    val genrePresets: Map<String, EqualizerPreset> = emptyMap(),
 ) {
     /**
      * The gain in dB of each band at [bandsHz], each within [MAX_BAND_GAIN_DB]. Own gains that were
@@ -94,6 +98,19 @@ data class EqualizerSettings(
         }
         return gains.map(::safeGain)
     }
+
+    /**
+     * The settings a song of [genreKeys] plays with: the preset of its first genre that has one, or
+     * these settings. The bass boost is the same for every song.
+     */
+    fun forSong(genreKeys: List<String>): EqualizerSettings {
+        val genrePreset = genreKeys.firstNotNullOfOrNull(genrePresets::get)
+        return if (genresOn && genrePreset != null) copy(preset = genrePreset) else this
+    }
+
+    /** The same settings with [preset] for the genre [key]; null makes the genre follow the main setting. */
+    fun withGenrePreset(key: String, preset: EqualizerPreset?): EqualizerSettings =
+        copy(genrePresets = if (preset == null) genrePresets - key else genrePresets + (key to preset))
 
     /** The bass boost in dB. */
     fun bassBoostDb(): Float = bassBoost.coerceIn(0, MAX_BASS_PERCENT) * MAX_BASS_BOOST_DB / MAX_BASS_PERCENT

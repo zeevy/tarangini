@@ -51,6 +51,33 @@ class DefaultEqualizerRepositoryTest {
     }
 
     @Test
+    fun `the preset of each genre is read back, also a genre key with a tab or a space`() = runTest {
+        val equalizer = DefaultEqualizerRepository(store())
+        val genres = EqualizerSettings(
+            isOn = true,
+            genresOn = true,
+            genrePresets = mapOf("carnatic" to EqualizerPreset.CARNATIC, "hip hop\tlive" to EqualizerPreset.BASS),
+        )
+
+        equalizer.save(genres)
+
+        assertEquals(genres, equalizer.settings().first())
+    }
+
+    @Test
+    fun `a broken genre preset is left out`() = runTest {
+        val store = store()
+        store.edit { saved ->
+            saved[SettingsKeys.EQUALIZER_GENRE_PRESETS] =
+                setOf("LOUD\trock", "BASS", "BASS\t", "VOCAL\tpop")
+        }
+
+        val read = DefaultEqualizerRepository(store).settings().first()
+
+        assertEquals(mapOf("pop" to EqualizerPreset.VOCAL), read.genrePresets)
+    }
+
+    @Test
     fun `broken and out of range values are read as their limits`() = runTest {
         val store = store()
         store.edit { saved ->

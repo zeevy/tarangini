@@ -23,7 +23,17 @@ internal fun followEqualizer(
     processor: EqualizerProcessor,
     scope: CoroutineScope,
 ): Job = scope.launch {
-    saved.settings().collect { settings -> processor.setTarget(targetOf(settings, bands.centresHz())) }
+    saved.settings().collect { settings -> processor.setTargets(targetsOf(settings, bands.centresHz())) }
+}
+
+/** The main target and the target of each genre that has its own preset. */
+internal fun targetsOf(settings: EqualizerSettings, bandsHz: List<Float>): EqualizerTargets {
+    val byGenre = if (settings.isOn && settings.genresOn) {
+        settings.genrePresets.mapValues { (key, _) -> targetOf(settings.forSong(listOf(key)), bandsHz) }
+    } else {
+        emptyMap()
+    }
+    return EqualizerTargets(targetOf(settings, bandsHz), byGenre)
 }
 
 /** What the processor does for [settings]: nothing while the equalizer is off. */

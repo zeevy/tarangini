@@ -349,6 +349,18 @@ internal abstract class LibraryDao {
     )
     abstract suspend fun songsBySourceIds(source: SongSource, sourceIds: List<String>): List<SongRow>
 
+    /** The key of each named genre of each song in [songIds]. The genre with no name is left out. */
+    @Query(
+        """
+            SELECT sg.song_id AS song_id, g.name_key AS name_key
+            FROM song_genres sg
+            JOIN genres g ON g.id = sg.genre_id
+            WHERE sg.song_id IN (:songIds) AND g.name_key != ''
+            ORDER BY sg.song_id, g.name_key
+        """,
+    )
+    abstract suspend fun genreKeysOfSongs(songIds: List<Long>): List<SongGenreKey>
+
     @Query(
         """
             SELECT s.*, ar.name AS artist_name, al.title AS album_title

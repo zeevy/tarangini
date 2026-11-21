@@ -9,6 +9,7 @@ package com.siliconcircuits.tarangini.core.playback.mapper
 import android.net.Uri
 import androidx.media3.common.MediaItem
 import com.siliconcircuits.tarangini.core.domain.model.Song
+import com.siliconcircuits.tarangini.core.domain.repository.GenreRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SongLookup
 import com.siliconcircuits.tarangini.core.domain.repository.StationStreams
 import com.siliconcircuits.tarangini.core.playback.stream.isStreamAddress
@@ -22,9 +23,14 @@ import kotlinx.coroutines.yield
  * so has the current item of a queue that came back at the start.
  *
  * The texts come from the database of this app, never from the caller that
- * sent the item.
+ * sent the item. So do the genres of the song, which pick the equalizer
+ * preset of its genre.
  */
-internal class LibraryTexts(private val songs: SongLookup, private val stations: StationStreams) {
+internal class LibraryTexts(
+    private val songs: SongLookup,
+    private val stations: StationStreams,
+    private val genres: GenreRepository,
+) {
     /**
      * The same items in the same order, each with the texts of its song. An item the library does
      * not know stays as it is. So do all of them when the read fails: a song must play without its texts.
@@ -32,19 +38,29 @@ internal class LibraryTexts(private val songs: SongLookup, private val stations:
     suspend fun addTo(items: List<MediaItem>): List<MediaItem> {
         val addresses = items.mapNotNull { it.address() }
         val found = read(emptyMap()) { songs.byMediaUri(addresses) }
+        val genreKeys = if (found.isEmpty()) {
+            emptyMap()
+        } else {
+            read(emptyMap()) {
+                genres.genreKeysOf(found.values.map(Song::id))
+            }
+        }
         val streams = addresses.filter { Uri.parse(it).isStreamAddress() }
         // A stream gets the name its station was stored with. The server is asked for a name only when there is none.
         val names = if (streams.isEmpty()) emptyMap() else read(emptyMap()) { stations.namesByAddress(streams) }
         return items.chunked(PART).flatMap { part ->
             // A queue can have many thousand items. The main thread draws and takes input between two parts.
             yield()
-            part.map { item -> item.withTexts(found[item.address()], names[item.address()]) }
+            part.map { item ->
+                val song = found[item.address()]
+                item.withTexts(song, names[item.address()], song?.let { genreKeys[it.id] }.orEmpty())
+            }
         }
     }
 
     /** The id and the address stay the checked ones of the item. Only the texts are added. */
-    private fun MediaItem.withTexts(song: Song?, station: String?): MediaItem = when {
-        song != null -> buildUpon().setMediaMetadata(song.toMediaItem().mediaMetadata).build()
+    private fun MediaItem.withTexts(song: Song?, station: String?, genreKeys: List<String>): MediaItem = when {
+        song != null -> buildUpon().setMediaMetadata(song.toMediaItem().mediaMetadata.withGenreKeys(genreKeys)).build()
 
         station != null ->
             buildUpon().setMediaMetadata(

@@ -26,6 +26,18 @@ internal data class EqualizerTarget(
 }
 
 /**
+ * The target of every song: [byGenre] for a song of a genre that has its own preset, [main] for
+ * all other songs.
+ */
+internal data class EqualizerTargets(
+    val main: EqualizerTarget = EqualizerTarget.FLAT,
+    val byGenre: Map<String, EqualizerTarget> = emptyMap(),
+) {
+    /** The target of a song of [genreKeys]. */
+    fun forSong(genreKeys: List<String>): EqualizerTarget = genreKeys.firstNotNullOfOrNull(byGenre::get) ?: main
+}
+
+/**
  * The filters of one [EqualizerTarget] for one audio format, with the state of each filter for
  * each channel. The chain always has one filter per band and one for the bass, so the state can
  * pass from one chain to the next.

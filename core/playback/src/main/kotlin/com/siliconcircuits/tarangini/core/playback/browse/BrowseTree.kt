@@ -156,4 +156,6 @@ private object NoGenres : GenreRepository {
     override suspend fun genre(genreId: Long): Genre? = null
 
     override suspend fun songsOfGenre(genreId: Long, page: Page): List<Song> = emptyList()
+
+    override suspend fun genreKeysOf(songIds: List<Long>): Map<Long, List<String>> = emptyMap()
 }

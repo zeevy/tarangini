@@ -45,6 +45,9 @@ internal class DefaultEqualizerRepository @Inject constructor(private val settin
             }
             saved[SettingsKeys.EQUALIZER_GAINS] = settings.ownGains.joinToString(",")
             saved[SettingsKeys.EQUALIZER_BASS] = settings.bassBoost.coerceIn(0, EqualizerSettings.MAX_BASS_PERCENT)
+            saved[SettingsKeys.EQUALIZER_GENRES_ON] = settings.genresOn
+            saved[SettingsKeys.EQUALIZER_GENRE_PRESETS] =
+                settings.genrePresets.map { (key, preset) -> preset.name + GENRE_SEPARATOR + key }.toSet()
         }
     }
 
@@ -62,6 +65,21 @@ internal class DefaultEqualizerRepository @Inject constructor(private val settin
             preset = preset,
             ownGains = gains,
             bassBoost = (saved[SettingsKeys.EQUALIZER_BASS] ?: 0).coerceIn(0, EqualizerSettings.MAX_BASS_PERCENT),
+            genresOn = saved[SettingsKeys.EQUALIZER_GENRES_ON] == true,
+            genrePresets = saved[SettingsKeys.EQUALIZER_GENRE_PRESETS].orEmpty().mapNotNull(::genrePreset).toMap(),
         )
+    }
+
+    /** One saved genre preset; a broken one is left out. */
+    private fun genrePreset(text: String): Pair<String, EqualizerPreset>? {
+        val name = text.substringBefore(GENRE_SEPARATOR)
+        val key = text.substringAfter(GENRE_SEPARATOR, missingDelimiterValue = "")
+        val preset = EqualizerPreset.entries.firstOrNull { it.name == name }
+        return if (preset == null || key.isEmpty()) null else key to preset
+    }
+
+    private companion object {
+        /** A preset name has no tab, so the first tab ends it. */
+        const val GENRE_SEPARATOR = '\t'
     }
 }

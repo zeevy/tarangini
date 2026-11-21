@@ -26,16 +26,31 @@ import java.nio.ByteBuffer
 @OptIn(UnstableApi::class)
 internal class EqualizerProcessor : BaseAudioProcessor() {
     @Volatile
-    private var wanted = EqualizerTarget.FLAT
+    private var wanted = EqualizerTargets()
+
+    @Volatile
+    private var songGenres: List<String> = emptyList()
+    private var seen: Pair<EqualizerTargets, List<String>>? = null
     private var applied: EqualizerTarget? = null
     private var current: FilterChain? = null
     private var fading: FilterChain? = null
     private var fadeFrames = 1
     private var fadeLeft = 0
 
-    /** Asks for [target]. Safe from any thread; it is heard from the next buffer. */
-    fun setTarget(target: EqualizerTarget) {
-        wanted = target
+    /** Asks for [target] for every song. Safe from any thread; it is heard from the next buffer. */
+    fun setTarget(target: EqualizerTarget) = setTargets(EqualizerTargets(target))
+
+    /** Asks for [targets]. Safe from any thread; it is heard from the next buffer. */
+    fun setTargets(targets: EqualizerTargets) {
+        wanted = targets
+    }
+
+    /**
+     * The first sound of a song of [genreKeys] comes next. Called on the playback thread between
+     * the last buffer of one song and the first of the next.
+     */
+    fun songStarts(genreKeys: List<String>) {
+        songGenres = genreKeys
     }
 
     override fun onConfigure(inputAudioFormat: AudioFormat): AudioFormat {
@@ -94,9 +109,21 @@ internal class EqualizerProcessor : BaseAudioProcessor() {
      * a fade runs the newest target waits for its end, so a slider that moves fast makes no jump.
      */
     private fun follow(): FilterChain {
-        val target = wanted
         val now = current
-        if (now != null && (target == applied || fading != null)) return now
+        val asked = wanted to songGenres
+        return when {
+            now != null && (fading != null || asked == seen) -> now
+
+            else -> {
+                seen = asked
+                val target = asked.first.forSong(asked.second)
+                if (now != null && target == applied) now else chainFor(target, now)
+            }
+        }
+    }
+
+    /** A new chain for [target]; with a chain [now] that plays, the fade from it starts. */
+    private fun chainFor(target: EqualizerTarget, now: FilterChain?): FilterChain {
         val format = inputAudioFormat
         val next = FilterChain.of(target, format.sampleRate, format.channelCount)
         if (now != null) {
@@ -115,6 +142,7 @@ internal class EqualizerProcessor : BaseAudioProcessor() {
         current = null
         applied = null
         fading = null
+        seen = null
     }
 
     override fun onReset() {

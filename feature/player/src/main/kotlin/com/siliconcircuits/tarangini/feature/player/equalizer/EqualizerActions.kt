@@ -14,4 +14,6 @@ internal data class EqualizerActions(
     val onPickPreset: (EqualizerPreset) -> Unit = {},
     val onSetBand: (Int, Float) -> Unit = { _, _ -> },
     val onSetBassBoost: (Int) -> Unit = {},
+    val onSetGenresOn: (Boolean) -> Unit = {},
+    val onSetGenrePreset: (String, EqualizerPreset?) -> Unit = { _, _ -> },
 )

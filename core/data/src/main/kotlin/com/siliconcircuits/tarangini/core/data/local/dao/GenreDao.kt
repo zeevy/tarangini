@@ -53,7 +53,7 @@ internal abstract class GenreDao {
      */
     @Query(
         """
-            SELECT g.id AS id, g.name AS name, COUNT(s.id) AS song_count
+            SELECT g.id AS id, g.name AS name, g.name_key AS name_key, COUNT(s.id) AS song_count
             FROM genres g
             JOIN song_genres sg ON sg.genre_id = g.id
             JOIN songs s ON s.id = sg.song_id AND s.missing_since IS NULL
@@ -67,7 +67,7 @@ internal abstract class GenreDao {
     /** One genre with its count, or null when it is gone or has no song to play. */
     @Query(
         """
-            SELECT g.id AS id, g.name AS name, COUNT(s.id) AS song_count
+            SELECT g.id AS id, g.name AS name, g.name_key AS name_key, COUNT(s.id) AS song_count
             FROM genres g
             JOIN song_genres sg ON sg.genre_id = g.id
             JOIN songs s ON s.id = sg.song_id AND s.missing_since IS NULL
@@ -94,4 +94,15 @@ internal abstract class GenreDao {
 }
 
 /** A genre with the number of its songs that can be played. */
-internal data class GenreRow(val id: Long, val name: String, @ColumnInfo(name = "song_count") val songCount: Int)
+internal data class GenreRow(
+    val id: Long,
+    val name: String,
+    @ColumnInfo(name = "name_key") val nameKey: String,
+    @ColumnInfo(name = "song_count") val songCount: Int,
+)
+
+/** One genre of one song, by the key of the genre. */
+internal data class SongGenreKey(
+    @ColumnInfo(name = "song_id") val songId: Long,
+    @ColumnInfo(name = "name_key") val nameKey: String,
+)

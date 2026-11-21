@@ -45,6 +45,7 @@ import com.siliconcircuits.tarangini.core.playback.browse.browseLabels
 import com.siliconcircuits.tarangini.core.playback.card.NowPlayingFeed
 import com.siliconcircuits.tarangini.core.playback.di.PlaybackCoroutineScope
 import com.siliconcircuits.tarangini.core.playback.mapper.LibraryTexts
+import com.siliconcircuits.tarangini.core.playback.mapper.genreKeys
 import com.siliconcircuits.tarangini.core.playback.player.CountPlays
 import com.siliconcircuits.tarangini.core.playback.player.LastSound
 import com.siliconcircuits.tarangini.core.playback.player.ReportPlayerErrors
@@ -144,7 +145,7 @@ internal class PlaybackService : MediaLibraryService() {
         val app = EntryPointAccessors.fromApplication(applicationContext, Dependencies::class.java)
         val sound = LastSound()
         val sounds = EqualizerProcessor()
-        val player = createPlayer(this, sound, listOf(sounds), app::httpClient)
+        val player = createPlayer(this, sound, listOf(sounds), { sounds.songStarts(it.genreKeys()) }, app::httpClient)
         equalizer = followEqualizer(app.equalizerRepository(), app.equalizerBands(), sounds, app.playbackScope())
         player.addListener(StreamFailover(player, app.stationStreams(), app.playbackScope()))
         player.addListener(SkipSilentEnd(player, sound, app.playbackScope()))
@@ -153,7 +154,7 @@ internal class PlaybackService : MediaLibraryService() {
         player.addListener(ResetSpeed(player))
         feed = NowPlayingFeed(player, app.nowPlayingCards(), app.playbackScope()).also(player::addListener)
         sleep = app.sleepTimer().also { timer -> timer.attach(player) }
-        val texts = LibraryTexts(app.songLookup(), app.stationStreams())
+        val texts = LibraryTexts(app.songLookup(), app.stationStreams(), app.genreRepository())
         val resume = PlaybackResume(player, app.resumeStore(), app.playbackScope(), texts::addTo)
         scope = app.playbackScope()
         val items = BrowseItems(browseLabels(this))

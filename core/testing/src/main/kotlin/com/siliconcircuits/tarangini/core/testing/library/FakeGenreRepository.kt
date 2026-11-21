@@ -25,4 +25,8 @@ class FakeGenreRepository : GenreRepository {
 
     override suspend fun songsOfGenre(genreId: Long, page: Page): List<Song> =
         songsByGenre[genre(genreId)?.name].orEmpty().drop(page.offset).take(page.limit)
+
+    override suspend fun genreKeysOf(songIds: List<Long>): Map<Long, List<String>> = songIds.associateWith { id ->
+        songsByGenre.filter { (name, songs) -> name.isNotEmpty() && songs.any { it.id == id } }.keys.sorted()
+    }.filterValues { it.isNotEmpty() }
 }

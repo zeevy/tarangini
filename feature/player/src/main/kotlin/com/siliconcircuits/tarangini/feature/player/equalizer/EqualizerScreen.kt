@@ -54,7 +54,14 @@ internal fun EqualizerScreen(
     viewModel: EqualizerViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val actions = EqualizerActions(viewModel::setOn, viewModel::pickPreset, viewModel::setBand, viewModel::setBassBoost)
+    val actions = EqualizerActions(
+        onSetOn = viewModel::setOn,
+        onPickPreset = viewModel::pickPreset,
+        onSetBand = viewModel::setBand,
+        onSetBassBoost = viewModel::setBassBoost,
+        onSetGenresOn = viewModel::setGenresOn,
+        onSetGenrePreset = viewModel::setGenrePreset,
+    )
     EqualizerContent(state, actions, onBackClick, modifier)
 }
 
@@ -104,6 +111,7 @@ internal fun EqualizerContent(
                     range = 0f..EqualizerSettings.MAX_BASS_PERCENT.toFloat(),
                     isEnabled = state.settings.isOn,
                 ) { actions.onSetBassBoost(it.roundToInt()) }
+                GenrePresets(state.settings, state.genres, actions.onSetGenresOn, actions.onSetGenrePreset)
             }
         }
     }
@@ -112,16 +120,23 @@ internal fun EqualizerContent(
 /** The whole row turns the equalizer on and off, not only the switch. */
 @Composable
 private fun OnSwitch(isOn: Boolean, onSetOn: (Boolean) -> Unit) {
+    SwitchRow(stringResource(R.string.equalizer_on), isOn, isEnabled = true, onSetOn)
+}
+
+/** A switch with its text in front; the whole row is the touch target. */
+@Composable
+internal fun SwitchRow(text: String, isOn: Boolean, isEnabled: Boolean, onChange: (Boolean) -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth().toggleable(value = isOn, role = Role.Switch, onValueChange = onSetOn),
+        modifier = Modifier.fillMaxWidth().toggleable(
+            value = isOn,
+            enabled = isEnabled,
+            role = Role.Switch,
+            onValueChange = onChange,
+        ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            stringResource(R.string.equalizer_on),
-            modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.titleMedium,
-        )
-        Switch(checked = isOn, onCheckedChange = null)
+        Text(text, modifier = Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
+        Switch(checked = isOn, onCheckedChange = null, enabled = isEnabled)
     }
 }
 
@@ -173,7 +188,7 @@ private fun LabelledSlider(
 }
 
 @Composable
-private fun presetName(preset: EqualizerPreset): String = stringResource(
+internal fun presetName(preset: EqualizerPreset): String = stringResource(
     when (preset) {
         EqualizerPreset.FLAT -> R.string.equalizer_preset_flat
         EqualizerPreset.BASS -> R.string.equalizer_preset_bass

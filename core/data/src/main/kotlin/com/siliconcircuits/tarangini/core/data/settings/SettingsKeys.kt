@@ -48,4 +48,10 @@ internal object SettingsKeys {
 
     /** The bass boost in percent. */
     val EQUALIZER_BASS = intPreferencesKey("equalizer_bass")
+
+    /** True when a song plays with the preset of its genre. */
+    val EQUALIZER_GENRES_ON = booleanPreferencesKey("equalizer_genres_on")
+
+    /** The preset of each genre, each as the preset name, a tab and the genre key. */
+    val EQUALIZER_GENRE_PRESETS = stringSetPreferencesKey("equalizer_genre_presets")
 }
