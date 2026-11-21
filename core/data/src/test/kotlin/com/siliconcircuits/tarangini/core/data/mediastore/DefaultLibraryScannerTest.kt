@@ -20,6 +20,8 @@ import com.siliconcircuits.tarangini.core.domain.library.ScanFailure
 import com.siliconcircuits.tarangini.core.domain.library.ScanOutcome
 import com.siliconcircuits.tarangini.core.domain.library.ScanState
 import com.siliconcircuits.tarangini.core.domain.library.ScanSummary
+import com.siliconcircuits.tarangini.core.domain.premium.ReportedProblem
+import com.siliconcircuits.tarangini.core.testing.premium.FakeCrashReporter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -49,11 +51,13 @@ class DefaultLibraryScannerTest {
     @After
     fun closeDatabase() = database.close()
 
+    private val crashes = FakeCrashReporter()
+
     private fun TestScope.settings(): DataStore<Preferences> =
         PreferenceDataStoreFactory.create(scope = backgroundScope) { folder.newFile("settings.preferences_pb") }
 
     private fun TestScope.scanner(settings: DataStore<Preferences> = settings()) =
-        DefaultLibraryScanner(source, library, settings, { now }, StandardTestDispatcher(testScheduler))
+        DefaultLibraryScanner(source, library, settings, { now }, StandardTestDispatcher(testScheduler), crashes)
 
     private suspend fun DefaultLibraryScanner.summary(): ScanSummary = (scan() as ScanOutcome.Success).summary
 
@@ -246,6 +250,7 @@ class DefaultLibraryScannerTest {
         val outcome = scanner.scan()
 
         assertEquals(ScanOutcome.Failure(ScanFailure.STORAGE_UNAVAILABLE), outcome)
+        assertEquals(listOf(ReportedProblem.SCAN_FAILED to "STORAGE_UNAVAILABLE"), crashes.reports)
         assertEquals(1, titles().size)
     }
 
@@ -361,7 +366,8 @@ class DefaultLibraryScannerTest {
                 return emptyList()
             }
         }
-        val scanner = DefaultLibraryScanner(probe, library, settings(), { now }, StandardTestDispatcher(testScheduler))
+        val scanner =
+            DefaultLibraryScanner(probe, library, settings(), { now }, StandardTestDispatcher(testScheduler), crashes)
 
         val scans = List(2) { launch { scanner.scan() } }
         scans.forEach { it.join() }

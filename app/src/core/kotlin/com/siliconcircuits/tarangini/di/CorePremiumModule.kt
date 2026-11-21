@@ -6,6 +6,7 @@
 
 package com.siliconcircuits.tarangini.di
 
+import com.siliconcircuits.tarangini.core.domain.premium.CrashReporter
 import com.siliconcircuits.tarangini.core.domain.premium.PremiumGate
 import dagger.Binds
 import dagger.Module
@@ -18,4 +19,7 @@ import dagger.hilt.components.SingletonComponent
 internal abstract class CorePremiumModule {
     @Binds
     abstract fun bindPremiumGate(gate: NoPremiumGate): PremiumGate
+
+    @Binds
+    abstract fun bindCrashReporter(reporter: NoCrashReporter): CrashReporter
 }

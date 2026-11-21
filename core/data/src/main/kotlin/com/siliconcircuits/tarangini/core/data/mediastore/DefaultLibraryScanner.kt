@@ -19,6 +19,8 @@ import com.siliconcircuits.tarangini.core.domain.library.ScanFailure
 import com.siliconcircuits.tarangini.core.domain.library.ScanOutcome
 import com.siliconcircuits.tarangini.core.domain.library.ScanState
 import com.siliconcircuits.tarangini.core.domain.library.ScanSummary
+import com.siliconcircuits.tarangini.core.domain.premium.CrashReporter
+import com.siliconcircuits.tarangini.core.domain.premium.ReportedProblem
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
@@ -48,6 +50,7 @@ internal class DefaultLibraryScanner @Inject constructor(
     private val settings: DataStore<Preferences>,
     private val time: TimeSource,
     @IoDispatcher private val io: CoroutineDispatcher,
+    private val crashes: CrashReporter,
 ) : LibraryScanner {
     private val scanState = MutableStateFlow<ScanState>(ScanState.Idle)
     override val state: StateFlow<ScanState> = scanState.asStateFlow()
@@ -72,6 +75,8 @@ internal class DefaultLibraryScanner @Inject constructor(
         val files = withContext(io) { source.files() }
         // No answer is never read as "all files are gone".
         return if (files == null) {
+            // A missing permission is the choice of the person. This one is a fault of the phone.
+            crashes.report(ReportedProblem.SCAN_FAILED, ScanFailure.STORAGE_UNAVAILABLE.name)
             ScanOutcome.Failure(ScanFailure.STORAGE_UNAVAILABLE)
         } else {
             ScanOutcome.Success(bringInStep(files, filterFromSettings()))
