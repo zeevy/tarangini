@@ -114,8 +114,8 @@ class LibraryChangeNoticesTest {
     }
 
     @Test
-    fun `only the recent list is told after a play was counted`() = runTest {
-        val open = { listOf("songs", "recent") }
+    fun `only the recent and the most played list are told after a play was counted`() = runTest {
+        val open = { listOf("songs", "recent", "mostplayed") }
         val notices = LibraryChangeNotices(library, personal, backgroundScope, open, told::add)
         notices.start()
         pass()
@@ -123,6 +123,6 @@ class LibraryChangeNoticesTest {
         history.songPlayed(1)
         pass()
 
-        assertEquals(listOf("recent"), told)
+        assertEquals(listOf("recent", "mostplayed"), told)
     }
 }

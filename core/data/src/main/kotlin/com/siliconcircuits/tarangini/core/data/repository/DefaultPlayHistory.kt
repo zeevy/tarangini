@@ -23,6 +23,9 @@ internal class DefaultPlayHistory @Inject constructor(private val history: Histo
     override suspend fun recentSongs(limit: Int): List<Song> =
         history.recentSongs(limit.coerceIn(1, PlayHistory.MAX_RECENT)).map { it.toSong() }
 
+    override suspend fun mostPlayedSongs(limit: Int): List<Song> =
+        history.mostPlayedSongs(limit.coerceIn(1, PlayHistory.MAX_RECENT)).map { it.toSong() }
+
     override fun changes(): Flow<Unit> = history.songPlaysCounted().map { }
 
     override suspend fun clear() = history.clearSongPlays()

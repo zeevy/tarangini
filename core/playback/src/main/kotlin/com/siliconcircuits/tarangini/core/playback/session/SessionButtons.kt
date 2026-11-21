@@ -36,6 +36,7 @@ internal class SessionButtons(
     private val show: (List<CommandButton>) -> Unit,
 ) : Player.Listener {
     private var heart: List<CommandButton> = emptyList()
+    private var shown: List<CommandButton>? = null
 
     /** Takes the heart button, or an empty list when the item that plays has none. */
     fun heart(buttons: List<CommandButton>) {
@@ -49,22 +50,34 @@ internal class SessionButtons(
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) = refresh()
 
-    /** A press of a mode button. False when [action] is not one of them. */
-    fun press(action: String): Boolean = when (action) {
-        SHUFFLE.customAction -> {
+    /**
+     * A press of a mode button. False when [action] is not one of them. A press while nothing is
+     * loaded changes nothing: it comes from a button that is no longer shown.
+     */
+    fun press(action: String): Boolean = when {
+        action != SHUFFLE.customAction && action != REPEAT.customAction -> false
+
+        player.currentMediaItem == null -> true
+
+        action == SHUFFLE.customAction -> {
             player.shuffleModeEnabled = !player.shuffleModeEnabled
             true
         }
 
-        REPEAT.customAction -> {
+        else -> {
             player.repeatMode = repeatAfter(player.repeatMode)
             true
         }
-
-        else -> false
     }
 
-    private fun refresh() = show(if (player.currentMediaItem == null) emptyList() else heart + modes())
+    /** Hands on the buttons only when they changed: every call makes the notification again. */
+    private fun refresh() {
+        val now = if (player.currentMediaItem == null) emptyList() else heart + modes()
+        if (now != shown) {
+            shown = now
+            show(now)
+        }
+    }
 
     private fun modes(): List<CommandButton> {
         val shuffle = if (player.shuffleModeEnabled) {

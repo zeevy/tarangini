@@ -134,7 +134,9 @@ internal class PlaybackSessionCallback(
         browser: MediaSession.ControllerInfo,
         mediaId: String,
     ): ListenableFuture<LibraryResult<MediaItem>> = scope.fromLibrary {
-        MediaId.parse(mediaId)?.let { id -> car.tree.item(id) }?.let { item -> LibraryResult.ofItem(item, null) }
+        MediaId.parse(mediaId).takeIf { callers.letsBrowse(browser) }
+            ?.let { id -> car.tree.item(id) }
+            ?.let { item -> LibraryResult.ofItem(item, null) }
     }
 
     /**
@@ -151,7 +153,8 @@ internal class PlaybackSessionCallback(
     ): ListenableFuture<LibraryResult<Void>> {
         // The count is sent after this call has returned: Media3 listens for it only from then on.
         scope.launch {
-            val count = runCatching { car.search.results(query).size }.getOrDefault(0)
+            val found = if (callers.letsBrowse(browser)) runCatching { car.search.results(query).size } else null
+            val count = found?.getOrNull() ?: 0
             session.notifySearchResultChanged(browser, query, count, params)
         }
         return Futures.immediateFuture(LibraryResult.ofVoid(params))
@@ -167,7 +170,7 @@ internal class PlaybackSessionCallback(
     ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = scope.fromLibrary {
         // Without the audio permission nothing found could play, so the search says what to do, as a list does.
         car.problems.noAccess()?.let { refused -> refused.asResult(params) }
-            ?: car.search.results(query).asPage(page, pageSize, params)
+            ?: car.search.results(query).takeIf { callers.letsBrowse(browser) }?.asPage(page, pageSize, params)
     }
 
     /**

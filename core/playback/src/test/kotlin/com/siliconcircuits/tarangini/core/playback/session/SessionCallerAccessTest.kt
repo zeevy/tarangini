@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.os.Looper
 import android.os.Process
 import androidx.annotation.OptIn
+import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaLibraryInfo
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -114,8 +115,17 @@ class SessionCallerAccessTest {
     }
 
     @Test
+    fun `an app that only has the name of the media panel is refused`() {
+        val fake = caller("com.android.systemui", Process.myUid() + 4, isTrusted = false)
+
+        assertFalse(callback.onConnect(session, fake).isAccepted)
+    }
+
+    @Test
     fun `a press of shuffle or repeat reaches the player`() {
         val player = session.player
+        player.setMediaItem(MediaItem.fromUri("content://media/external/audio/media/1"))
+        shadowOf(Looper.getMainLooper()).idle()
         callback.buttons = SessionButtons(player, { it.name }) { }
 
         val shuffle = callback.onCustomCommand(session, theCar, SessionButtons.SHUFFLE, Bundle.EMPTY).get()
@@ -136,6 +146,8 @@ private val labels = BrowseLabels(
     recent = "Recent",
     recentIcon = null,
     playlists = "Playlists",
+    mostPlayed = "Most played",
+    mostPlayedIcon = null,
 )
 
 private fun caller(packageName: String, uid: Int, isTrusted: Boolean): MediaSession.ControllerInfo =

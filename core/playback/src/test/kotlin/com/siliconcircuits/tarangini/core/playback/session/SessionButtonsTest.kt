@@ -108,6 +108,28 @@ class SessionButtonsTest {
     }
 
     @Test
+    fun `a press while nothing is loaded changes no mode`() {
+        assertTrue(buttons.press(SessionButtons.SHUFFLE.customAction))
+        assertTrue(buttons.press(SessionButtons.REPEAT.customAction))
+        settle()
+
+        assertFalse(player.shuffleModeEnabled)
+        assertEquals(Player.REPEAT_MODE_OFF, player.repeatMode)
+    }
+
+    @Test
+    fun `the buttons come when an item is loaded, and are handed on only when they changed`() {
+        buttons.heart(listOf(heart))
+        load()
+        buttons.heart(listOf(heart))
+        player.repeatMode = Player.REPEAT_MODE_OFF
+        settle()
+
+        val handedOn = shown.map { list -> list.map { it.displayName.toString() } }
+        assertEquals(listOf(emptyList(), listOf("Heart", "SHUFFLE_ON", "REPEAT_ALL")), handedOn)
+    }
+
+    @Test
     fun `another command is not taken`() {
         assertFalse(buttons.press("com.example.OTHER"))
         assertFalse(buttons.press(FavouriteButton.COMMAND.customAction))

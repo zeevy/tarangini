@@ -41,6 +41,8 @@ class BrowseTreeTest {
             recent = "Recent",
             recentIcon = null,
             playlists = "Playlists",
+            mostPlayed = "Most played",
+            mostPlayedIcon = null,
         )
     private val tree =
         BrowseTree(library, FakeLibraryLetters(library), BrowseItems(labels), favourites, history, playlists)
@@ -111,7 +113,7 @@ class BrowseTreeTest {
 
     @Test
     fun `the top shows the three tabs, and the Library shows its five lists`() = runTest {
-        assertEquals(listOf("Library", "Favourites", "Recent"), under(MediaId.Root).titles())
+        assertEquals(listOf("Library", "Favourites", "Recent", "Most played"), under(MediaId.Root).titles())
         assertEquals(listOf("Songs", "Albums", "Artists", "Folders", "Playlists"), under(MediaId.Library).titles())
     }
 
@@ -182,15 +184,30 @@ class BrowseTreeTest {
     }
 
     @Test
-    fun `only the nodes that list albums ask the car for a grid`() = runTest {
-        val grid = MediaConstants.EXTRAS_VALUE_CONTENT_STYLE_GRID_ITEM
-        fun MediaItem?.style() = this?.mediaMetadata?.extras?.getInt(MediaConstants.EXTRAS_KEY_CONTENT_STYLE_BROWSABLE)
+    fun `the Most played tab lists the songs by their plays, and a tap plays them from that song on`() = runTest {
+        library.songs = listOf(testSong(1), testSong(2), testSong(3))
+        history.known = library.songs
+        listOf(1L, 2L, 2L, 3L, 3L, 3L).forEach { history.songPlayed(it) }
 
-        assertEquals(grid, tree.item(MediaId.Section(LibraryList.ALBUMS)).style())
-        assertEquals(grid, tree.item(MediaId.Letter(LibraryList.ALBUMS, 'k'.code)).style())
-        assertEquals(null, tree.item(MediaId.Section(LibraryList.SONGS)).style())
-        assertEquals(null, tree.item(MediaId.Letter(LibraryList.ARTISTS, 'k'.code)).style())
-        assertEquals(null, tree.item(MediaId.Playlists).style())
+        val rows = under(MediaId.MostPlayed)
+        val queue = tree.queue(MediaId.SongIn(2, MediaId.MostPlayed))
+
+        assertEquals(listOf(3L, 2L, 1L).map { MediaId.SongIn(it, MediaId.MostPlayed) }, rows.ids())
+        assertEquals(listOf(3L, 2L, 1L) to 1, queue?.songs?.map { it.id } to queue?.index)
+    }
+
+    @Test
+    fun `an album asks the car for a tile with its cover, and no other row does`() = runTest {
+        library.albums = listOf(testAlbum(1, "Kind of Blue", artist = "Miles"))
+        library.artists = listOf(testArtist(1, "Miles"))
+        val grid = MediaConstants.EXTRAS_VALUE_CONTENT_STYLE_GRID_ITEM
+        val key = MediaConstants.EXTRAS_KEY_CONTENT_STYLE_SINGLE_ITEM
+        fun MediaItem?.style() = this?.mediaMetadata?.extras?.getInt(key)
+
+        assertEquals(grid, under(MediaId.Section(LibraryList.ALBUMS)).single().style())
+        assertEquals(null, under(MediaId.Section(LibraryList.ARTISTS)).single().style())
+        assertEquals(null, tree.item(MediaId.Section(LibraryList.ALBUMS)).style())
+        assertEquals(null, tree.item(MediaId.Letter(LibraryList.ALBUMS, 'k'.code)).style())
     }
 
     @Test

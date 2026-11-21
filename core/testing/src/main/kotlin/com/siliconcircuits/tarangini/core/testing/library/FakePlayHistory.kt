@@ -27,6 +27,19 @@ class FakePlayHistory : PlayHistory {
     override suspend fun recentSongs(limit: Int): List<Song> =
         played.value.reversed().distinct().mapNotNull { id -> known.firstOrNull { it.id == id } }.take(limit)
 
+    override suspend fun mostPlayedSongs(limit: Int): List<Song> {
+        val plays = played.value
+        // The most plays first; songs with the same count in the order they were heard last.
+        return plays.distinct()
+            .sortedWith(
+                compareByDescending<Long> { id ->
+                    plays.count { it == id }
+                }.thenByDescending(plays::lastIndexOf),
+            )
+            .mapNotNull { id -> known.firstOrNull { it.id == id } }
+            .take(limit)
+    }
+
     override fun changes(): Flow<Unit> = played.map { }
 
     override suspend fun clear() {

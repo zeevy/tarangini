@@ -80,6 +80,7 @@ private fun HomeSections(out: HomeLinksOut, modifier: Modifier = Modifier, viewM
     HomeContent(
         state = state,
         songActions = viewModel.songActions,
+        mostPlayedActions = viewModel.mostPlayedActions,
         links = HomeLinks(viewModel::resume, out.onOpenLibrary, out.onOpenPlaylist),
         modifier = modifier,
     )

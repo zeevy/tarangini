@@ -38,6 +38,9 @@ internal sealed interface MediaId {
     /** The Recent tab: the songs heard last, the newest first. */
     data object Recent : MediaId
 
+    /** The Most played tab: the songs heard most often, the one with the most plays first. */
+    data object MostPlayed : MediaId
+
     /**
      * The rows of a long list that start with one letter.
      *
@@ -70,7 +73,7 @@ internal sealed interface MediaId {
     /** True for a node whose children are songs, so a song can name it as its list. */
     val holdsSongs: Boolean
         get() = when (this) {
-            is Album, is Artist, is Folder, is Playlist, Favourites, Recent -> true
+            is Album, is Artist, is Folder, is Playlist, Favourites, Recent, MostPlayed -> true
             is Section -> list == LibraryList.SONGS
             is Letter -> list == LibraryList.SONGS
             Root, Library, Folders, Playlists, is SongIn -> false
@@ -78,12 +81,7 @@ internal sealed interface MediaId {
 
     /** The text form of the id, for example `album.12` or `song.345@album.12`. */
     fun encode(): String = when (this) {
-        Root -> ROOT
-        Library -> LIBRARY
-        Folders -> FOLDERS
-        Favourites -> FAVOURITES
-        Recent -> RECENT
-        Playlists -> PLAYLISTS
+        Root, Library, Folders, Favourites, Recent, MostPlayed, Playlists -> FIXED.getValue(this)
         is Playlist -> "$PLAYLIST$PART$id"
         is Section -> list.word
         is Letter -> "${list.word}$PART$letter"
@@ -102,6 +100,7 @@ internal sealed interface MediaId {
         private const val FOLDERS = "folders"
         private const val FAVOURITES = "favourites"
         private const val RECENT = "recent"
+        private const val MOST_PLAYED = "mostplayed"
         private const val PLAYLISTS = "playlists"
         private const val PLAYLIST = "playlist"
         private const val ALBUM = "album"
@@ -110,6 +109,20 @@ internal sealed interface MediaId {
         private const val SONG = "song"
         private const val PART = "."
         private const val IN = "@"
+
+        // The nodes that are a word alone. Made at the first use: the nodes do not exist
+        // yet while this object is made.
+        private val FIXED: Map<MediaId, String> by lazy {
+            mapOf(
+                Root to ROOT,
+                Library to LIBRARY,
+                Folders to FOLDERS,
+                Favourites to FAVOURITES,
+                Recent to RECENT,
+                MostPlayed to MOST_PLAYED,
+                Playlists to PLAYLISTS,
+            )
+        }
 
         // The longest id this app makes has about 50 characters.
         private const val MAX_LENGTH = 64
@@ -144,15 +157,8 @@ internal sealed interface MediaId {
             }
         }
 
-        private fun fixed(word: String): MediaId? = when (word) {
-            ROOT -> Root
-            LIBRARY -> Library
-            FOLDERS -> Folders
-            FAVOURITES -> Favourites
-            RECENT -> Recent
-            PLAYLISTS -> Playlists
-            else -> LibraryList.entries.firstOrNull { it.word == word }?.let(::Section)
-        }
+        private fun fixed(word: String): MediaId? = FIXED.entries.firstOrNull { it.value == word }?.key
+            ?: LibraryList.entries.firstOrNull { it.word == word }?.let(::Section)
 
         private fun numbered(word: String, number: Long): MediaId? = when (word) {
             ALBUM -> Album(number)
