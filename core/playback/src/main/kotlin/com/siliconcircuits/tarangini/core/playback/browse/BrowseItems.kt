@@ -9,8 +9,12 @@ package com.siliconcircuits.tarangini.core.playback.browse
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
+import android.os.Bundle
+import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.MediaConstants
 import com.siliconcircuits.tarangini.core.domain.model.Album
 import com.siliconcircuits.tarangini.core.domain.model.Artist
 import com.siliconcircuits.tarangini.core.domain.model.Folder
@@ -126,6 +130,17 @@ internal class BrowseItems(private val labels: BrowseLabels) {
         .build()
 }
 
+/** True for a node whose rows are albums: the Albums list and its letters. */
+private fun MediaId.showsAlbums(): Boolean =
+    (this is MediaId.Section && list == LibraryList.ALBUMS) || (this is MediaId.Letter && list == LibraryList.ALBUMS)
+
+/** Asks the car to show the rows under a node as a grid of covers. A car is free to show a list all the same. */
+// The names of the content style hints are API of Media3 that may still change.
+@OptIn(UnstableApi::class)
+private fun albumGrid() = Bundle().apply {
+    putInt(MediaConstants.EXTRAS_KEY_CONTENT_STYLE_BROWSABLE, MediaConstants.EXTRAS_VALUE_CONTENT_STYLE_GRID_ITEM)
+}
+
 /** A node that opens a list. */
 private fun node(id: MediaId, title: String?, type: Int, subtitle: String? = null, icon: Uri? = null): MediaItem =
     MediaItem.Builder()
@@ -138,6 +153,7 @@ private fun node(id: MediaId, title: String?, type: Int, subtitle: String? = nul
                 .setMediaType(type)
                 .setIsBrowsable(true)
                 .setIsPlayable(false)
+                .setExtras(if (id.showsAlbums()) albumGrid() else null)
                 .build(),
         )
         .build()

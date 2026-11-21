@@ -7,6 +7,7 @@
 package com.siliconcircuits.tarangini.core.playback.browse
 
 import androidx.media3.common.MediaItem
+import androidx.media3.session.MediaConstants
 import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryLetters
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
@@ -178,6 +179,18 @@ class BrowseTreeTest {
         assertEquals(listOf("Unknown artist", "Miles"), artists.titles())
         assertEquals(listOf(MediaId.SongIn(1, MediaId.Album(1))), under(MediaId.Album(1)).ids())
         assertEquals(listOf(MediaId.SongIn(2, MediaId.Artist(2))), under(MediaId.Artist(2)).ids())
+    }
+
+    @Test
+    fun `only the nodes that list albums ask the car for a grid`() = runTest {
+        val grid = MediaConstants.EXTRAS_VALUE_CONTENT_STYLE_GRID_ITEM
+        fun MediaItem?.style() = this?.mediaMetadata?.extras?.getInt(MediaConstants.EXTRAS_KEY_CONTENT_STYLE_BROWSABLE)
+
+        assertEquals(grid, tree.item(MediaId.Section(LibraryList.ALBUMS)).style())
+        assertEquals(grid, tree.item(MediaId.Letter(LibraryList.ALBUMS, 'k'.code)).style())
+        assertEquals(null, tree.item(MediaId.Section(LibraryList.SONGS)).style())
+        assertEquals(null, tree.item(MediaId.Letter(LibraryList.ARTISTS, 'k'.code)).style())
+        assertEquals(null, tree.item(MediaId.Playlists).style())
     }
 
     @Test

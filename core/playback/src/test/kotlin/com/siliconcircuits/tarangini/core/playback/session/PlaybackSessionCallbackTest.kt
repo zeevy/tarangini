@@ -143,10 +143,8 @@ class PlaybackSessionCallbackTest {
         ).forEach { command -> assertTrue(result.availablePlayerCommands.contains(command)) }
         assertFalse(result.availablePlayerCommands.contains(Player.COMMAND_SET_MEDIA_ITEM))
         assertFalse(result.availablePlayerCommands.contains(Player.COMMAND_CHANGE_MEDIA_ITEMS))
-        // It cannot read the library either: the lists are for this app and the car.
+        // It cannot read or search the library either: the lists are for this app and the car.
         listOf(
-            SessionCommand.COMMAND_CODE_LIBRARY_GET_LIBRARY_ROOT,
-            SessionCommand.COMMAND_CODE_LIBRARY_GET_CHILDREN,
             SessionCommand.COMMAND_CODE_LIBRARY_GET_ITEM,
             SessionCommand.COMMAND_CODE_LIBRARY_SUBSCRIBE,
             SessionCommand.COMMAND_CODE_LIBRARY_SEARCH,
