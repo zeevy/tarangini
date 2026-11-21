@@ -13,7 +13,7 @@ People fall asleep to music and long recordings, and listen to talks faster or s
 |---|---|---|
 | `SleepTimer` in `core:domain` has one implementation, `DefaultSleepTimer`, a singleton that the playback service hands its player while the service lives | Commands of our own through the media session, with the state in the session extras | The screens and the service are one process. A direct object is less code, has no caller to check, and the timer still lives as long as the player does |
 | "At the end of the song" asks the player itself to pause at the end of the item | Pause when the next item starts | Nothing of the next song is heard |
-| A timed stop gets quieter over the last 5 seconds, and the volume is back to full after the pause | A hard stop | A sound that ends at once wakes a person who is nearly asleep |
+| A timed stop gets quieter over the last 5 seconds down to silence, and the volume is back to full after the pause | A hard stop | A sound that ends at once wakes a person who is nearly asleep |
 | The times are 15, 30, 45 and 60 minutes. A new timer takes the place of the one before | A field to type any time | Four taps cover the use. The interface takes any time up to 12 hours, so another choice needs no new code below the screen |
 | A timer ends with the playback service | Keep it for the next start | With no player there is nothing to stop |
 | The speed is the playback speed of Media3 with the pitch left at 1, set through `PlaybackController.setSpeed` and held between 0.5 and 2 | An audio processor of our own | Media3 already changes the speed with the pitch kept |
@@ -24,5 +24,7 @@ People fall asleep to music and long recordings, and listen to talks faster or s
 ## What follows
 
 - The car and the notification have no control for the speed or the timer. A speed that is set applies to them too, since there is one player.
+- "At the end of the song" means the end the player reaches by playing. When the person skips, or the app skips a file that is gone or has less sound than it states, the choice holds for the song that plays next.
+- The speed also goes back to 1x when the song that plays is removed from the queue: for the player that is a new first item.
 - The time left counts down once a second by the timer of the app. It is not an alarm: Android may delay it by a few seconds, which does not matter here.
 - The checks that need a real phone are rows 120 and 121 of `docs/MANUAL-TESTS.md`.

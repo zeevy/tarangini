@@ -57,9 +57,14 @@ class DefaultSleepTimerTest {
         advanceTimeBy(57_000)
         runCurrent()
         val fading = player.volume
-        advanceTimeBy(3_000)
+        advanceTimeBy(2_000)
+        runCurrent()
+        val silent = player.volume
+        advanceTimeBy(1_000)
         runCurrent()
 
+        // The last second before the pause is silent.
+        assertEquals(0f, silent)
         assertTrue(fading > 0f && fading < 1f)
         assertTrue(player.playWhenReady.not())
         assertEquals(1f, player.volume)
@@ -95,6 +100,17 @@ class DefaultSleepTimerTest {
         assertEquals(true to SleepState.EndOfTrack, asked)
         assertFalse(player.pauseAtEndOfMediaItems)
         assertEquals(SleepState.Off, timer.state.value)
+    }
+
+    @Test
+    fun `the end of the track picked before the service starts holds when its player comes`() = runTest {
+        val timer = DefaultSleepTimer(backgroundScope)
+
+        timer.stopAtEndOfTrack()
+        timer.attach(player)
+
+        assertTrue(player.pauseAtEndOfMediaItems)
+        assertEquals(SleepState.EndOfTrack, timer.state.value)
     }
 
     @Test

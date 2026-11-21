@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -133,7 +134,8 @@ private fun ChoiceDialog(title: String, choices: List<Choice>, onDismiss: () -> 
         onDismissRequest = onDismiss,
         title = { Text(title) },
         text = {
-            Column {
+            // One group, so a screen reader says which of how many lines it is on.
+            Column(modifier = Modifier.selectableGroup()) {
                 choices.forEach { choice ->
                     Text(
                         text = choice.label,

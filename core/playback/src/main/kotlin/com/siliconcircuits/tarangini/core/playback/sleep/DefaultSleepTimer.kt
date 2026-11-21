@@ -46,6 +46,8 @@ internal class DefaultSleepTimer @Inject constructor(@param:PlaybackCoroutineSco
     fun attach(player: ExoPlayer) {
         this.player = player
         player.addListener(this)
+        // "At the end of the song" may have been picked before the service was there.
+        player.pauseAtEndOfMediaItems = current.value == SleepState.EndOfTrack
     }
 
     /** The service ends. A timer that was set ends with it: there is nothing left to stop. */
@@ -61,8 +63,8 @@ internal class DefaultSleepTimer @Inject constructor(@param:PlaybackCoroutineSco
             var leftMs = minutes.coerceIn(1, SleepTimer.MAX_MINUTES) * MS_PER_MINUTE
             while (leftMs > 0) {
                 current.value = SleepState.Timed(leftMs)
-                // The last seconds get quieter step by step, so the sound does not stop at once.
-                if (leftMs <= FADE_MS) player?.volume = leftMs.toFloat() / FADE_MS
+                // The last seconds get quieter step by step down to silence, so the sound does not stop at once.
+                if (leftMs <= FADE_MS) player?.volume = (leftMs - TICK_MS).toFloat() / FADE_MS
                 delay(TICK_MS)
                 leftMs -= TICK_MS
             }

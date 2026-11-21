@@ -90,7 +90,10 @@ internal class SessionPlaybackController @Inject constructor(
 
     // Media3 keeps the pitch when only the speed is set.
     override fun setSpeed(speed: Float) = send { player ->
-        player.setPlaybackSpeed(speed.coerceIn(PlaybackController.MIN_SPEED, PlaybackController.MAX_SPEED))
+        // A value that is no number has no place between the limits, and the player would refuse it.
+        if (!speed.isNaN()) {
+            player.setPlaybackSpeed(speed.coerceIn(PlaybackController.MIN_SPEED, PlaybackController.MAX_SPEED))
+        }
     }
 
     private fun send(command: (Player) -> Unit) {
