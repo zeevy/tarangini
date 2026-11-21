@@ -77,6 +77,8 @@ enum class EqualizerPreset(private val curve: List<Float>) {
  * @property bassBoost the bass boost in percent, from 0 to 100
  * @property genresOn true when a song of a genre in [genrePresets] plays with the preset of its genre
  * @property genrePresets the preset for a genre, by [com.siliconcircuits.tarangini.core.domain.model.Genre.key]
+ * @property levelling how songs with ReplayGain tags are brought to a similar loudness; this works
+ *   also while the equalizer is off
  */
 data class EqualizerSettings(
     val isOn: Boolean = false,
@@ -85,6 +87,7 @@ data class EqualizerSettings(
     val bassBoost: Int = 0,
     val genresOn: Boolean = false,
     val genrePresets: Map<String, EqualizerPreset> = emptyMap(),
+    val levelling: VolumeLevelling = VolumeLevelling.OFF,
 ) {
     /**
      * The gain in dB of each band at [bandsHz], each within [MAX_BAND_GAIN_DB]. Own gains that were

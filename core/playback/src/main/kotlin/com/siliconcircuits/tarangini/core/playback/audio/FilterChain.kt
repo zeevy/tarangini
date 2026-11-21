@@ -6,19 +6,23 @@
 
 package com.siliconcircuits.tarangini.core.playback.audio
 
+import com.siliconcircuits.tarangini.core.domain.audio.ReplayGain
+import com.siliconcircuits.tarangini.core.domain.audio.VolumeLevelling
 import kotlin.math.exp
 import kotlin.math.ln
 import kotlin.math.min
 import kotlin.math.pow
 
 /**
- * What the equalizer is asked to do: a gain for each band and a bass boost. Flat leaves the sound
- * as it is.
+ * What the equalizer is asked to do: a gain for each band, a bass boost and the volume level of the
+ * song ([levelDb], from its ReplayGain tags; it is already kept below clipping). Flat leaves the
+ * sound as it is.
  */
 internal data class EqualizerTarget(
     val bandsHz: List<Float> = emptyList(),
     val gainsDb: List<Float> = emptyList(),
     val bassDb: Float = 0f,
+    val levelDb: Float = 0f,
 ) {
     companion object {
         val FLAT = EqualizerTarget()
@@ -32,9 +36,14 @@ internal data class EqualizerTarget(
 internal data class EqualizerTargets(
     val main: EqualizerTarget = EqualizerTarget.FLAT,
     val byGenre: Map<String, EqualizerTarget> = emptyMap(),
+    val levelling: VolumeLevelling = VolumeLevelling.OFF,
 ) {
-    /** The target of a song of [genreKeys]. */
-    fun forSong(genreKeys: List<String>): EqualizerTarget = genreKeys.firstNotNullOfOrNull(byGenre::get) ?: main
+    /** The target of a song of [genreKeys] whose file has the tags [gain]. */
+    fun forSong(genreKeys: List<String>, gain: ReplayGain? = null): EqualizerTarget {
+        val target = genreKeys.firstNotNullOfOrNull(byGenre::get) ?: main
+        val level = gain?.levelDb(levelling) ?: 0f
+        return if (level == 0f) target else target.copy(levelDb = level)
+    }
 }
 
 /**
@@ -113,7 +122,8 @@ internal class FilterChain private constructor(
                 }
             }
             val filters = (bands + Biquad.lowShelf(sampleRate, BASS_HZ, target.bassDb.toDouble())).toTypedArray()
-            return FilterChain(filters, preGainFor(filters, sampleRate, target.bandsHz), channels)
+            val level = 10.0.pow(target.levelDb.toDouble() / AMPLITUDE_DB)
+            return FilterChain(filters, preGainFor(filters, sampleRate, target.bandsHz) * level, channels)
         }
 
         /** The gain that turns the loudest tone of the chain down to its first level. */

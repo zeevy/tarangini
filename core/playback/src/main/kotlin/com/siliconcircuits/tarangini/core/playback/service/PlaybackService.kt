@@ -145,7 +145,10 @@ internal class PlaybackService : MediaLibraryService() {
         val app = EntryPointAccessors.fromApplication(applicationContext, Dependencies::class.java)
         val sound = LastSound()
         val sounds = EqualizerProcessor()
-        val player = createPlayer(this, sound, listOf(sounds), { sounds.songStarts(it.genreKeys()) }, app::httpClient)
+        val player =
+            createPlayer(this, sound, listOf(sounds), { item, gain ->
+                sounds.songStarts(item.genreKeys(), gain)
+            }, app::httpClient)
         equalizer = followEqualizer(app.equalizerRepository(), app.equalizerBands(), sounds, app.playbackScope())
         player.addListener(StreamFailover(player, app.stationStreams(), app.playbackScope()))
         player.addListener(SkipSilentEnd(player, sound, app.playbackScope()))

@@ -33,7 +33,7 @@ internal fun targetsOf(settings: EqualizerSettings, bandsHz: List<Float>): Equal
     } else {
         emptyMap()
     }
-    return EqualizerTargets(targetOf(settings, bandsHz), byGenre)
+    return EqualizerTargets(targetOf(settings, bandsHz), byGenre, settings.levelling)
 }
 
 /** What the processor does for [settings]: nothing while the equalizer is off. */

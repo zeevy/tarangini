@@ -204,6 +204,9 @@ Use wired headphones or a Bluetooth speaker, and a song with steady bass and voi
 | 140 | Turn on "Preset per genre", give one genre the preset Bass and leave another on "Same as the main setting" (main preset Vocal). Make a queue that mixes songs of both genres, also two tracks of a gapless test album of different genres one after the other | Each song starts with the preset of its genre from its first second. No click and no gap at the change, also between the gapless tracks |
 | 141 | With the settings of row 140, close the app, open it again and rescan the library from Settings | The genres keep their presets. A song with no genre tag plays with the main setting |
 | 142 | With the settings of row 140, play the mixed queue in the car | The car plays each song with the preset of its genre, the same as the phone |
+| 143 | Tag two albums of very different loudness with ReplayGain (for example with foobar2000 or Mp3tag), set "Volume levelling" to "Same loudness for every song" and play songs of both in one queue, with the equalizer off and then on | The songs sound about as loud as each other, with no click or gap at the start of a song and no distortion in loud parts |
+| 144 | With the albums of row 143, switch to "Same loudness for every album" and play an album from start to end | The steps in loudness between the songs of the album stay as they are; the album as a whole is about as loud as the other one |
+| 145 | With levelling on, play a song with no ReplayGain tags and a radio station | Both play at their own level, as with levelling off |
 
 ## Results
 

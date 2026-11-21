@@ -7,6 +7,7 @@
 package com.siliconcircuits.tarangini.feature.player.equalizer
 
 import com.siliconcircuits.tarangini.core.domain.audio.EqualizerPreset
+import com.siliconcircuits.tarangini.core.domain.audio.VolumeLevelling
 
 /** What the parts of the equalizer screen do. */
 internal data class EqualizerActions(
@@ -16,4 +17,5 @@ internal data class EqualizerActions(
     val onSetBassBoost: (Int) -> Unit = {},
     val onSetGenresOn: (Boolean) -> Unit = {},
     val onSetGenrePreset: (String, EqualizerPreset?) -> Unit = { _, _ -> },
+    val onSetLevelling: (VolumeLevelling) -> Unit = {},
 )

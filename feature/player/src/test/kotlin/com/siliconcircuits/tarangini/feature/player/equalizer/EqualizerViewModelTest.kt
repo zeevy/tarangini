@@ -9,6 +9,7 @@ package com.siliconcircuits.tarangini.feature.player.equalizer
 import com.siliconcircuits.tarangini.core.domain.audio.EqualizerPreset
 import com.siliconcircuits.tarangini.core.domain.audio.EqualizerSettings
 import com.siliconcircuits.tarangini.core.domain.audio.FIVE_BANDS_HZ
+import com.siliconcircuits.tarangini.core.domain.audio.VolumeLevelling
 import com.siliconcircuits.tarangini.core.domain.premium.EqualizerBands
 import com.siliconcircuits.tarangini.core.testing.library.FakeGenreRepository
 import com.siliconcircuits.tarangini.core.testing.library.testSong
@@ -91,6 +92,18 @@ class EqualizerViewModelTest {
 
         assertEquals(true, saved.saved.value.genresOn)
         assertEquals(mapOf("Rock" to EqualizerPreset.BASS), saved.saved.value.genrePresets)
+    }
+
+    @Test
+    fun `the volume levelling is saved`() = runTest(mainDispatcher.dispatcher) {
+        backgroundScope.launch { viewModel.state.collect() }
+        runCurrent()
+
+        viewModel.setLevelling(VolumeLevelling.ALBUM)
+        runCurrent()
+
+        assertEquals(VolumeLevelling.ALBUM, saved.saved.value.levelling)
+        assertEquals(VolumeLevelling.ALBUM, viewModel.state.value!!.settings.levelling)
     }
 
     @Test

@@ -12,6 +12,8 @@ import androidx.media3.common.audio.AudioProcessor.StreamMetadata
 import com.siliconcircuits.tarangini.core.domain.audio.EqualizerPreset
 import com.siliconcircuits.tarangini.core.domain.audio.EqualizerSettings
 import com.siliconcircuits.tarangini.core.domain.audio.FIVE_BANDS_HZ
+import com.siliconcircuits.tarangini.core.domain.audio.ReplayGain
+import com.siliconcircuits.tarangini.core.domain.audio.VolumeLevelling
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.PI
@@ -215,6 +217,75 @@ class EqualizerProcessorTest {
 
         // On a laptop this is about 1 % of the time of the sound; a phone is a few times slower.
         assertTrue("$millis ms for $SECONDS_MEASURED s of sound", millis < SECONDS_MEASURED * 1_000 / 10)
+    }
+
+    @Test
+    fun `two songs of different loudness play at a similar level`() {
+        processor.setTargets(targetsOf(EqualizerSettings(levelling = VolumeLevelling.TRACK), FIVE_BANDS_HZ))
+        val loud = tone(1_000.0, 0.5, seconds = 0.3)
+        val soft = tone(1_000.0, 0.25, seconds = 0.3)
+
+        processor.songStarts(emptyList(), ReplayGain(trackGainDb = -6.02f, trackPeak = 0.5f))
+        val first = run(loud)
+        processor.songStarts(emptyList(), ReplayGain(trackGainDb = 0f, trackPeak = 0.25f))
+        val second = run(soft)
+
+        assertEquals(level(soft), level(first), 0.1)
+        assertEquals(level(soft), level(second), 0.1)
+    }
+
+    @Test
+    fun `a lift does not clip`() {
+        processor.setTargets(targetsOf(EqualizerSettings(levelling = VolumeLevelling.TRACK), FIVE_BANDS_HZ))
+        val input = tone(1_000.0, 0.5, seconds = 0.3)
+
+        // The tag asks for 9 dB, but the peak of 0.5 leaves room for 6 dB only.
+        processor.songStarts(emptyList(), ReplayGain(trackGainDb = 9f, trackPeak = 0.5f))
+        val output = run(input)
+
+        assertEquals(level(input) + 6.02, level(output), 0.1)
+        assertTrue(output.all { it > Short.MIN_VALUE && it < Short.MAX_VALUE })
+    }
+
+    @Test
+    fun `with levelling off, and for a song with no tags, the sound stays as it is`() {
+        val input = tone(1_000.0, 0.5, seconds = 0.1)
+        processor.setTargets(targetsOf(EqualizerSettings(), FIVE_BANDS_HZ))
+        processor.songStarts(emptyList(), ReplayGain(trackGainDb = -6f, trackPeak = 0.5f))
+        assertArrayEquals(input, run(input))
+
+        processor.setTargets(targetsOf(EqualizerSettings(levelling = VolumeLevelling.ALBUM), FIVE_BANDS_HZ))
+        processor.songStarts(emptyList(), null)
+        assertArrayEquals(input, run(input))
+    }
+
+    @Test
+    fun `tags that come after the start of a song still level it, with a fade`() {
+        processor.setTargets(targetsOf(EqualizerSettings(levelling = VolumeLevelling.TRACK), FIVE_BANDS_HZ))
+        val input = tone(1_000.0, 0.5, seconds = 0.3)
+
+        processor.songStarts(listOf("rock"), null)
+        val before = run(input)
+        processor.songStarts(listOf("rock"), ReplayGain(trackGainDb = -6.02f, trackPeak = 0.5f))
+        val after = run(input)
+
+        assertArrayEquals(input, before)
+        assertEquals(level(input) - 6.02, level(after), 0.1)
+    }
+
+    @Test
+    fun `the level of a song goes with the preset of its genre and the equalizer`() {
+        val settings = EqualizerSettings(
+            isOn = true,
+            genresOn = true,
+            genrePresets = mapOf("rock" to EqualizerPreset.BASS),
+            levelling = VolumeLevelling.ALBUM,
+        )
+        val targets = targetsOf(settings, FIVE_BANDS_HZ)
+        val gain = ReplayGain(trackGainDb = -3f, albumGainDb = -5f)
+
+        assertEquals(targets.byGenre.getValue("rock").copy(levelDb = -5f), targets.forSong(listOf("rock"), gain))
+        assertEquals(targets.main.copy(levelDb = -5f), targets.forSong(listOf("folk"), gain))
     }
 
     /** Stereo 16 bit samples of a sine at [hz], both channels the same. */
