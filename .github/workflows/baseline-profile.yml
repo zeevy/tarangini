@@ -65,6 +65,9 @@ jobs:
       - name: Put songs on the emulator
         run: |
           adb="$ANDROID_HOME/platform-tools/adb"
+          # Shared storage is ready a little after the boot is complete.
+          timeout 120 bash -c "until \"$adb\" shell touch /sdcard/Music/.ready 2> /dev/null; do sleep 3; done"
+          "$adb" shell rm /sdcard/Music/.ready
           "$adb" shell mkdir -p /sdcard/Music/Profile
           for n in $(seq 1 60); do
             "$adb" push app/src/androidTest/assets/e2e/song-$(( (n % 3) + 1 )).mp3 "/sdcard/Music/Profile/Profile song $n.mp3" > /dev/null
