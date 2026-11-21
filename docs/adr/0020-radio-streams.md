@@ -40,3 +40,4 @@ A station is a name and an address that the user types in. The address can be an
 - Only the first usable entry of a playlist file is used. A change to the next entry when the first fails belongs to the work on weak networks.
 - The song title a station sends (ICY) is not read yet.
 - The tests open each kind of station against a local server and check which part of the player reads it. Sound from a real station, and the change between a song and a station, are checked on a phone once a station can be added in the app (`docs/MANUAL-TESTS.md`).
+- Since 21 Nov 2026 plain `http` is off in the network security settings, because radio is out of the first release (see ADR 0039). The decision above holds again when radio comes back.
