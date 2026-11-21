@@ -40,7 +40,11 @@ class TaranginiBuildTest {
 
     @Test
     fun `a version name of another form fails the build`() {
-        listOf("1.0", "1.0.0.0", "1.0.x", "1.0.0-beta", "1.1000.0", "-1.0.0", "", "+1.0.0", "01.0.0", " 1.0.0", "1.-0.0", "2001.0.0").forEach { name ->
+        val refused = listOf(
+            "1.0", "1.0.0.0", "1.0.x", "1.0.0-beta", "1.1000.0", "-1.0.0", "",
+            "+1.0.0", "01.0.0", " 1.0.0", "1.-0.0", "2001.0.0",
+        )
+        refused.forEach { name ->
             assertThrows(name, IllegalArgumentException::class.java) { TaranginiBuild.versionCodeOf(name) }
         }
     }
