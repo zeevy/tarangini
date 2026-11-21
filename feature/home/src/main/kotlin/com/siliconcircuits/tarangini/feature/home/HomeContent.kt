@@ -36,6 +36,7 @@ import com.siliconcircuits.tarangini.core.ui.component.MessageState
 import com.siliconcircuits.tarangini.core.ui.component.PlaylistRow
 import com.siliconcircuits.tarangini.core.ui.component.SongRow
 import com.siliconcircuits.tarangini.core.ui.component.SongRowActions
+import com.siliconcircuits.tarangini.core.ui.component.rowTextLines
 import com.siliconcircuits.tarangini.core.ui.theme.GlassEdge
 import com.siliconcircuits.tarangini.core.ui.theme.GlassPanel
 import com.siliconcircuits.tarangini.core.ui.theme.Spacing
@@ -111,7 +112,7 @@ private fun ContinueCard(item: PlaybackItem, onResume: () -> Unit) {
                 Text(
                     item.title ?: stringResource(CoreUiR.string.unknown_title),
                     style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
+                    maxLines = rowTextLines(),
                     overflow = TextOverflow.Ellipsis,
                 )
                 item.artist?.takeIf { it.isNotEmpty() }?.let { artist ->
@@ -119,7 +120,7 @@ private fun ContinueCard(item: PlaybackItem, onResume: () -> Unit) {
                         artist,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
+                        maxLines = rowTextLines(),
                         overflow = TextOverflow.Ellipsis,
                     )
                 }

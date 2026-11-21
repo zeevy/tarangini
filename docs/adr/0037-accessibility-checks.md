@@ -23,3 +23,4 @@ Every screen must work with TalkBack, with large fonts and on small phones. A ru
 - The helper is a small file in the test folder of each module, as the other test helpers are. Sharing them is its own piece of work.
 - The checks do not replace a run with TalkBack: the order of the items and what an action says can only be judged by a person. Those runs are rows in `docs/MANUAL-TESTS.md`.
 - The mini player keeps one line of text at every font size, so the bar keeps its height.
+- Not checked yet: dialogs and menus (each is a window of its own, which the helper does not read), the Favourites tab, the album, artist and folder screens and the licences screen.
