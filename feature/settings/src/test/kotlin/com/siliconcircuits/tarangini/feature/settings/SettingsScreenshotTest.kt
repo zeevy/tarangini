@@ -12,6 +12,9 @@ import com.siliconcircuits.tarangini.core.domain.library.ScanState
 import com.siliconcircuits.tarangini.core.domain.library.ScanSummary
 import com.siliconcircuits.tarangini.core.domain.model.ScanSettings
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
+import com.siliconcircuits.tarangini.feature.settings.backup.BackupActions
+import com.siliconcircuits.tarangini.feature.settings.backup.BackupContent
+import com.siliconcircuits.tarangini.feature.settings.backup.BackupUiState
 import java.io.File
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -53,7 +56,11 @@ class SettingsScreenshotTest {
         assertTrue("No saved picture $picture. Run the tests with -PrecordScreenshots.", recording || picture.exists())
         captureRoboImage(picture.path) {
             TaranginiTheme {
-                SettingsScreen(onBackClick = {}) { SettingsContent(state, "1.0.0", SettingsActions()) }
+                SettingsScreen(onBackClick = {}) {
+                    SettingsContent(state, "1.0.0", SettingsActions(), backup = {
+                        BackupContent(BackupUiState(), BackupActions())
+                    })
+                }
             }
         }
     }

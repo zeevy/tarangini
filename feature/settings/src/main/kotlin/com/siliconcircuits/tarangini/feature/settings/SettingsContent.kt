@@ -32,7 +32,7 @@ import com.siliconcircuits.tarangini.core.domain.library.ScanOutcome
 import com.siliconcircuits.tarangini.core.domain.library.ScanState
 import com.siliconcircuits.tarangini.core.ui.theme.Spacing
 
-/** The rows of Settings in three groups: Library, History and About. */
+/** The rows of Settings in groups: Library, History, Backup (the [backup] slot) and About. */
 @Composable
 internal fun SettingsContent(
     state: SettingsUiState,
@@ -40,6 +40,7 @@ internal fun SettingsContent(
     actions: SettingsActions,
     modifier: Modifier = Modifier,
     firstDialog: SettingsDialog = SettingsDialog.NONE,
+    backup: @Composable () -> Unit = {},
 ) {
     var dialog by rememberSaveable { mutableStateOf(firstDialog) }
     val close = { dialog = SettingsDialog.NONE }
@@ -58,9 +59,9 @@ internal fun SettingsContent(
         SettingsDialog.NONE -> Unit
     }
     Column(modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        GroupTitle(stringResource(R.string.settings_library))
+        SettingsGroupTitle(stringResource(R.string.settings_library))
         val hidden = state.scan.hiddenFolders.size
-        Row(
+        SettingsRow(
             title = stringResource(R.string.settings_hidden_folders),
             text = if (hidden == 0) {
                 stringResource(R.string.settings_hidden_folders_none)
@@ -69,33 +70,36 @@ internal fun SettingsContent(
             },
             onClick = { dialog = SettingsDialog.FOLDERS },
         )
-        Row(
+        SettingsRow(
             title = stringResource(R.string.settings_min_track),
             text = minTrackLabel(state.scan.minTrackSeconds),
             onClick = { dialog = SettingsDialog.MIN_TRACK },
         )
-        Row(stringResource(R.string.settings_rescan), scanText(state.scanState), actions.onRescan)
+        SettingsRow(stringResource(R.string.settings_rescan), scanText(state.scanState), actions.onRescan)
 
-        GroupTitle(stringResource(R.string.settings_history))
-        Row(
+        SettingsGroupTitle(stringResource(R.string.settings_history))
+        SettingsRow(
             title = stringResource(R.string.settings_clear_history),
             text = stringResource(R.string.settings_clear_history_text),
             onClick = { dialog = SettingsDialog.CLEAR_HISTORY },
         )
 
-        GroupTitle(stringResource(R.string.settings_about))
-        Row(stringResource(R.string.settings_version), version, onClick = null)
-        Row(
+        // The backup rows have their own state, so a test of the other rows needs none of it.
+        backup()
+
+        SettingsGroupTitle(stringResource(R.string.settings_about))
+        SettingsRow(stringResource(R.string.settings_version), version, onClick = null)
+        SettingsRow(
             stringResource(R.string.settings_source),
             stringResource(R.string.settings_source_text),
             actions.onOpenSource,
         )
-        Row(
+        SettingsRow(
             stringResource(R.string.licences_title),
             stringResource(R.string.settings_licences_text),
             actions.onOpenLicences,
         )
-        Row(
+        SettingsRow(
             stringResource(R.string.settings_privacy),
             stringResource(R.string.settings_privacy_text),
             actions.onOpenPrivacy,
@@ -104,7 +108,7 @@ internal fun SettingsContent(
 }
 
 @Composable
-private fun GroupTitle(text: String) {
+internal fun SettingsGroupTitle(text: String) {
     Text(
         text = text,
         style = MaterialTheme.typography.titleSmall,
@@ -117,7 +121,7 @@ private fun GroupTitle(text: String) {
 
 /** One setting: its name and its value. A row with no [onClick] only shows something. */
 @Composable
-private fun Row(title: String, text: String, onClick: (() -> Unit)?) {
+internal fun SettingsRow(title: String, text: String, onClick: (() -> Unit)?) {
     ListItem(
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
         headlineContent = { Text(title) },

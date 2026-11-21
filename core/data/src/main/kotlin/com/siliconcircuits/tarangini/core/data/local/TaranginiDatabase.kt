@@ -9,6 +9,7 @@ package com.siliconcircuits.tarangini.core.data.local
 import androidx.room3.Database
 import androidx.room3.RoomDatabase
 import androidx.room3.migration.Migration
+import com.siliconcircuits.tarangini.core.data.local.dao.BackupDao
 import com.siliconcircuits.tarangini.core.data.local.dao.FavouriteDao
 import com.siliconcircuits.tarangini.core.data.local.dao.FolderDao
 import com.siliconcircuits.tarangini.core.data.local.dao.GenreDao
@@ -85,6 +86,8 @@ internal abstract class TaranginiDatabase : RoomDatabase() {
     abstract fun playlistDao(): PlaylistDao
 
     abstract fun playlistFileDao(): PlaylistFileDao
+
+    abstract fun backupDao(): BackupDao
 
     abstract fun queueDao(): QueueDao
 

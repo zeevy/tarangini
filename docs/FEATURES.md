@@ -444,6 +444,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D70 | Plain `http` is off for the whole app while it has no radio | 21 Nov 2026 | Nothing in the first release needs it. It comes back with radio, for media streams. See [ADR 0039](adr/0039-release-build.md) |
 | D71 | Genres: read from the genre tag by the scan into two new tables (database version 3). A tag can name several genres, divided by ";" or ","; a song with no genre is under "Unknown". Genres is a list of the Library tab on the phone and in the car | 21 Nov 2026 | A song is under each of its genres with one join table, and the lists stay one query each. See `docs/adr/0043-genres.md` |
 | D72 | The `NOTICE` files of the libraries are collected by the build into one asset and shown on the licences screen above the licence text of their library | 21 Nov 2026 | Section 4(d) of the Apache licence asks that the content of such a file goes with the app. Read from the downloaded libraries at build time, a new library needs no step by hand. See `docs/adr/0035-open-source-licences.md` |
+| D73 | Backup and restore to a file: favourites, playlists and library settings in one JSON file through the file picker. Songs are named by the path of their file. Restore asks "Add" or "Replace". The file is not trusted: size limit, list limits, version check | 21 Nov 2026 | No server of ours, so the copy is a file the person keeps. A path means the same on the next phone, an id does not. See `docs/adr/0044-backup-file.md` |
 
 ## 9. Checks before building
 

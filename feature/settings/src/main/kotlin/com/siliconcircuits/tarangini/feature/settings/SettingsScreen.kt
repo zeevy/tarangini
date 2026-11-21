@@ -27,6 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.siliconcircuits.tarangini.core.ui.component.BackButton
 import com.siliconcircuits.tarangini.core.ui.theme.glassBackground
 import com.siliconcircuits.tarangini.core.ui.theme.glassTopBarColors
+import com.siliconcircuits.tarangini.feature.settings.backup.BackupSection
 
 /**
  * The frame of Settings: the title and the way back. What is under the bar is given by the
@@ -86,7 +87,7 @@ private fun LoadedSettings(
             onOpenPrivacy = { runCatching { links.openUri(PRIVACY) } },
         )
     }
-    SettingsContent(state, version, actions, modifier)
+    SettingsContent(state, version, actions, modifier, backup = { BackupSection() })
 }
 
 /** Where the source code of the app is. */
