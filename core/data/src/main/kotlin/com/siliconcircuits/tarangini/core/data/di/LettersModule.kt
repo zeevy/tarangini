@@ -7,6 +7,8 @@
 package com.siliconcircuits.tarangini.core.data.di
 
 import com.siliconcircuits.tarangini.core.data.mediastore.DefaultAudioAccess
+import com.siliconcircuits.tarangini.core.data.mediastore.DefaultStorageNames
+import com.siliconcircuits.tarangini.core.data.mediastore.StorageNames
 import com.siliconcircuits.tarangini.core.data.repository.DefaultLibraryLetters
 import com.siliconcircuits.tarangini.core.domain.repository.AudioAccess
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryLetters
@@ -27,4 +29,7 @@ internal abstract class LettersModule {
 
     @Binds
     abstract fun audioAccess(access: DefaultAudioAccess): AudioAccess
+
+    @Binds
+    abstract fun storageNames(names: DefaultStorageNames): StorageNames
 }
