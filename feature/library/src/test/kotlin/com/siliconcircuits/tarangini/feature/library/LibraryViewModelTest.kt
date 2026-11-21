@@ -9,6 +9,7 @@ package com.siliconcircuits.tarangini.feature.library
 import com.siliconcircuits.tarangini.core.domain.library.ScanFailure
 import com.siliconcircuits.tarangini.core.domain.library.ScanOutcome
 import com.siliconcircuits.tarangini.core.domain.model.SongSort
+import com.siliconcircuits.tarangini.core.testing.MainDispatcherRule
 import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryScanner

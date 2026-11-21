@@ -13,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onRoot
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.siliconcircuits.tarangini.core.testing.RegisterComponentActivityRule
+import com.siliconcircuits.tarangini.core.testing.savedPicture
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import com.siliconcircuits.tarangini.core.ui.theme.glassBackground
 import java.io.File
@@ -34,16 +36,9 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(qualifiers = "w320dp-h640dp-xhdpi")
 class MiniPlayerScreenshotTest {
-    private val app: Application = RuntimeEnvironment.getApplication()
     private val composeRule = createAndroidComposeRule<ComponentActivity>()
 
-    /** The manifest of a library has no activity, so the plain one is added before Compose starts it. */
-    private val registerActivity = object : TestWatcher() {
-        override fun starting(description: Description) {
-            shadowOf(app.packageManager)
-                .addActivityIfNotPresent(ComponentName(app.packageName, ComponentActivity::class.java.name))
-        }
-    }
+    private val registerActivity = RegisterComponentActivityRule()
 
     @get:Rule
     val rules: RuleChain = RuleChain.outerRule(registerActivity).around(composeRule)
@@ -76,9 +71,7 @@ class MiniPlayerScreenshotTest {
     }
 
     private fun capture(name: String, state: MiniPlayerUiState) {
-        val picture = File("src/test/screenshots/$name.png")
-        // Without this, a test with no saved picture passes: there is nothing to compare with.
-        assertTrue("No saved picture $picture. Run the tests with -PrecordScreenshots.", recording || picture.exists())
+        val picture = savedPicture("$name")
         // The line of the buffering state moves for ever. The clock is held, so the picture is of
         // one fixed moment and the test does not wait for the line to stop.
         composeRule.mainClock.autoAdvance = false
@@ -89,5 +82,3 @@ class MiniPlayerScreenshotTest {
         composeRule.onRoot().captureRoboImage(picture.path)
     }
 }
-
-private val recording = System.getProperty("roborazzi.test.record").toBoolean()

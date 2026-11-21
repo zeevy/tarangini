@@ -56,6 +56,7 @@ dependencies {
     // Finds memory leaks while a debug build is used. It is never part of a release build.
     debugImplementation(libs.leakcanary.android)
 
+    testImplementation(project(":core:testing"))
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     // The Compose test library brings espresso 3.5, which fails on Android 17 (no InputManager.getInstance).

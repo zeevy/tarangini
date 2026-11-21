@@ -15,6 +15,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.siliconcircuits.tarangini.core.testing.RegisterComponentActivityRule
 import kotlinx.serialization.Serializable
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -30,16 +31,9 @@ import org.robolectric.Shadows.shadowOf
 /** Which screens count as screens of the player. Plain texts stand in for the screens themselves. */
 @RunWith(RobolectricTestRunner::class)
 class PlayerNavigationTest {
-    private val app: Application = RuntimeEnvironment.getApplication()
     private val composeRule = createAndroidComposeRule<ComponentActivity>()
 
-    /** The manifest of a library has no activity, so the plain one is added before Compose starts it. */
-    private val registerActivity = object : TestWatcher() {
-        override fun starting(description: Description) {
-            shadowOf(app.packageManager)
-                .addActivityIfNotPresent(ComponentName(app.packageName, ComponentActivity::class.java.name))
-        }
-    }
+    private val registerActivity = RegisterComponentActivityRule()
 
     @get:Rule
     val rules: RuleChain = RuleChain.outerRule(registerActivity).around(composeRule)

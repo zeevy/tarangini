@@ -10,8 +10,9 @@ import com.github.takahirom.roborazzi.captureRoboImage
 import com.siliconcircuits.tarangini.core.domain.model.LibraryLicence
 import com.siliconcircuits.tarangini.core.domain.model.OpenSourceLibrary
 import com.siliconcircuits.tarangini.core.domain.repository.LicenceCatalog
+import com.siliconcircuits.tarangini.core.testing.MainDispatcherRule
+import com.siliconcircuits.tarangini.core.testing.savedPicture
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
-import com.siliconcircuits.tarangini.feature.settings.MainDispatcherRule
 import java.io.File
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -96,13 +97,9 @@ class LicencesTest {
     }
 
     private fun shot(name: String, state: LicencesUiState) {
-        val picture = File("src/test/screenshots/$name.png")
-        // Without this, a test with no saved picture passes: there is nothing to compare with.
-        assertTrue("No saved picture $picture. Run the tests with -PrecordScreenshots.", recording || picture.exists())
+        val picture = savedPicture("$name")
         captureRoboImage(picture.path) {
             TaranginiTheme { LicencesContent(state, onOpen = {}, onClose = {}, onBack = {}) }
         }
     }
 }
-
-private val recording = System.getProperty("roborazzi.test.record").toBoolean()

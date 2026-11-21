@@ -17,6 +17,8 @@ import com.github.takahirom.roborazzi.captureScreenRoboImage
 import com.siliconcircuits.tarangini.core.domain.model.LibraryLicence
 import com.siliconcircuits.tarangini.core.domain.model.OpenSourceLibrary
 import com.siliconcircuits.tarangini.core.domain.model.ScanSettings
+import com.siliconcircuits.tarangini.core.testing.RegisterComponentActivityRule
+import com.siliconcircuits.tarangini.core.testing.savedPicture
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import com.siliconcircuits.tarangini.feature.settings.licences.LicencesContent
 import com.siliconcircuits.tarangini.feature.settings.licences.LicencesUiState
@@ -40,16 +42,9 @@ import org.robolectric.annotation.GraphicsMode
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class AccessibilityOfDialogsTest {
-    private val app: Application = RuntimeEnvironment.getApplication()
     private val composeRule = createAndroidComposeRule<ComponentActivity>()
 
-    /** The manifest of a library has no activity, so the plain one is added before Compose starts it. */
-    private val registerActivity = object : TestWatcher() {
-        override fun starting(description: Description) {
-            shadowOf(app.packageManager)
-                .addActivityIfNotPresent(ComponentName(app.packageName, ComponentActivity::class.java.name))
-        }
-    }
+    private val registerActivity = RegisterComponentActivityRule()
 
     @get:Rule
     val rules: RuleChain = RuleChain.outerRule(registerActivity).around(composeRule)
@@ -111,9 +106,7 @@ class AccessibilityOfDialogsTest {
         shotAtLargestFont("Clear history", "settings_clear_history")
 
     private fun shotAtLargestFont(row: String, name: String) {
-        val picture = File("src/test/screenshots/${name}_largest_font.png")
-        // Without this, a test with no saved picture passes: there is nothing to compare with.
-        assertTrue("No saved picture $picture. Run the tests with -PrecordScreenshots.", recording || picture.exists())
+        val picture = savedPicture("${name}_largest_font")
         RuntimeEnvironment.setFontScale(LARGEST_FONT)
         open(row)
         // The dialog opens in a later frame than the tap.
@@ -124,4 +117,3 @@ class AccessibilityOfDialogsTest {
 }
 
 private const val LARGEST_FONT = 2f
-private val recording = System.getProperty("roborazzi.test.record").toBoolean()

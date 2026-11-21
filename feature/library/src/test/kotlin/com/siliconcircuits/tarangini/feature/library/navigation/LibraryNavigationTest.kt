@@ -17,6 +17,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.siliconcircuits.tarangini.core.testing.RegisterComponentActivityRule
 import com.siliconcircuits.tarangini.core.testing.library.testAlbum
 import com.siliconcircuits.tarangini.core.testing.library.testArtist
 import org.junit.Assert.assertEquals
@@ -33,16 +34,9 @@ import org.robolectric.Shadows.shadowOf
 /** The ways another feature opens an album or an artist, on a graph with plain screens. */
 @RunWith(RobolectricTestRunner::class)
 class LibraryNavigationTest {
-    private val app: Application = RuntimeEnvironment.getApplication()
     private val composeRule = createAndroidComposeRule<ComponentActivity>()
 
-    /** The manifest of a library has no activity, so the plain one is added before Compose starts it. */
-    private val registerActivity = object : TestWatcher() {
-        override fun starting(description: Description) {
-            shadowOf(app.packageManager)
-                .addActivityIfNotPresent(ComponentName(app.packageName, ComponentActivity::class.java.name))
-        }
-    }
+    private val registerActivity = RegisterComponentActivityRule()
 
     @get:Rule
     val rules: RuleChain = RuleChain.outerRule(registerActivity).around(composeRule)

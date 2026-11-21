@@ -9,8 +9,8 @@ package com.siliconcircuits.tarangini.feature.player.miniplayer
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackItem
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
+import com.siliconcircuits.tarangini.core.testing.MainDispatcherRule
 import com.siliconcircuits.tarangini.core.testing.playback.FakePlaybackController
-import com.siliconcircuits.tarangini.feature.player.MainDispatcherRule
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest

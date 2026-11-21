@@ -23,6 +23,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.core.app.ActivityOptionsCompat
 import androidx.lifecycle.Lifecycle
+import com.siliconcircuits.tarangini.core.testing.RegisterComponentActivityRule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Rule
@@ -42,13 +43,7 @@ class AudioPermissionGateTest {
     private val permission = audioPermissionFor(Build.VERSION.SDK_INT)
     private val composeRule = createAndroidComposeRule<ComponentActivity>()
 
-    /** The manifest of a library has no activity, so the plain one is added before Compose starts it. */
-    private val registerActivity = object : TestWatcher() {
-        override fun starting(description: Description) {
-            shadowOf(app.packageManager)
-                .addActivityIfNotPresent(ComponentName(app.packageName, ComponentActivity::class.java.name))
-        }
-    }
+    private val registerActivity = RegisterComponentActivityRule()
 
     @get:Rule
     val rules: RuleChain = RuleChain.outerRule(registerActivity).around(composeRule)

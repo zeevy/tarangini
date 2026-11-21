@@ -15,6 +15,8 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.lifecycle.SavedStateHandle
 import com.siliconcircuits.tarangini.core.domain.model.Genre
+import com.siliconcircuits.tarangini.core.testing.MainDispatcherRule
+import com.siliconcircuits.tarangini.core.testing.RegisterComponentActivityRule
 import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeGenreRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
@@ -28,7 +30,6 @@ import com.siliconcircuits.tarangini.feature.library.LibraryActions
 import com.siliconcircuits.tarangini.feature.library.LibraryContent
 import com.siliconcircuits.tarangini.feature.library.LibraryState
 import com.siliconcircuits.tarangini.feature.library.LibraryTab
-import com.siliconcircuits.tarangini.feature.library.MainDispatcherRule
 import com.siliconcircuits.tarangini.feature.library.checkAccessibility
 import com.siliconcircuits.tarangini.feature.library.list.PagedItems
 import com.siliconcircuits.tarangini.feature.library.list.SongActions
@@ -48,16 +49,9 @@ import org.robolectric.annotation.GraphicsMode
 
 @RunWith(RobolectricTestRunner::class)
 class GenreTest {
-    private val app: Application = RuntimeEnvironment.getApplication()
     private val composeRule = createAndroidComposeRule<ComponentActivity>()
 
-    /** The manifest of a library has no activity, so the plain one is added before Compose starts it. */
-    private val registerActivity = object : TestWatcher() {
-        override fun starting(description: Description) {
-            shadowOf(app.packageManager)
-                .addActivityIfNotPresent(ComponentName(app.packageName, ComponentActivity::class.java.name))
-        }
-    }
+    private val registerActivity = RegisterComponentActivityRule()
 
     @get:Rule
     val rules: RuleChain = RuleChain.outerRule(registerActivity).around(composeRule)

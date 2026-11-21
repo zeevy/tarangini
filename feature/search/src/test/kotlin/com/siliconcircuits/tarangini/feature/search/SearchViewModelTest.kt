@@ -8,6 +8,7 @@ package com.siliconcircuits.tarangini.feature.search
 
 import com.siliconcircuits.tarangini.core.domain.model.SearchResults
 import com.siliconcircuits.tarangini.core.domain.repository.SearchRepository
+import com.siliconcircuits.tarangini.core.testing.MainDispatcherRule
 import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakePlaylistRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeSearchRepository
