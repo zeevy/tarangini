@@ -20,7 +20,9 @@ import androidx.media3.common.MimeTypes
 import androidx.media3.common.Timeline
 import androidx.media3.common.audio.AudioProcessor
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.DecoderReuseEvaluation
 import androidx.media3.exoplayer.DefaultRenderersFactory
+import androidx.media3.exoplayer.FormatHolder
 import androidx.media3.exoplayer.Renderer
 import androidx.media3.exoplayer.audio.AudioRendererEventListener
 import androidx.media3.exoplayer.audio.AudioSink
@@ -29,6 +31,8 @@ import androidx.media3.exoplayer.audio.MediaCodecAudioRenderer
 import androidx.media3.exoplayer.mediacodec.MediaCodecAdapter
 import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
 import androidx.media3.exoplayer.source.MediaSource
+import com.siliconcircuits.tarangini.core.domain.audio.ReplayGain
+import com.siliconcircuits.tarangini.core.playback.audio.replayGainOf
 import java.nio.ByteBuffer
 
 /**
@@ -69,7 +73,7 @@ internal class GaplessRenderersFactory(
     context: Context,
     private val sound: LastSound,
     private val audioProcessors: List<AudioProcessor> = emptyList(),
-    private val onSongStarts: (MediaItem) -> Unit = {},
+    private val onSongStarts: SongStarts = SongStarts { _, _ -> },
 ) : DefaultRenderersFactory(context) {
     override fun buildAudioSink(
         context: Context,
@@ -117,7 +121,7 @@ internal class GaplessAudioRenderer(
     eventListener: AudioRendererEventListener,
     audioSink: AudioSink,
     private val sound: LastSound,
-    private val onSongStarts: (MediaItem) -> Unit = {},
+    private val onSongStarts: SongStarts = SongStarts { _, _ -> },
 ) : MediaCodecAudioRenderer(
     context,
     mediaCodecSelector,
@@ -127,6 +131,9 @@ internal class GaplessAudioRenderer(
     audioSink,
 ) {
     private val songs = StreamSongs<Any>()
+    private val gainOf = LinkedHashMap<Any, ReplayGain>()
+    private var reading: Any? = null
+    private var playing: Any? = null
 
     override fun onStreamChanged(
         formats: Array<out Format>,
@@ -136,6 +143,7 @@ internal class GaplessAudioRenderer(
     ) {
         // Kept before Media3 takes the stream, because for the first stream it tells of the start at once.
         songs.read(offsetUs, mediaPeriodId.periodUid)
+        reading = mediaPeriodId.periodUid
         super.onStreamChanged(formats, startPositionUs, offsetUs, mediaPeriodId)
         songs.playsAtOnce(offsetUs, outputStreamOffsetUs)?.let(::songStarts)
     }
@@ -147,14 +155,31 @@ internal class GaplessAudioRenderer(
         songStarts(songs.started(outputStreamOffsetUs))
     }
 
-    /** Tells of the song of [periodUid]. A song that is not known (any more) plays as one with no genre. */
+    /**
+     * Tells of the song of [periodUid]. A song that is not known (any more) plays as one with no
+     * genre and no tags.
+     */
     private fun songStarts(periodUid: Any?) {
+        playing = periodUid
         val timeline = timeline
         val period = periodUid?.let(timeline::getIndexOfPeriod)?.takeIf { it != C.INDEX_UNSET }
         val item = period?.let {
             timeline.getWindow(timeline.getPeriod(it, Timeline.Period()).windowIndex, Timeline.Window()).mediaItem
         }
-        onSongStarts(item ?: MediaItem.EMPTY)
+        onSongStarts.songStarts(item ?: MediaItem.EMPTY, periodUid?.let(gainOf::get))
+    }
+
+    // The format of a stream comes from its file before its first sound, with the tags of the file.
+    // For the first song of a queue it comes only after the start was told, so the tags follow.
+    override fun onInputFormatChanged(formatHolder: FormatHolder): DecoderReuseEvaluation? {
+        val period = reading
+        if (period != null) {
+            val gain = replayGainOf(formatHolder.format?.metadata)
+            if (gain == null) gainOf.remove(period) else gainOf[period] = gain
+            while (gainOf.size > KEPT_GAINS) gainOf.remove(gainOf.keys.first())
+            if (period == playing) songStarts(period)
+        }
+        return super.onInputFormatChanged(formatHolder)
     }
 
     override fun onOutputFormatChanged(format: Format, mediaFormat: MediaFormat?) {
@@ -192,3 +217,12 @@ internal class GaplessAudioRenderer(
         )
     }
 }
+
+/** Hears of each song whose first sound goes to the processors next, with the tags of its file. */
+internal fun interface SongStarts {
+    /** Called on the playback thread with the [item] that starts and its ReplayGain tags, or null. */
+    fun songStarts(item: MediaItem, gain: ReplayGain?)
+}
+
+/** The tags of a few songs read ahead are kept; older ones are done. */
+private const val KEPT_GAINS = 8

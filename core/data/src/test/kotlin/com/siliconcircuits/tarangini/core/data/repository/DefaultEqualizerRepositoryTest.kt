@@ -13,6 +13,7 @@ import androidx.datastore.preferences.core.edit
 import com.siliconcircuits.tarangini.core.data.settings.SettingsKeys
 import com.siliconcircuits.tarangini.core.domain.audio.EqualizerPreset
 import com.siliconcircuits.tarangini.core.domain.audio.EqualizerSettings
+import com.siliconcircuits.tarangini.core.domain.audio.VolumeLevelling
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
@@ -62,6 +63,18 @@ class DefaultEqualizerRepositoryTest {
         equalizer.save(genres)
 
         assertEquals(genres, equalizer.settings().first())
+    }
+
+    @Test
+    fun `the volume levelling is read back, and a broken name is off`() = runTest {
+        val store = store()
+        val equalizer = DefaultEqualizerRepository(store)
+
+        equalizer.save(EqualizerSettings(levelling = VolumeLevelling.ALBUM))
+        assertEquals(VolumeLevelling.ALBUM, equalizer.settings().first().levelling)
+
+        store.edit { it[SettingsKeys.EQUALIZER_LEVELLING] = "LOUD" }
+        assertEquals(VolumeLevelling.OFF, equalizer.settings().first().levelling)
     }
 
     @Test

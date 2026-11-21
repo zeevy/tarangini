@@ -144,11 +144,11 @@ The calls the app needs: `/json/stations/search` (`name`, `countrycode`, `langua
 |---|---|---|---|---|
 | Equalizer and presets | 5 band equalizer built as our own ExoPlayer audio processor, the same on every phone. Presets: Flat, Bass, Vocal, Classical, Carnatic, Bollywood | [v1.1] | Yes | Applies |
 | Bass boost | Part of the same audio processor | [v1.1] | Yes | Applies |
-| Volume normalization | Use ReplayGain tags when present | [Future] | Yes | Applies |
+| Volume normalization | Use ReplayGain tags when present: off, the same loudness for every song, or for every album (decision D79) | [Future] | Yes | Applies |
 | Crossfade | Fade between tracks | [Future] | Yes | Applies |
 
 > [!WARNING]
-> The equalizer is our own ExoPlayer audio processor (decision D12). Its trial build is a go (decision D76); the numbers on real phones are still to be measured. Media3 has no built-in crossfade or ReplayGain. Crossfade needs two players or a custom audio processor and may break gapless playback.
+> The equalizer is our own ExoPlayer audio processor (decision D12). Its trial build is a go (decision D76); the numbers on real phones are still to be measured. Media3 has no built-in crossfade or ReplayGain; ReplayGain is applied in our own processor (decision D79). Crossfade needs two players or a custom audio processor and may break gapless playback.
 
 ### 2.8 Personalization
 
@@ -450,6 +450,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D76 | Our own equalizer: five bell filters and a low shelf for the bass in an audio processor of the player, turned down first so a full boost does not clip, with a fade of 20 ms on each change. Presets are curves, so they fit any number of bands. The trial numbers are a go | 21 Nov 2026 | The same sound on every phone and in the car. See `docs/adr/0047-equalizer.md` |
 | D77 | Equalizer preset per genre: a preset for each genre, picked when the first sound of a song of that genre reaches the equalizer, with the same 20 ms fade. Genres are known by their sort key; the bass boost stays the same; songs with no genre and radio use the main setting | 21 Nov 2026 | The renderer knows the exact sample where a song starts; the player knows it only when it is heard. See `docs/adr/0048-equalizer-preset-per-genre.md` |
 | D78 | `StorageSource` hook: one folder at a time and a file from an offset, the sources as a Hilt set with the phone always in it. The scan and the player keep their own path for the phone until the first cloud source | 21 Nov 2026 | The premium module needs the interface first; the tested local paths stay as they are. See `docs/adr/0049-storage-source.md` and `docs/PREMIUM-HOOKS.md` |
+| D79 | Volume levelling from ReplayGain tags, read by the player from each file, applied in the equalizer processor with a 20 ms fade. Modes off, per song, per album; a lift never passes the peak; works also with the equalizer off | 21 Nov 2026 | No new database version and no extra scan; one processor keeps gapless playback. See `docs/adr/0050-volume-levelling.md` |
 
 ## 9. Checks before building
 

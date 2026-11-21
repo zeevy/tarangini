@@ -45,7 +45,7 @@ internal fun createPlayer(
     context: Context,
     sound: LastSound = LastSound(),
     audioProcessors: List<AudioProcessor> = emptyList(),
-    onSongStarts: (MediaItem) -> Unit = {},
+    onSongStarts: SongStarts = SongStarts { _, _ -> },
     httpClient: () -> OkHttpClient,
 ): ExoPlayer {
     val music = AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build()

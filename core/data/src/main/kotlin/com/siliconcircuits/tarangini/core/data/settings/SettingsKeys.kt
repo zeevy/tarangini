@@ -54,4 +54,7 @@ internal object SettingsKeys {
 
     /** The preset of each genre, each as the preset name, a tab and the genre key. */
     val EQUALIZER_GENRE_PRESETS = stringSetPreferencesKey("equalizer_genre_presets")
+
+    /** The name of the volume levelling mode: OFF, TRACK or ALBUM. */
+    val EQUALIZER_LEVELLING = stringPreferencesKey("equalizer_levelling")
 }

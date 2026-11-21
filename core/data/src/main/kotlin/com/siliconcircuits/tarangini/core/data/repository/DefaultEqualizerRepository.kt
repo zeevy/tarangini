@@ -14,6 +14,7 @@ import com.siliconcircuits.tarangini.core.data.settings.SettingsKeys
 import com.siliconcircuits.tarangini.core.domain.audio.EqualizerPreset
 import com.siliconcircuits.tarangini.core.domain.audio.EqualizerSettings
 import com.siliconcircuits.tarangini.core.domain.audio.MAX_BAND_GAIN_DB
+import com.siliconcircuits.tarangini.core.domain.audio.VolumeLevelling
 import com.siliconcircuits.tarangini.core.domain.repository.EqualizerRepository
 import java.io.IOException
 import javax.inject.Inject
@@ -48,6 +49,7 @@ internal class DefaultEqualizerRepository @Inject constructor(private val settin
             saved[SettingsKeys.EQUALIZER_GENRES_ON] = settings.genresOn
             saved[SettingsKeys.EQUALIZER_GENRE_PRESETS] =
                 settings.genrePresets.map { (key, preset) -> preset.name + GENRE_SEPARATOR + key }.toSet()
+            saved[SettingsKeys.EQUALIZER_LEVELLING] = settings.levelling.name
         }
     }
 
@@ -67,6 +69,8 @@ internal class DefaultEqualizerRepository @Inject constructor(private val settin
             bassBoost = (saved[SettingsKeys.EQUALIZER_BASS] ?: 0).coerceIn(0, EqualizerSettings.MAX_BASS_PERCENT),
             genresOn = saved[SettingsKeys.EQUALIZER_GENRES_ON] == true,
             genrePresets = saved[SettingsKeys.EQUALIZER_GENRE_PRESETS].orEmpty().mapNotNull(::genrePreset).toMap(),
+            levelling = VolumeLevelling.entries.firstOrNull { it.name == saved[SettingsKeys.EQUALIZER_LEVELLING] }
+                ?: VolumeLevelling.OFF,
         )
     }
 

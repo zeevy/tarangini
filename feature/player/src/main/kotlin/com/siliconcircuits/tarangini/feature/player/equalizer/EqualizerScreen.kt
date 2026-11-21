@@ -61,6 +61,7 @@ internal fun EqualizerScreen(
         onSetBassBoost = viewModel::setBassBoost,
         onSetGenresOn = viewModel::setGenresOn,
         onSetGenrePreset = viewModel::setGenrePreset,
+        onSetLevelling = viewModel::setLevelling,
     )
     EqualizerContent(state, actions, onBackClick, modifier)
 }
@@ -111,6 +112,7 @@ internal fun EqualizerContent(
                     range = 0f..EqualizerSettings.MAX_BASS_PERCENT.toFloat(),
                     isEnabled = state.settings.isOn,
                 ) { actions.onSetBassBoost(it.roundToInt()) }
+                VolumeLevellingSection(state.settings.levelling, actions.onSetLevelling)
                 GenrePresets(state.settings, state.genres, actions.onSetGenresOn, actions.onSetGenrePreset)
             }
         }

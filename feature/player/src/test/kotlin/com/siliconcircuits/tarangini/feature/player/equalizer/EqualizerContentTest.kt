@@ -10,6 +10,7 @@ import android.app.Application
 import android.content.ComponentName
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
@@ -27,6 +28,7 @@ import com.github.takahirom.roborazzi.captureRoboImage
 import com.siliconcircuits.tarangini.core.domain.audio.EqualizerPreset
 import com.siliconcircuits.tarangini.core.domain.audio.EqualizerSettings
 import com.siliconcircuits.tarangini.core.domain.audio.FIVE_BANDS_HZ
+import com.siliconcircuits.tarangini.core.domain.audio.VolumeLevelling
 import com.siliconcircuits.tarangini.core.domain.model.Genre
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import com.siliconcircuits.tarangini.feature.player.checkAccessibility
@@ -71,6 +73,7 @@ class EqualizerContentTest {
         onSetBassBoost = { done += "bass $it" },
         onSetGenresOn = { done += "genres $it" },
         onSetGenrePreset = { key, preset -> done += "genre $key $preset" },
+        onSetLevelling = { done += "levelling $it" },
     )
     private val carnatic = EqualizerUiState(
         EqualizerSettings(isOn = true, preset = EqualizerPreset.CARNATIC, bassBoost = 40),
@@ -156,6 +159,26 @@ class EqualizerContentTest {
     }
 
     @Test
+    fun `volume levelling shows its mode and works also with the equalizer off`() {
+        show(EqualizerUiState(EqualizerSettings(levelling = VolumeLevelling.TRACK), FIVE_BANDS_HZ))
+
+        composeRule.onNodeWithText("Volume levelling").performScrollTo()
+        composeRule.onNodeWithText("Same loudness for every song").performScrollTo().assertIsSelected()
+        composeRule.onNodeWithText("Same loudness for every album").performScrollTo().assertIsEnabled().performClick()
+        composeRule.onNodeWithText("Off").performScrollTo().performClick()
+
+        assertEquals(listOf("levelling ALBUM", "levelling OFF"), done)
+    }
+
+    @Test
+    fun `the volume levelling section passes the accessibility checks`() {
+        show(carnatic)
+        composeRule.onNodeWithText("Same loudness for every album").performScrollTo()
+
+        composeRule.checkAccessibility()
+    }
+
+    @Test
     fun `the genre section passes the accessibility checks`() {
         show(withGenres)
         composeRule.onNodeWithText("Rock").performScrollTo()
@@ -188,6 +211,12 @@ class EqualizerContentTest {
     fun `the presets per genre`() = shot("equalizer_genres") {
         show(withGenres)
         composeRule.onNodeWithText("Rock").performScrollTo()
+    }
+
+    @Test
+    fun `the volume levelling`() = shot("equalizer_levelling") {
+        show(carnatic.copy(settings = carnatic.settings.copy(levelling = VolumeLevelling.ALBUM)))
+        composeRule.onNodeWithText("Same loudness for every album").performScrollTo()
     }
 
     @Test

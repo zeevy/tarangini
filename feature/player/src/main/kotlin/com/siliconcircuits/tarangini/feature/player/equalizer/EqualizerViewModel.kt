@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.siliconcircuits.tarangini.core.domain.audio.EqualizerPreset
 import com.siliconcircuits.tarangini.core.domain.audio.EqualizerSettings
+import com.siliconcircuits.tarangini.core.domain.audio.VolumeLevelling
 import com.siliconcircuits.tarangini.core.domain.model.Genre
 import com.siliconcircuits.tarangini.core.domain.model.Page
 import com.siliconcircuits.tarangini.core.domain.premium.EqualizerBands
@@ -84,6 +85,9 @@ internal class EqualizerViewModel @Inject constructor(
 
     /** Gives the genre [key] its own [preset]; null makes it follow the main setting. */
     fun setGenrePreset(key: String, preset: EqualizerPreset?) = change { it.withGenrePreset(key, preset) }
+
+    /** Picks how songs are brought to a similar loudness. */
+    fun setLevelling(levelling: VolumeLevelling) = change { it.copy(levelling = levelling) }
 
     /** Sets the bass boost to [percent]. */
     fun setBassBoost(percent: Int) =

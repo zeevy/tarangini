@@ -12,6 +12,7 @@ import androidx.media3.common.audio.AudioProcessor.AudioFormat
 import androidx.media3.common.audio.AudioProcessor.StreamMetadata
 import androidx.media3.common.audio.BaseAudioProcessor
 import androidx.media3.common.util.UnstableApi
+import com.siliconcircuits.tarangini.core.domain.audio.ReplayGain
 import java.nio.ByteBuffer
 
 /**
@@ -29,8 +30,8 @@ internal class EqualizerProcessor : BaseAudioProcessor() {
     private var wanted = EqualizerTargets()
 
     @Volatile
-    private var songGenres: List<String> = emptyList()
-    private var seen: Pair<EqualizerTargets, List<String>>? = null
+    private var song = PlayingSong()
+    private var seen: Pair<EqualizerTargets, PlayingSong>? = null
     private var applied: EqualizerTarget? = null
     private var current: FilterChain? = null
     private var fading: FilterChain? = null
@@ -46,11 +47,12 @@ internal class EqualizerProcessor : BaseAudioProcessor() {
     }
 
     /**
-     * The first sound of a song of [genreKeys] comes next. Called on the playback thread between
-     * the last buffer of one song and the first of the next.
+     * The first sound of a song of [genreKeys] with the tags [gain] comes next. Called on the
+     * playback thread between the last buffer of one song and the first of the next, and again
+     * when the tags of the song that plays are read only after its start.
      */
-    fun songStarts(genreKeys: List<String>) {
-        songGenres = genreKeys
+    fun songStarts(genreKeys: List<String>, gain: ReplayGain? = null) {
+        song = PlayingSong(genreKeys, gain)
     }
 
     override fun onConfigure(inputAudioFormat: AudioFormat): AudioFormat {
@@ -110,13 +112,13 @@ internal class EqualizerProcessor : BaseAudioProcessor() {
      */
     private fun follow(): FilterChain {
         val now = current
-        val asked = wanted to songGenres
+        val asked = wanted to song
         return when {
             now != null && (fading != null || asked == seen) -> now
 
             else -> {
                 seen = asked
-                val target = asked.first.forSong(asked.second)
+                val target = asked.first.forSong(asked.second.genreKeys, asked.second.gain)
                 if (now != null && target == applied) now else chainFor(target, now)
             }
         }
@@ -159,3 +161,6 @@ internal class EqualizerProcessor : BaseAudioProcessor() {
         const val SHORT_SCALE = 32_768.0
     }
 }
+
+/** The song whose sound goes through the processor: its genres and its ReplayGain tags. */
+private data class PlayingSong(val genreKeys: List<String> = emptyList(), val gain: ReplayGain? = null)

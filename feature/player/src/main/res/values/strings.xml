@@ -57,6 +57,11 @@
     <string name="equalizer_gain">%1$s dB</string>
     <string name="equalizer_bass">Bass boost</string>
     <string name="equalizer_bass_value">%1$d %%</string>
+    <string name="equalizer_levelling">Volume levelling</string>
+    <string name="equalizer_levelling_about">Uses the ReplayGain tags of your files. A song with no tags plays as it is.</string>
+    <string name="equalizer_levelling_off">Off</string>
+    <string name="equalizer_levelling_track">Same loudness for every song</string>
+    <string name="equalizer_levelling_album">Same loudness for every album</string>
     <string name="equalizer_genres">Preset per genre</string>
     <string name="equalizer_genres_none">No genres in the library yet.</string>
     <string name="equalizer_genre_main">Same as the main setting</string>
