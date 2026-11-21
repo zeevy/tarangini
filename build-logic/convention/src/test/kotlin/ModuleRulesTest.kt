@@ -83,6 +83,13 @@ class ModuleRulesTest {
     }
 
     @Test
+    fun `the baseline profile module may use the app only`() {
+        assertNull(main(":baselineprofile", ":app"))
+        assertNotNull(main(":baselineprofile", ":core:domain"))
+        assertNotNull(main(":baselineprofile", ":feature:library"))
+    }
+
+    @Test
     fun `only test configurations count as tests`() {
         assertTrue(ModuleRules.isTestConfiguration("testImplementation"))
         assertTrue(ModuleRules.isTestConfiguration("testDebugImplementation"))

@@ -26,6 +26,8 @@ object ModuleRules {
         UI to setOf(DOMAIN),
         TESTING to setOf(DOMAIN),
         PREMIUM to setOf(DOMAIN, UI),
+        // It installs the app and drives it from outside; it uses none of the app's code.
+        ":baselineprofile" to setOf(APP),
     )
 
     /** True for the configurations of unit tests and device tests, such as `testImplementation`. */

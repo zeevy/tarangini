@@ -8,6 +8,8 @@ plugins {
     id("tarangini.android.application")
     id("tarangini.android.compose")
     id("tarangini.android.hilt")
+    // The baseline profile from :baselineprofile goes into the release app.
+    id("androidx.baselineprofile")
 }
 
 // core: this repo alone, a complete free app with no closed source library.
@@ -52,6 +54,9 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.work.runtime)
+    // Compiles the code of the baseline profile ahead of time after an install from outside Play.
+    implementation(libs.androidx.profileinstaller)
+    baselineProfile(project(":baselineprofile"))
 
     // Finds memory leaks while a debug build is used. It is never part of a release build.
     debugImplementation(libs.leakcanary.android)

@@ -42,7 +42,7 @@ tasks.register<LicenceHeaderTask>("checkLicenceHeaders") {
     baseDir.set(layout.projectDirectory)
     sources.from(fileTree(layout.projectDirectory) { include("*.kts") })
     sources.from(
-        listOf("app", "core", "feature", "build-logic").map { folder ->
+        listOf("app", "baselineprofile", "core", "feature", "build-logic").map { folder ->
             fileTree(folder) {
                 include("**/*.kts", "**/src/**/*.kt", "**/src/**/*.java", "**/src/**/*.xml")
                 exclude("build/**", "*/build/**", ".gradle/**", "*/.gradle/**")
