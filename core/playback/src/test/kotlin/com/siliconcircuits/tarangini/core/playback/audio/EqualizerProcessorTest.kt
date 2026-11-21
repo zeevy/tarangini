@@ -146,6 +146,56 @@ class EqualizerProcessorTest {
     }
 
     @Test
+    fun `a song of a genre with its own preset plays with it, and the next song with the main setting`() {
+        val settings = EqualizerSettings(
+            isOn = true,
+            preset = EqualizerPreset.FLAT,
+            genresOn = true,
+            genrePresets = mapOf("rock" to EqualizerPreset.BASS),
+        )
+        processor.setTargets(targetsOf(settings, FIVE_BANDS_HZ))
+        val song = tone(60.0, 0.25, seconds = 0.3)
+
+        val flat = run(song)
+        processor.songStarts(listOf("rock"))
+        val rock = run(song)
+        processor.songStarts(listOf("folk"))
+        val folk = run(song)
+
+        assertArrayEquals(song, flat)
+        // The bass preset lifts 60 Hz by 6 dB; the whole sound is turned down by about the same.
+        assertTrue(abs(level(rock) - level(song)) < 0.5)
+        // After the fade of 20 ms the flat setting gives back the samples as they are.
+        val end = song.size / 2 until song.size
+        assertArrayEquals(song.sliceArray(end), folk.sliceArray(end))
+    }
+
+    @Test
+    fun `the change at the start of a song has no click and no gap`() {
+        processor.setTargets(EqualizerTargets(byGenre = mapOf("rock" to bands(0f, 0f, 0f, 12f, 0f))))
+        val input = tone(1_000.0, 0.5, seconds = 0.4)
+        val half = input.size / 4 * 2
+
+        // The end of one song and the start of the next of genre rock, as gapless playback gives them.
+        val end = run(input.copyOfRange(0, half))
+        processor.songStarts(listOf("rock"))
+        val start = run(input.copyOfRange(half, input.size))
+        val joined = end + start
+
+        assertEquals(input.size, joined.size)
+        val largestToneStep = 0.5 * Short.MAX_VALUE * 2 * PI * 1_000.0 / RATE
+        val steps = (2 until joined.size step 2).map { abs(joined[it] - joined[it - 2]) }
+        assertTrue("largest step ${steps.max()}", steps.max() < largestToneStep * 1.2)
+    }
+
+    @Test
+    fun `with the genre switch off no genre has its own target`() {
+        val settings = EqualizerSettings(isOn = true, genrePresets = mapOf("rock" to EqualizerPreset.BASS))
+
+        assertEquals(EqualizerTargets(targetOf(settings, FIVE_BANDS_HZ)), targetsOf(settings, FIVE_BANDS_HZ))
+    }
+
+    @Test
     fun `the equalizer off is flat`() {
         assertEquals(
             EqualizerTarget.FLAT,

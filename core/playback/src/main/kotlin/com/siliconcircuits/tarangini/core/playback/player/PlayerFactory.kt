@@ -10,6 +10,7 @@ import android.content.Context
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
+import androidx.media3.common.MediaItem
 import androidx.media3.common.audio.AudioProcessor
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
@@ -36,6 +37,7 @@ import okhttp3.OkHttpClient
  *
  * @param httpClient gives the shared HTTP client when the first stream is opened
  * @param audioProcessors run on the sound before it is played, such as the equalizer
+ * @param onSongStarts called on the playback thread when the first sound of a song goes to the processors
  */
 // The player is built with our own renderers factory, which is API that may still change.
 @OptIn(UnstableApi::class)
@@ -43,11 +45,12 @@ internal fun createPlayer(
     context: Context,
     sound: LastSound = LastSound(),
     audioProcessors: List<AudioProcessor> = emptyList(),
+    onSongStarts: (MediaItem) -> Unit = {},
     httpClient: () -> OkHttpClient,
 ): ExoPlayer {
     val music = AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build()
     val retry = StreamRetryPolicy()
-    val player = ExoPlayer.Builder(context, GaplessRenderersFactory(context, sound, audioProcessors))
+    val player = ExoPlayer.Builder(context, GaplessRenderersFactory(context, sound, audioProcessors, onSongStarts))
         .setMediaSourceFactory(
             DefaultMediaSourceFactory(context)
                 .setDataSourceFactory(streamDataSourceFactory(context, httpClient))

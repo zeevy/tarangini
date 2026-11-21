@@ -50,6 +50,37 @@ class EqualizerSettingsTest {
     }
 
     @Test
+    fun `a song plays with the preset of its first genre that has one`() {
+        val settings = EqualizerSettings(
+            isOn = true,
+            preset = EqualizerPreset.VOCAL,
+            bassBoost = 30,
+            genresOn = true,
+            genrePresets = mapOf("carnatic" to EqualizerPreset.CARNATIC, "rock" to EqualizerPreset.BASS),
+        )
+
+        assertEquals(EqualizerPreset.CARNATIC, settings.forSong(listOf("folk", "carnatic", "rock")).preset)
+        assertEquals(30, settings.forSong(listOf("carnatic")).bassBoost)
+        assertEquals(settings, settings.forSong(listOf("folk")))
+        assertEquals(settings, settings.forSong(emptyList()))
+    }
+
+    @Test
+    fun `with the genre switch off every song plays with the main setting`() {
+        val settings = EqualizerSettings(isOn = true, genrePresets = mapOf("rock" to EqualizerPreset.BASS))
+
+        assertEquals(settings, settings.forSong(listOf("rock")))
+    }
+
+    @Test
+    fun `a genre gets a preset, and back to the main setting with none`() {
+        val rock = EqualizerSettings().withGenrePreset("rock", EqualizerPreset.BASS)
+
+        assertEquals(mapOf("rock" to EqualizerPreset.BASS), rock.genrePresets)
+        assertEquals(emptyMap<String, EqualizerPreset>(), rock.withGenrePreset("rock", null).genrePresets)
+    }
+
+    @Test
     fun `a gain that is no number is flat`() {
         val own = EqualizerSettings(preset = null, ownGains = listOf(Float.NaN, Float.POSITIVE_INFINITY, 2f, 0f, 0f))
 

@@ -24,4 +24,7 @@ interface GenreRepository {
 
     /** The songs of a genre by title. */
     suspend fun songsOfGenre(genreId: Long, page: Page): List<Song>
+
+    /** The [Genre.key] of each genre of each song in [songIds]. A song with no genre tag has none. */
+    suspend fun genreKeysOf(songIds: List<Long>): Map<Long, List<String>>
 }

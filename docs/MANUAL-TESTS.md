@@ -201,6 +201,9 @@ Use wired headphones or a Bluetooth speaker, and a song with steady bass and voi
 | 137 | Charge to full, play the same album for one hour with the screen off, once with the equalizer off and once on (bass boost 100 %). Read the battery use of the app in Settings | The use with the equalizer on is at most 5 % more than with it off. Write the numbers in the results table |
 | 138 | Open the equalizer from the menu of now playing, turn it on and move each band and the bass slider while the song plays, slowly and fast | Each change is heard within half a second. No click, pop or crackle. With every band and the bass at full, a loud song does not crackle |
 | 139 | Turn the equalizer on with a preset, play a gapless album (a live album or one with tracks that run into each other), then close the app and play from the car or from the notification | No gap or click between the tracks. The preset is still on after the app was closed, and the car hears it too |
+| 140 | Turn on "Preset per genre", give one genre the preset Bass and leave another on "Same as the main setting" (main preset Vocal). Make a queue that mixes songs of both genres, also two tracks of a gapless test album of different genres one after the other | Each song starts with the preset of its genre from its first second. No click and no gap at the change, also between the gapless tracks |
+| 141 | With the settings of row 140, close the app, open it again and rescan the library from Settings | The genres keep their presets. A song with no genre tag plays with the main setting |
+| 142 | With the settings of row 140, play the mixed queue in the car | The car plays each song with the preset of its genre, the same as the phone |
 
 ## Results
 

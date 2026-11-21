@@ -10,6 +10,8 @@ import com.siliconcircuits.tarangini.core.domain.audio.EqualizerPreset
 import com.siliconcircuits.tarangini.core.domain.audio.EqualizerSettings
 import com.siliconcircuits.tarangini.core.domain.audio.FIVE_BANDS_HZ
 import com.siliconcircuits.tarangini.core.domain.premium.EqualizerBands
+import com.siliconcircuits.tarangini.core.testing.library.FakeGenreRepository
+import com.siliconcircuits.tarangini.core.testing.library.testSong
 import com.siliconcircuits.tarangini.core.testing.settings.FakeEqualizerRepository
 import com.siliconcircuits.tarangini.feature.player.MainDispatcherRule
 import kotlinx.coroutines.flow.collect
@@ -26,9 +28,13 @@ class EqualizerViewModelTest {
     val mainDispatcher = MainDispatcherRule()
 
     private val saved = FakeEqualizerRepository()
+    private val genres = FakeGenreRepository().apply {
+        songsByGenre =
+            mapOf("Carnatic" to listOf(testSong(1)), "Rock" to listOf(testSong(2)), "" to listOf(testSong(3)))
+    }
 
     // Made at first use, after the rule has set the main dispatcher.
-    private val viewModel by lazy { EqualizerViewModel(saved, EqualizerBands { FIVE_BANDS_HZ }) }
+    private val viewModel by lazy { EqualizerViewModel(saved, EqualizerBands { FIVE_BANDS_HZ }, genres) }
 
     @Test
     fun `the screen shows the saved settings with the bands of the build`() = runTest(mainDispatcher.dispatcher) {
@@ -69,6 +75,22 @@ class EqualizerViewModelTest {
         assertNull(state.settings.preset)
         assertEquals(listOf(6f, 4f, 0f, 0f, 3f), state.gains)
         assertEquals(state.settings, saved.saved.value)
+    }
+
+    @Test
+    fun `the screen lists the named genres, and a genre gets its own preset`() = runTest(mainDispatcher.dispatcher) {
+        backgroundScope.launch { viewModel.state.collect() }
+        runCurrent()
+
+        assertEquals(listOf("Carnatic", "Rock"), viewModel.state.value!!.genres.map { it.name })
+
+        viewModel.setGenresOn(true)
+        viewModel.setGenrePreset("Rock", EqualizerPreset.BASS)
+        viewModel.setGenrePreset("Carnatic", EqualizerPreset.CARNATIC)
+        viewModel.setGenrePreset("Carnatic", null)
+
+        assertEquals(true, saved.saved.value.genresOn)
+        assertEquals(mapOf("Rock" to EqualizerPreset.BASS), saved.saved.value.genrePresets)
     }
 
     @Test

@@ -13,8 +13,11 @@ import android.content.Context
 import android.media.MediaFormat
 import android.os.Handler
 import androidx.annotation.OptIn
+import androidx.media3.common.C
 import androidx.media3.common.Format
+import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
+import androidx.media3.common.Timeline
 import androidx.media3.common.audio.AudioProcessor
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultRenderersFactory
@@ -25,6 +28,7 @@ import androidx.media3.exoplayer.audio.DefaultAudioSink
 import androidx.media3.exoplayer.audio.MediaCodecAudioRenderer
 import androidx.media3.exoplayer.mediacodec.MediaCodecAdapter
 import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
+import androidx.media3.exoplayer.source.MediaSource
 import java.nio.ByteBuffer
 
 /**
@@ -65,6 +69,7 @@ internal class GaplessRenderersFactory(
     context: Context,
     private val sound: LastSound,
     private val audioProcessors: List<AudioProcessor> = emptyList(),
+    private val onSongStarts: (MediaItem) -> Unit = {},
 ) : DefaultRenderersFactory(context) {
     override fun buildAudioSink(
         context: Context,
@@ -95,6 +100,7 @@ internal class GaplessRenderersFactory(
                 eventListener,
                 audioSink,
                 sound,
+                onSongStarts,
             )
     }
 }
@@ -111,6 +117,7 @@ internal class GaplessAudioRenderer(
     eventListener: AudioRendererEventListener,
     audioSink: AudioSink,
     private val sound: LastSound,
+    private val onSongStarts: (MediaItem) -> Unit = {},
 ) : MediaCodecAudioRenderer(
     context,
     mediaCodecSelector,
@@ -119,6 +126,37 @@ internal class GaplessAudioRenderer(
     eventListener,
     audioSink,
 ) {
+    private val songs = StreamSongs<Any>()
+
+    override fun onStreamChanged(
+        formats: Array<out Format>,
+        startPositionUs: Long,
+        offsetUs: Long,
+        mediaPeriodId: MediaSource.MediaPeriodId,
+    ) {
+        // Kept before Media3 takes the stream, because for the first stream it tells of the start at once.
+        songs.read(offsetUs, mediaPeriodId.periodUid)
+        super.onStreamChanged(formats, startPositionUs, offsetUs, mediaPeriodId)
+        songs.playsAtOnce(offsetUs, outputStreamOffsetUs)?.let(::songStarts)
+    }
+
+    // Called on the playback thread after the last sound of a song went to the sink and before the
+    // first sound of the next one, so the equalizer can switch at the exact sample.
+    override fun onOutputStreamOffsetUsChanged(outputStreamOffsetUs: Long) {
+        super.onOutputStreamOffsetUsChanged(outputStreamOffsetUs)
+        songStarts(songs.started(outputStreamOffsetUs))
+    }
+
+    /** Tells of the song of [periodUid]. A song that is not known (any more) plays as one with no genre. */
+    private fun songStarts(periodUid: Any?) {
+        val timeline = timeline
+        val period = periodUid?.let(timeline::getIndexOfPeriod)?.takeIf { it != C.INDEX_UNSET }
+        val item = period?.let {
+            timeline.getWindow(timeline.getPeriod(it, Timeline.Period()).windowIndex, Timeline.Window()).mediaItem
+        }
+        onSongStarts(item ?: MediaItem.EMPTY)
+    }
+
     override fun onOutputFormatChanged(format: Format, mediaFormat: MediaFormat?) {
         super.onOutputFormatChanged(format.forDecoder(codecInfo?.name), mediaFormat)
     }
