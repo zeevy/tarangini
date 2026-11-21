@@ -11,6 +11,7 @@ import androidx.room3.RoomDatabase
 import androidx.room3.migration.Migration
 import com.siliconcircuits.tarangini.core.data.local.dao.FavouriteDao
 import com.siliconcircuits.tarangini.core.data.local.dao.FolderDao
+import com.siliconcircuits.tarangini.core.data.local.dao.GenreDao
 import com.siliconcircuits.tarangini.core.data.local.dao.HistoryDao
 import com.siliconcircuits.tarangini.core.data.local.dao.LetterDao
 import com.siliconcircuits.tarangini.core.data.local.dao.LibraryDao
@@ -24,16 +25,19 @@ import com.siliconcircuits.tarangini.core.data.local.entity.ArtistEntity
 import com.siliconcircuits.tarangini.core.data.local.entity.FavouriteSongEntity
 import com.siliconcircuits.tarangini.core.data.local.entity.FavouriteStationEntity
 import com.siliconcircuits.tarangini.core.data.local.entity.FolderEntity
+import com.siliconcircuits.tarangini.core.data.local.entity.GenreEntity
 import com.siliconcircuits.tarangini.core.data.local.entity.PlaylistEntity
 import com.siliconcircuits.tarangini.core.data.local.entity.PlaylistItemEntity
 import com.siliconcircuits.tarangini.core.data.local.entity.QueueItemEntity
 import com.siliconcircuits.tarangini.core.data.local.entity.ResumeStateEntity
 import com.siliconcircuits.tarangini.core.data.local.entity.SongEntity
+import com.siliconcircuits.tarangini.core.data.local.entity.SongGenreEntity
 import com.siliconcircuits.tarangini.core.data.local.entity.SongPlayEntity
 import com.siliconcircuits.tarangini.core.data.local.entity.SongSearchEntity
 import com.siliconcircuits.tarangini.core.data.local.entity.StationEntity
 import com.siliconcircuits.tarangini.core.data.local.entity.StationPlayEntity
 import com.siliconcircuits.tarangini.core.data.local.entity.StationStreamEntity
+import com.siliconcircuits.tarangini.core.data.local.migration.GenreTables
 import com.siliconcircuits.tarangini.core.data.local.migration.SearchTableWholeWords
 
 /**
@@ -48,24 +52,29 @@ import com.siliconcircuits.tarangini.core.data.local.migration.SearchTableWholeW
         FavouriteSongEntity::class,
         FavouriteStationEntity::class,
         FolderEntity::class,
+        GenreEntity::class,
         PlaylistEntity::class,
         PlaylistItemEntity::class,
         QueueItemEntity::class,
         ResumeStateEntity::class,
         SongEntity::class,
+        SongGenreEntity::class,
         SongPlayEntity::class,
         SongSearchEntity::class,
         StationEntity::class,
         StationPlayEntity::class,
         StationStreamEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
+@Suppress("TooManyFunctions") // One function per DAO of the database.
 internal abstract class TaranginiDatabase : RoomDatabase() {
     abstract fun favouriteDao(): FavouriteDao
 
     abstract fun folderDao(): FolderDao
+
+    abstract fun genreDao(): GenreDao
 
     abstract fun historyDao(): HistoryDao
 
@@ -87,6 +96,6 @@ internal abstract class TaranginiDatabase : RoomDatabase() {
         const val FILE_NAME = "tarangini.db"
 
         /** Every step from an older version to this one. A new version adds its step here. */
-        val MIGRATIONS: List<Migration> = listOf(SearchTableWholeWords)
+        val MIGRATIONS: List<Migration> = listOf(SearchTableWholeWords, GenreTables)
     }
 }

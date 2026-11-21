@@ -7,10 +7,12 @@
 package com.siliconcircuits.tarangini.core.playback.browse
 
 import androidx.media3.common.MediaItem
+import com.siliconcircuits.tarangini.core.domain.model.Genre
 import com.siliconcircuits.tarangini.core.domain.model.Page
 import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.domain.model.SongSort
 import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
+import com.siliconcircuits.tarangini.core.domain.repository.GenreRepository
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryLetters
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
 import com.siliconcircuits.tarangini.core.domain.repository.PlayHistory
@@ -34,6 +36,7 @@ internal class BrowseTree(
     private val favourites: FavouriteRepository,
     private val history: PlayHistory,
     private val playlists: PlaylistRepository,
+    private val genres: GenreRepository = NoGenres,
 ) {
     /** The top node. The car asks for it first, before any list. */
     val root: MediaItem = items.list(MediaId.Root)
@@ -50,8 +53,9 @@ internal class BrowseTree(
         is MediaId.Letter -> rows(parent.list, parent, group(parent))
         MediaId.Folders -> library.folders(null).map(items::folder)
         MediaId.Playlists -> playlists.playlists().take(Page.MAX_LIMIT).map(items::playlist)
+        MediaId.Genres -> genres.genres(Page(Page.MAX_LIMIT)).map(items::genre)
         is MediaId.Folder -> library.folders(parent.id).map(items::folder) + songItems(parent)
-        is MediaId.Album, is MediaId.Artist, is MediaId.Playlist -> songItems(parent)
+        is MediaId.Album, is MediaId.Artist, is MediaId.Playlist, is MediaId.Genre -> songItems(parent)
         MediaId.Favourites, MediaId.Recent, MediaId.MostPlayed -> songItems(parent)
         is MediaId.SongIn -> null
     }
@@ -112,6 +116,8 @@ internal class BrowseTree(
 
         is MediaId.Artist -> library.songsOfArtist(list.id, Page(Page.MAX_LIMIT))
 
+        is MediaId.Genre -> genres.songsOfGenre(list.id, Page(Page.MAX_LIMIT))
+
         is MediaId.Folder -> library.songsInFolder(list.id, Page(Page.MAX_LIMIT))
 
         MediaId.Favourites -> favourites.songs(Page(Page.MAX_LIMIT))
@@ -124,7 +130,8 @@ internal class BrowseTree(
         is MediaId.Playlist ->
             playlists.songs(list.id, Page(Page.MAX_LIMIT)).map { it.song }.distinctBy { it.id }
 
-        MediaId.Root, MediaId.Library, MediaId.Folders, MediaId.Playlists, is MediaId.SongIn -> emptyList()
+        MediaId.Root, MediaId.Library, MediaId.Folders, MediaId.Playlists, MediaId.Genres, is MediaId.SongIn ->
+            emptyList()
     }
 
     private suspend fun group(letter: MediaId.Letter): LetterGroup? =
@@ -140,4 +147,13 @@ internal class BrowseTree(
         /** A list by name with more rows than this is shown by letter. A driver cannot scroll through more. */
         const val WHOLE_LIST = 100
     }
+}
+
+/** A library with no genres, for a tree that is built without them. */
+private object NoGenres : GenreRepository {
+    override suspend fun genres(page: Page): List<Genre> = emptyList()
+
+    override suspend fun genre(genreId: Long): Genre? = null
+
+    override suspend fun songsOfGenre(genreId: Long, page: Page): List<Song> = emptyList()
 }

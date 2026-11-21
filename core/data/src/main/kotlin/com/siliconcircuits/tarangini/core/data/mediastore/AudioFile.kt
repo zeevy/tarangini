@@ -17,6 +17,7 @@ package com.siliconcircuits.tarangini.core.data.mediastore
  * @property albumArtist the artist of the whole album, or null when the file has no tag
  * @property durationMs the length, or null when the phone does not know it
  * @property dateAdded when the file came to the phone, in milliseconds since 1970 UTC
+ * @property genre the genre tag as the file states it; it can name more than one genre
  * @property dateModified when the file last changed, in milliseconds since 1970 UTC
  */
 internal data class AudioFile(
@@ -33,6 +34,7 @@ internal data class AudioFile(
     val trackNumber: Int?,
     val discNumber: Int?,
     val year: Int?,
+    val genre: String? = null,
     val dateAdded: Long,
     val dateModified: Long,
 )

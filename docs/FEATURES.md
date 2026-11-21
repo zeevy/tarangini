@@ -442,6 +442,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D68 | Database version 2: the search table keeps a word of an Indian script whole. The table is made again from the songs by a migration | 21 Nov 2026 | A search for the start of a Telugu or Hindi word found words with another vowel. See [ADR 0014](adr/0014-library-search.md) and [DATABASE.md](DATABASE.md) |
 | D69 | Playlists go in and out as `.m3u` files through the file picker of the system. A line is matched to a library song by the end of its path, or by its file name when only one song has it. A file over 1 MB is refused | 21 Nov 2026 | The app needs no new permission, and a file from anywhere cannot name anything but songs of the library. See `docs/adr/0042-playlist-files.md` |
 | D70 | Plain `http` is off for the whole app while it has no radio | 21 Nov 2026 | Nothing in the first release needs it. It comes back with radio, for media streams. See [ADR 0039](adr/0039-release-build.md) |
+| D71 | Genres: read from the genre tag by the scan into two new tables (database version 3). A tag can name several genres, divided by ";" or ","; a song with no genre is under "Unknown". Genres is a list of the Library tab on the phone and in the car | 21 Nov 2026 | A song is under each of its genres with one join table, and the lists stay one query each. See `docs/adr/0043-genres.md` |
 
 ## 9. Checks before building
 

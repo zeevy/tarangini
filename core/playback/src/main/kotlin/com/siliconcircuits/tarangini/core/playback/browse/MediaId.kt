@@ -55,6 +55,12 @@ internal sealed interface MediaId {
     /** One playlist: its songs in its order. */
     data class Playlist(val id: Long) : MediaId
 
+    /** The genres, under the Library tab. */
+    data object Genres : MediaId
+
+    /** One genre: its songs by title. */
+    data class Genre(val id: Long) : MediaId
+
     /** One album: its songs. */
     data class Album(val id: Long) : MediaId
 
@@ -73,16 +79,17 @@ internal sealed interface MediaId {
     /** True for a node whose children are songs, so a song can name it as its list. */
     val holdsSongs: Boolean
         get() = when (this) {
-            is Album, is Artist, is Folder, is Playlist, Favourites, Recent, MostPlayed -> true
+            is Album, is Artist, is Folder, is Playlist, is Genre, Favourites, Recent, MostPlayed -> true
             is Section -> list == LibraryList.SONGS
             is Letter -> list == LibraryList.SONGS
-            Root, Library, Folders, Playlists, is SongIn -> false
+            Root, Library, Folders, Playlists, Genres, is SongIn -> false
         }
 
     /** The text form of the id, for example `album.12` or `song.345@album.12`. */
     fun encode(): String = when (this) {
-        Root, Library, Folders, Favourites, Recent, MostPlayed, Playlists -> FIXED.getValue(this)
+        Root, Library, Folders, Favourites, Recent, MostPlayed, Playlists, Genres -> FIXED.getValue(this)
         is Playlist -> "$PLAYLIST$PART$id"
+        is Genre -> "$GENRE$PART$id"
         is Section -> list.word
         is Letter -> "${list.word}$PART$letter"
         is Album -> "$ALBUM$PART$id"
@@ -103,6 +110,8 @@ internal sealed interface MediaId {
         private const val MOST_PLAYED = "mostplayed"
         private const val PLAYLISTS = "playlists"
         private const val PLAYLIST = "playlist"
+        private const val GENRES = "genres"
+        private const val GENRE = "genre"
         private const val ALBUM = "album"
         private const val ARTIST = "artist"
         private const val FOLDER = "folder"
@@ -121,6 +130,7 @@ internal sealed interface MediaId {
                 Recent to RECENT,
                 MostPlayed to MOST_PLAYED,
                 Playlists to PLAYLISTS,
+                Genres to GENRES,
             )
         }
 
@@ -168,6 +178,8 @@ internal sealed interface MediaId {
             FOLDER -> Folder(number)
 
             PLAYLIST -> Playlist(number)
+
+            GENRE -> Genre(number)
 
             else -> LibraryList.entries.firstOrNull { it.word == word }
                 ?.takeIf { number <= Character.MAX_CODE_POINT }

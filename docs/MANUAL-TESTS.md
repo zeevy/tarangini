@@ -181,6 +181,8 @@ These need the Desktop Head Unit or a car. The steps are in [ANDROID-AUTO.md](AN
 | 124 | Open a playlist with songs, choose "Export to a file" in its menu and save it in Downloads. Open the file in a file app. Then in Library, Playlists choose "Import a playlist file" and pick that file | The file picker of the system opens both times. The file has one path per song. The import makes a new playlist with the name of the file and the same songs in the same order, and says how many were found |
 | 125 | Import a playlist file made on a computer (Windows paths or relative paths) with some songs that are not on the phone, and then a large file that is no playlist (a video) | The songs that are on the phone are found, the others are listed as not found. The large file is refused with a clear text and no playlist is made |
 | 126 | With the release build on a phone, read the log while the app runs through the main flows | No line about cleartext traffic that was refused: the app itself asks for no plain `http` address |
+| 127 | On a phone with songs that have genre tags, some with two genres and some with none, open Library, Genres and a genre | Each genre shows with its number of songs, a song with two genres is under both, the songs with none are under "Unknown" at the end. A tap on a song plays the genre from that song on |
+| 128 | Install the build with genres over a build without them and open the app. Then open Library, Genres in the car | After the first scan the Genres list is filled; favourites and playlists are as before. The car shows Genres under Library and plays a genre |
 
 ## Results
 

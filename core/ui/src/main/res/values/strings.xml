@@ -33,6 +33,7 @@
     <string name="action_ok">OK</string>
     <string name="unknown_artist">Unknown artist</string>
     <string name="unknown_album">Unknown album</string>
+    <string name="unknown_genre">Unknown</string>
     <string name="row_two_parts">%1$s · %2$s</string>
     <plurals name="song_count">
         <item quantity="one">%1$d song</item>

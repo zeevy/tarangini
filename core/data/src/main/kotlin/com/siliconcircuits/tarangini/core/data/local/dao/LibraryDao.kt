@@ -245,10 +245,17 @@ internal abstract class LibraryDao {
     @Query("DELETE FROM song_search WHERE rowid IN (:songIds)")
     protected abstract suspend fun deleteSearchRows(songIds: List<Long>)
 
-    /** Every stored song of [source], for a scan to compare with the files it finds. */
+    /**
+     * Every stored song of [source], for a scan to compare with the files it finds.
+     *
+     * A song with no genre row was saved before the app read genres. It gets a change date no file
+     * has, so the next scan reads its tags again.
+     */
     @Query(
         """
-        SELECT s.id, s.source_id, s.date_modified, s.missing_since, s.file_name, s.size_bytes, f.path AS folder_path
+        SELECT s.id, s.source_id, s.missing_since, s.file_name, s.size_bytes, f.path AS folder_path,
+            CASE WHEN EXISTS (SELECT 1 FROM song_genres g WHERE g.song_id = s.id)
+                THEN s.date_modified ELSE $GENRE_NOT_READ END AS date_modified
         FROM songs s
         LEFT JOIN folders f ON f.id = s.folder_id
         WHERE s.source = :source
@@ -539,6 +546,9 @@ internal abstract class LibraryDao {
     companion object {
         /** The most ids in one statement. SQLite limits the number of values a statement can take. */
         const val MAX_IDS = 500
+
+        /** The change date the scan sees for a song whose genre tag was never read. */
+        const val GENRE_NOT_READ = -1L
 
         /**
          * The `missing_since` value of a song that the settings of the user

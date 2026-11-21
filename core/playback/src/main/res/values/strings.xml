@@ -9,6 +9,7 @@
     <string name="car_songs">Songs</string>
     <string name="car_albums">Albums</string>
     <string name="car_artists">Artists</string>
+    <string name="car_genres">Genres</string>
     <string name="car_folders">Folders</string>
     <string name="car_playlists">Playlists</string>
     <string name="car_favourites">Favourites</string>
@@ -23,6 +24,7 @@
     <string name="car_repeat_off">Turn repeat off</string>
     <string name="car_unknown_album">Unknown album</string>
     <string name="car_unknown_artist">Unknown artist</string>
+    <string name="car_unknown_genre">Unknown</string>
     <string name="car_nothing_found">Nothing in your library matches that</string>
     <string name="car_no_songs">There are no songs in your library yet</string>
     <string name="car_allow_audio">Allow access to audio files on your phone, when it is safe</string>

@@ -94,6 +94,7 @@ internal class MediaStoreAudioSource @Inject constructor(@ApplicationContext pri
         trackNumber = leadingNumber(text(MediaStore.Audio.Media.CD_TRACK_NUMBER)),
         discNumber = leadingNumber(text(MediaStore.Audio.Media.DISC_NUMBER)),
         year = number(MediaStore.Audio.Media.YEAR)?.toInt()?.takeIf { it > 0 },
+        genre = tag(MediaStore.Audio.Media.GENRE),
         dateAdded = (number(MediaStore.Audio.Media.DATE_ADDED) ?: 0) * MS_PER_SECOND,
         dateModified = (number(MediaStore.Audio.Media.DATE_MODIFIED) ?: 0) * MS_PER_SECOND,
     )
@@ -141,6 +142,7 @@ internal class MediaStoreAudioSource @Inject constructor(@ApplicationContext pri
             MediaStore.Audio.Media.CD_TRACK_NUMBER,
             MediaStore.Audio.Media.DISC_NUMBER,
             MediaStore.Audio.Media.YEAR,
+            MediaStore.Audio.Media.GENRE,
             MediaStore.Audio.Media.DATE_ADDED,
             MediaStore.Audio.Media.DATE_MODIFIED,
         )

@@ -40,7 +40,7 @@ class SchemaTest {
     fun `version 1 is built from its committed schema and matches the entities`() = runTest {
         helper.createDatabase(version = 1).close()
 
-        helper.runMigrationsAndValidate(version = 2, migrations = migrations).close()
+        helper.runMigrationsAndValidate(version = 3, migrations = migrations).close()
     }
 
     @Test
@@ -63,7 +63,7 @@ class SchemaTest {
             )
         }
 
-        helper.runMigrationsAndValidate(version = 2, migrations = migrations).use { now ->
+        helper.runMigrationsAndValidate(version = 3, migrations = migrations).use { now ->
             assertEquals(listOf(1L, 2L), now.longs("SELECT id FROM songs ORDER BY id"))
             assertEquals(listOf(1L), now.longs("SELECT song_id FROM favourite_songs"))
             assertEquals(listOf(2L), now.longs("SELECT song_id FROM playlist_items WHERE playlist_id = 1"))
@@ -74,6 +74,25 @@ class SchemaTest {
             )
             // A word is whole now: the start "గా" is not the start of "గోవిందా".
             assertEquals(listOf(2L), now.longs("SELECT rowid FROM song_search WHERE song_search MATCH '\"గా*\"'"))
+        }
+    }
+
+    @Test
+    fun `version 3 adds empty genre tables and leaves the songs as they are`() = runTest {
+        helper.createDatabase(version = 2).use { old ->
+            old.execSQL("INSERT INTO artists(id, name, name_key) VALUES (1, 'Ravi', 'ravi')")
+            old.execSQL("INSERT INTO albums(id, title, title_key, artist_id) VALUES (1, 'Morning', 'morning', 1)")
+            old.execSQL(
+                "INSERT INTO songs(id, source, source_id, title, title_key, artist_id, album_id, file_name, " +
+                    "mime_type, duration_ms, size_bytes, date_added, date_modified) " +
+                    "VALUES (1, 'LOCAL', '1', 'Raga', 'raga', 1, 1, '1.mp3', 'audio/mpeg', 1000, 10, 1, 1)",
+            )
+        }
+
+        helper.runMigrationsAndValidate(version = 3, migrations = migrations).use { now ->
+            assertEquals(listOf(1L), now.longs("SELECT id FROM songs"))
+            assertEquals(listOf(0L), now.longs("SELECT COUNT(*) FROM genres"))
+            assertEquals(listOf(0L), now.longs("SELECT COUNT(*) FROM song_genres"))
         }
     }
 
