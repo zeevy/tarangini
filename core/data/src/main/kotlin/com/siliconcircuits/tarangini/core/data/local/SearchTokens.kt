@@ -45,7 +45,8 @@ private const val INDIC_MARKS =
 /**
  * The option of the search table that makes each mark of [INDIC_MARKS] part of a word.
  *
- * It is part of the definition of the table. A change to it needs a higher database version and
- * a migration that makes the table again.
+ * It is part of the definition of the table, and the migration to version 2 makes the table with
+ * it. So this value never changes: another list of characters is a new constant, with a higher
+ * database version and a migration that makes the table again.
  */
 internal const val SEARCH_TOKEN_CHARS = "tokenchars=$INDIC_MARKS"
