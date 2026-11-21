@@ -57,6 +57,23 @@ class NoticeFilesTest {
     }
 
     @Test
+    fun `every notice of a file is kept, each once, also from a jar in the libs folder`() {
+        val inside = zip("META-INF/NOTICE" to "From the inner jar".toByteArray())
+        val classes = zip("META-INF/NOTICE.txt" to "Made by B".toByteArray(), "x.jar" to inside)
+        val aar = library(
+            "g.aar",
+            "NOTICE-extra.md" to "At the top".toByteArray(),
+            "classes.jar" to classes,
+            "libs/other.jar" to zip(
+                "NOTICE" to "Made by B".toByteArray(),
+                "META-INF/NOTICE" to "Of libs".toByteArray(),
+            ),
+        )
+
+        assertEquals("At the top\n\nMade by B\n\nOf libs", NoticeFiles.noticeIn(aar))
+    }
+
+    @Test
     fun `a very long notice is cut`() {
         val jar = library("f.jar", "NOTICE" to "x".repeat(NoticeFiles.MAX_CHARS + 10).toByteArray())
 

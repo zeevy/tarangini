@@ -51,7 +51,7 @@ class DefaultLicenceCatalogTest {
              {"groupId": "org.a", "artifactId": "two", "version": "1", "spdxLicenses": [{"identifier": "Apache-2.0"}]}]
         """.trimIndent()
         val notices = """
-            [{"groupId": "org.a", "artifactId": "one", "notice": " Made\u0007 by A\nIn 2020 "},
+            [{"groupId": "org.a", "artifactId": "one", "notice": " Made\u0007 by\tA\u202E\nIn 2020 "},
              {"groupId": "org.a", "artifactId": "empty", "notice": "  "}, "no entry"]
         """.trimIndent()
 

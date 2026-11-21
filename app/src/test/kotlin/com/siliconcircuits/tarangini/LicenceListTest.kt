@@ -43,7 +43,7 @@ class LicenceListTest {
         }
 
         // A notice of a library that is not in the list would never show on the licences screen.
-        assertTrue("No notice was collected", withNotice.isNotEmpty())
+        assertTrue("No notice: the build step did not run, or no library has one any more", withNotice.isNotEmpty())
         assertTrue("Not in the list: ${withNotice - libraries}", libraries.containsAll(withNotice))
     }
 

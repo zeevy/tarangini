@@ -32,11 +32,15 @@ abstract class NoticeFilesTask : DefaultTask() {
     @TaskAction
     fun collect() {
         val names = names.get()
-        val notices = libraries.files.mapNotNull { file ->
-            val name = names[file.absolutePath]
-            val notice = NoticeFiles.noticeIn(file)
-            if (name != null && notice != null) name to notice else null
-        }.toMap()
+        // A library can have more than one file. Their notices are joined in a fixed order.
+        val notices = libraries.files.sortedBy { it.name }
+            .mapNotNull { file ->
+                val name = names[file.absolutePath]
+                val notice = NoticeFiles.noticeIn(file)
+                if (name != null && notice != null) name to notice else null
+            }
+            .groupBy({ it.first }, { it.second })
+            .mapValues { (_, texts) -> texts.distinct().joinToString("\n\n") }
         val asset = assets.get().file(NoticeFiles.ASSET).asFile
         asset.parentFile.mkdirs()
         asset.writeText(NoticeFiles.toJson(notices))

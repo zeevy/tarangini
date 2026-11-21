@@ -67,14 +67,16 @@ internal fun parseArtifacts(json: String, notices: Map<String, String> = emptyMa
 
 /**
  * The `NOTICE` files the build collected, by the `group:name` of the library. The text comes from
- * a file of a library, so it loses its control characters and is cut. A list that is no list gives nothing.
+ * a file of a library, so it loses its control characters and direction marks and is cut. A list
+ * that is no list gives nothing.
  */
 internal fun parseNotices(json: String): Map<String, String> = try {
     val notices = JSONArray(json)
     (0 until notices.length()).mapNotNull { index ->
         val entry = notices.optJSONObject(index)
         val text = entry?.optString("notice").orEmpty()
-            .filter { it == '\n' || !it.isISOControl() }
+            .replace('\t', ' ')
+            .filterNot { (it != '\n' && it.isISOControl()) || it.isDirectionMark() }
             .trim()
             .take(MAX_NOTICE)
         if (entry == null || text.isEmpty()) null else entry.coordinates() to text
@@ -84,6 +86,9 @@ internal fun parseNotices(json: String): Map<String, String> = try {
 }
 
 private const val MAX_NOTICE = 64 * 1024
+
+/** True for a character that is not seen and can change the direction of the text around it. */
+private fun Char.isDirectionMark() = Character.getType(this) == Character.FORMAT.toInt()
 
 private fun JSONObject.coordinates() = optString("groupId") + ":" + optString("artifactId")
 
