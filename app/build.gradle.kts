@@ -28,6 +28,18 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // With -Ptarangini.releaseEndToEnd the end to end test runs against the shrunk release app,
+    // so a keep rule that R8 needs shows up as a failed test. Only that run signs the release app
+    // (with the debug key), as a device installs only signed apps.
+    if (providers.gradleProperty("tarangini.releaseEndToEnd").isPresent) {
+        testBuildType = "release"
+        buildTypes.getByName("release") {
+            signingConfig = signingConfigs.getByName("debug")
+            testProguardFiles("test-proguard-rules.pro")
+            proguardFile("release-end-to-end-rules.pro")
+        }
+    }
+
     flavorDimensions += "distribution"
     productFlavors {
         create("core")
