@@ -89,6 +89,27 @@ class DefaultSearchRepositoryTest {
     }
 
     @Test
+    fun `the start of a word of an Indian script does not find a word with another vowel`() = runTest {
+        // Per script: a word, the start of it, and a start with the same consonant and another vowel.
+        val words = listOf(
+            Triple("గోవిందా", "గో", "గా"),
+            Triple("गोविंदा", "गो", "गा"),
+            Triple("கோவிந்தா", "கோ", "கா"),
+            Triple("ಗೋವಿಂದಾ", "ಗೋ", "ಗಾ"),
+            Triple("ഗോവിന്ദാ", "ഗോ", "ഗാ"),
+            Triple("গোবিন্দ", "গো", "গা"),
+        )
+        words.forEach { (word, _, _) -> song(word) }
+
+        words.forEach { (word, start, otherVowel) ->
+            assertEquals(listOf(word), search.search(start).songs.map { it.title })
+            assertEquals(word, emptyList<String>(), search.search(otherVowel).songs.map { it.title })
+            // The bare consonant is the start of the word as it is written.
+            assertEquals(listOf(word), search.search(start.take(1)).songs.map { it.title })
+        }
+    }
+
+    @Test
     fun `Telugu and Hindi text finds songs with such tags`() = runTest {
         song("ఎందరో మహానుభావులు", artist = "త్యాగరాజు", album = "పంచరత్న కృతులు")
         song("रघुपति राघव", artist = "विष्णु दिगंबर", album = "भजन")

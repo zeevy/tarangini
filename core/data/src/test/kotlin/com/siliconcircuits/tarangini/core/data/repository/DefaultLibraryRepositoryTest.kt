@@ -34,11 +34,12 @@ class DefaultLibraryRepositoryTest {
     private val database = testDatabase()
     private val library = database.libraryDao()
     private var nextFileId = 1
+    private val names = mutableMapOf<String, String>()
 
     @After
     fun closeDatabase() = database.close()
 
-    private fun repository() = DefaultLibraryRepository(library)
+    private fun repository() = DefaultLibraryRepository(library) { volume -> names[volume] ?: volume }
 
     /** Saves a song with the next file id, because a local song always has a number as its file id. */
     @Suppress("LongParameterList") // Each test sets only the values it is about.
@@ -149,6 +150,19 @@ class DefaultLibraryRepositoryTest {
         assertEquals(listOf("First", "Second"), repository.albumsOfArtist(amy).map { it.title })
         assertEquals(listOf("a", "b"), repository.songsOfArtist(amy, Page()).map { it.title })
         assertEquals(listOf("b"), repository.songsOfArtist(amy, Page(limit = 1, offset = 1)).map { it.title })
+    }
+
+    @Test
+    fun `a storage shows with a name a person knows, and the folders in it keep their own`() = runTest {
+        names["external_primary"] = "Phone storage"
+        val phone = library.saveFolder("external_primary", "external_primary", parentId = null)
+        library.saveFolder("external_primary/external_primary", "external_primary", parentId = phone)
+        song("in the storage", folderId = phone)
+
+        val storage = repository().folders(null).single()
+
+        assertEquals("Phone storage" to "external_primary", storage.name to storage.path)
+        assertEquals(listOf("external_primary"), repository().folders(phone).map { it.name })
     }
 
     @Test

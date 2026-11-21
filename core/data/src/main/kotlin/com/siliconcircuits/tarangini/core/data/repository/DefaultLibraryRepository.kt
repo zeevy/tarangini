@@ -12,6 +12,7 @@ import com.siliconcircuits.tarangini.core.data.mapper.toAlbum
 import com.siliconcircuits.tarangini.core.data.mapper.toArtist
 import com.siliconcircuits.tarangini.core.data.mapper.toFolder
 import com.siliconcircuits.tarangini.core.data.mapper.toSong
+import com.siliconcircuits.tarangini.core.data.mediastore.StorageNames
 import com.siliconcircuits.tarangini.core.domain.model.Album
 import com.siliconcircuits.tarangini.core.domain.model.Artist
 import com.siliconcircuits.tarangini.core.domain.model.Folder
@@ -24,7 +25,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 /** The library from the database of the app. Every list is one query with a limit; nothing is kept in memory. */
-internal class DefaultLibraryRepository @Inject constructor(private val library: LibraryDao) : LibraryRepository {
+internal class DefaultLibraryRepository @Inject constructor(
+    private val library: LibraryDao,
+    private val storageNames: StorageNames,
+) : LibraryRepository {
     override fun changes(): Flow<Unit> = library.hasSongs().map { }
 
     override suspend fun songs(sort: SongSort, page: Page): List<Song> = when (sort) {
@@ -51,7 +55,11 @@ internal class DefaultLibraryRepository @Inject constructor(private val library:
     override suspend fun songsOfArtist(artistId: Long, page: Page): List<Song> =
         library.songsOfArtist(artistId, page.limit, page.offset).map(SongRow::toSong)
 
-    override suspend fun folders(parentId: Long?): List<Folder> = library.childFolders(parentId).map { it.toFolder() }
+    override suspend fun folders(parentId: Long?): List<Folder> {
+        val folders = library.childFolders(parentId).map { it.toFolder() }
+        // A top folder is a storage. Its saved name is the code MediaStore has for it.
+        return if (parentId == null) folders.map { it.copy(name = storageNames.nameOf(it.name)) } else folders
+    }
 
     override suspend fun songsInFolder(folderId: Long, page: Page): List<Song> =
         library.songsInFolder(folderId, page.limit, page.offset).map(SongRow::toSong)

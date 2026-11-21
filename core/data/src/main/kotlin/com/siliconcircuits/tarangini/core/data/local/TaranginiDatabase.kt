@@ -8,6 +8,7 @@ package com.siliconcircuits.tarangini.core.data.local
 
 import androidx.room3.Database
 import androidx.room3.RoomDatabase
+import androidx.room3.migration.Migration
 import com.siliconcircuits.tarangini.core.data.local.dao.FavouriteDao
 import com.siliconcircuits.tarangini.core.data.local.dao.FolderDao
 import com.siliconcircuits.tarangini.core.data.local.dao.HistoryDao
@@ -32,6 +33,7 @@ import com.siliconcircuits.tarangini.core.data.local.entity.SongSearchEntity
 import com.siliconcircuits.tarangini.core.data.local.entity.StationEntity
 import com.siliconcircuits.tarangini.core.data.local.entity.StationPlayEntity
 import com.siliconcircuits.tarangini.core.data.local.entity.StationStreamEntity
+import com.siliconcircuits.tarangini.core.data.local.migration.SearchTableWholeWords
 
 /**
  * The one database of the app. A change to an entity needs a higher
@@ -56,7 +58,7 @@ import com.siliconcircuits.tarangini.core.data.local.entity.StationStreamEntity
         StationPlayEntity::class,
         StationStreamEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 internal abstract class TaranginiDatabase : RoomDatabase() {
@@ -80,5 +82,8 @@ internal abstract class TaranginiDatabase : RoomDatabase() {
 
     companion object {
         const val FILE_NAME = "tarangini.db"
+
+        /** Every step from an older version to this one. A new version adds its step here. */
+        val MIGRATIONS: List<Migration> = listOf(SearchTableWholeWords)
     }
 }
