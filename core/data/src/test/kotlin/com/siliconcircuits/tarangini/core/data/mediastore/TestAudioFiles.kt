@@ -22,6 +22,7 @@ internal fun audioFile(
     durationMs: Long? = 180_000,
     sizeBytes: Long = 1_000 + id.hashCode().toLong(),
     dateModified: Long = 1_000,
+    genre: String? = null,
 ) = AudioFile(
     id = id,
     fileName = fileName,
@@ -36,6 +37,7 @@ internal fun audioFile(
     trackNumber = null,
     discNumber = null,
     year = null,
+    genre = genre,
     dateAdded = 500,
     dateModified = dateModified,
 )

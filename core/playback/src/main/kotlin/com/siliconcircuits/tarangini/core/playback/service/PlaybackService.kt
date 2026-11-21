@@ -22,6 +22,7 @@ import com.siliconcircuits.tarangini.core.domain.playback.ResumeStore
 import com.siliconcircuits.tarangini.core.domain.premium.CrashReporter
 import com.siliconcircuits.tarangini.core.domain.repository.AudioAccess
 import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
+import com.siliconcircuits.tarangini.core.domain.repository.GenreRepository
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryLetters
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
 import com.siliconcircuits.tarangini.core.domain.repository.PlayHistory
@@ -92,6 +93,8 @@ internal class PlaybackService : MediaLibraryService() {
         fun playHistory(): PlayHistory
 
         fun playlistRepository(): PlaylistRepository
+
+        fun genreRepository(): GenreRepository
     }
 
     /** What the service takes from the app. The system makes a service, so nothing can be handed to its constructor. */
@@ -171,6 +174,7 @@ internal class PlaybackService : MediaLibraryService() {
         app.favouriteRepository(),
         app.playHistory(),
         app.playlistRepository(),
+        app.genreRepository(),
     )
 
     /** Writes a song into the play history once it was heard for some seconds. A stream is no song and is left out. */

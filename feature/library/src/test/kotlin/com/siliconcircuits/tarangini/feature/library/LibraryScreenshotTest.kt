@@ -8,6 +8,7 @@ package com.siliconcircuits.tarangini.feature.library
 
 import androidx.compose.runtime.Composable
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.siliconcircuits.tarangini.core.domain.model.Genre
 import com.siliconcircuits.tarangini.core.domain.model.Playlist
 import com.siliconcircuits.tarangini.core.domain.model.PlaylistSong
 import com.siliconcircuits.tarangini.core.domain.model.Song
@@ -20,6 +21,7 @@ import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import com.siliconcircuits.tarangini.feature.library.album.AlbumContent
 import com.siliconcircuits.tarangini.feature.library.artist.ArtistContent
 import com.siliconcircuits.tarangini.feature.library.folder.FolderContent
+import com.siliconcircuits.tarangini.feature.library.genre.GenresContent
 import com.siliconcircuits.tarangini.feature.library.list.PagedItems
 import com.siliconcircuits.tarangini.feature.library.playlist.PlaylistActions
 import com.siliconcircuits.tarangini.feature.library.playlist.PlaylistContent
@@ -115,6 +117,22 @@ class LibraryScreenshotTest {
     @Test
     fun `a folder with nothing left`() = shot("library_folder_empty") {
         FolderContent("Old", emptyList(), PagedItems(isLoading = false), songActions, {}, {}, {}, {})
+    }
+
+    @Test
+    fun genres() = shot("library_genres") {
+        LibraryContent(
+            lists,
+            songActions,
+            LibraryActions(),
+            firstTab = LibraryTab.GENRES,
+            genres = {
+                GenresContent(
+                    PagedItems(listOf(Genre(1, "Carnatic", 240), Genre(2, "Film", 1), Genre(3, "", 12)), false),
+                    onOpenGenre = {},
+                )
+            },
+        )
     }
 
     @Test

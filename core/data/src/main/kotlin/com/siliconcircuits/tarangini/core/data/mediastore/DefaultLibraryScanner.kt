@@ -46,12 +46,15 @@ import kotlinx.coroutines.withContext
 @Singleton
 internal class DefaultLibraryScanner @Inject constructor(
     private val source: AudioFileSource,
-    private val library: LibraryDao,
+    store: ScanStore,
     private val settings: DataStore<Preferences>,
     private val time: TimeSource,
     @IoDispatcher private val io: CoroutineDispatcher,
     private val crashes: CrashReporter,
 ) : LibraryScanner {
+    private val library = store.library
+    private val genres = store.genres
+
     private val scanState = MutableStateFlow<ScanState>(ScanState.Idle)
     override val state: StateFlow<ScanState> = scanState.asStateFlow()
 
@@ -147,6 +150,7 @@ internal class DefaultLibraryScanner @Inject constructor(
      */
     private suspend fun removeForGood(songIds: List<Long>) = library.inOneTransaction {
         library.deleteSongs(songIds)
+        genres.deleteUnusedGenres()
         library.deleteUnusedAlbums()
         library.deleteUnusedArtists()
         while (library.deleteUnusedFolders() > 0) {
@@ -160,7 +164,7 @@ internal class DefaultLibraryScanner @Inject constructor(
         val albumId = ids.album(file.album.orEmpty(), ids.artist(file.albumArtist ?: artist), file.year)
         // A file named only ".mp3" has no name before the ending; it shows its whole name.
         val title = file.title ?: file.fileName.substringBeforeLast('.').ifBlank { file.fileName }
-        library.saveSong(
+        val songId = library.saveSong(
             SongEntity(
                 source = SongSource.LOCAL,
                 sourceId = file.id,
@@ -181,6 +185,7 @@ internal class DefaultLibraryScanner @Inject constructor(
             ),
             isNew = isNew,
         )
+        genres.setGenres(songId, genreNames(file.genre).map { ids.genre(it) })
     }
 
     /**
@@ -192,11 +197,15 @@ internal class DefaultLibraryScanner @Inject constructor(
         private val artists = HashMap<String, Long>()
         private val albums = HashMap<Triple<Long, String, Int?>, Long>()
         private val folders = HashMap<String, Long?>()
+        private val genreIds = HashMap<String, Long>()
 
         suspend fun artist(name: String): Long =
             artists.getOrPut(sortKey(name)) { library.saveArtist(name, sortKey(name)) }
 
         /** The year is part of the key, so the first song that has a year gives it to its album. */
+        suspend fun genre(name: String): Long =
+            genreIds.getOrPut(sortKey(name)) { genres.saveGenre(name, sortKey(name)) }
+
         suspend fun album(title: String, artistId: Long, year: Int?): Long =
             albums.getOrPut(Triple(artistId, sortKey(title), year)) {
                 library.saveAlbum(title, sortKey(title), artistId, year)

@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import com.siliconcircuits.tarangini.core.domain.model.Album
 import com.siliconcircuits.tarangini.core.domain.model.Artist
 import com.siliconcircuits.tarangini.core.domain.model.Folder
+import com.siliconcircuits.tarangini.core.domain.model.Genre
 import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.ui.R
 
@@ -152,6 +153,18 @@ fun ArtistRow(artist: Artist, onClick: () -> Unit, modifier: Modifier = Modifier
         headlineContent = { OneLine(artist.name.ifEmpty { stringResource(R.string.unknown_artist) }) },
         supportingContent = { OneLine(pluralStringResource(R.plurals.song_count, artist.songCount, artist.songCount)) },
         leadingContent = { IconTile(painterResource(R.drawable.ic_artist)) },
+        modifier = modifier.opens(onClick),
+    )
+}
+
+/** One genre in a list: the name and how many songs. A tap opens the genre. */
+@Composable
+fun GenreRow(genre: Genre, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    ListItem(
+        colors = clearRowColors(),
+        headlineContent = { OneLine(genre.name.ifEmpty { stringResource(R.string.unknown_genre) }) },
+        supportingContent = { OneLine(pluralStringResource(R.plurals.song_count, genre.songCount, genre.songCount)) },
+        leadingContent = { IconTile(painterResource(R.drawable.ic_music_note)) },
         modifier = modifier.opens(onClick),
     )
 }

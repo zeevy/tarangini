@@ -170,7 +170,7 @@ class PlaybackSessionCallbackTest {
         assertEquals(MediaId.Root.encode(), root.value?.mediaId)
         assertEquals(true, root.value?.mediaMetadata?.isBrowsable)
         assertEquals(listOf("Library", "Favourites", "Recent", "Most played"), tabs.map { it.mediaMetadata.title })
-        assertEquals(listOf("Songs", "Albums", "Artists", "Folders", "Playlists"), lists.map { it.mediaMetadata.title })
+        assertEquals("Songs Albums Artists Genres Folders Playlists", lists.joinToString(" ") { it.title() })
     }
 
     @Test
@@ -524,7 +524,7 @@ class PlaybackSessionCallbackTest {
         val sections = callback.onGetChildren(session, theCar, MediaId.Library.encode(), 0, 100, null).get()
 
         assertEquals(LibraryResult.RESULT_SUCCESS, sections.resultCode)
-        assertEquals(5, sections.value?.size)
+        assertEquals(6, sections.value?.size)
     }
 
     @Test
@@ -567,6 +567,7 @@ private val playlists = FakePlaylistRepository()
 private val labels =
     BrowseLabels(
         "Library", "Songs", "Albums", "Artists", "Folders", "No album", "No artist", null,
+        genres = "Genres",
         favourites = "Favourites",
         favouritesIcon = null,
         recent = "Recent",
@@ -596,3 +597,5 @@ private const val MAX_OPENED = 50
 private class BrokenLibrary(library: LibraryRepository) : LibraryRepository by library {
     override suspend fun folders(parentId: Long?): List<Folder> = error("The database is closed")
 }
+
+private fun MediaItem.title() = "${mediaMetadata.title}"

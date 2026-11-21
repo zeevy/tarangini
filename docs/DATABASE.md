@@ -2,14 +2,14 @@
 
 This page says what the app stores on the phone, in which tables, and why. The code is in `core/data/src/main/kotlin/.../core/data/local`. The exported schema of every version is in `core/data/schemas/`.
 
-Status: version 2, 21 Nov 2026 (version 1 is of 19 Nov 2026). Rule ids such as D1 are from [CONTRIBUTING.md](../CONTRIBUTING.md#rules-with-ids).
+Status: version 3, 21 Nov 2026 (version 1 is of 19 Nov 2026). Rule ids such as D1 are from [CONTRIBUTING.md](../CONTRIBUTING.md#rules-with-ids).
 
 ## 1. Context
 
 - One SQLite database on the phone, through Room. One user, one writer process. No server and no sync.
 - It holds the library index (a copy of what MediaStore knows), saved stations, favourites, playlists, play counts and the saved play queue.
 - Settings are not in the database. They are in a DataStore file (section 9).
-- Out of scope for version 1: the repositories, a cache of Radio Browser results, genres, lyrics.
+- Out of scope for version 1: the repositories, a cache of Radio Browser results, lyrics. Genres came with version 3.
 
 ## 2. Numbers and recovery
 
@@ -100,6 +100,8 @@ Every id is a whole number that the database gives and never uses again. Every t
 | `folders` | `id`, `parent_id`, `path`, `name` | `path` | Goes with its parent folder |
 | `songs` | `id`, `source`, `source_id`, `title`, `title_key`, `artist_id`, `album_id`, `folder_id`, `file_name`, `mime_type`, `duration_ms`, `size_bytes`, `track_number`, `disc_number`, `year`, `date_added`, `date_modified`, `missing_since` | `source` with `source_id` | An artist, album or folder with songs cannot be removed |
 | `song_search` | row id (the song id), `title`, `artist`, `album` | - | Written and removed by the library DAO with the song, in one transaction. The vowel signs and other marks of the Indian scripts are part of a word (`SEARCH_TOKEN_CHARS`) |
+| `genres` | `id`, `name`, `name_key` | `name_key` unique | Written by the scan. The row with the empty name holds the songs with no genre tag. A genre with no song is removed |
+| `song_genres` | `song_id`, `genre_id` (both the key) | `genre_id, song_id` | One row per genre of a song. Removed with the song or the genre. A song with no row is one whose genre tag was never read |
 | `stations` | `id`, `source`, `radio_browser_uuid`, `name`, `homepage`, `country_code`, `language`, `tags`, `created_at`, `updated_at` | `radio_browser_uuid` when it is set | - |
 | `station_streams` | `id`, `station_id`, `position`, `url`, `codec`, `bitrate_kbps` | `station_id` with `position` | Goes with its station |
 | `favourite_songs` | `song_id` (key), `added_at` | One row per song | Goes with its song |
@@ -185,6 +187,7 @@ A key is added by the issue that first uses it.
 |---|---|---|
 | 1 | The first schema | - |
 | 2 | The search table keeps a word of an Indian script whole | `SearchTableWholeWords`: makes `song_search` again and fills it from the songs. The table holds only a copy of song texts, so nothing is lost |
+| 3 | Genres: the tables `genres` and `song_genres` | `GenreTables`: adds both tables empty. The next scan fills them |
 
 ## 11. Open questions
 

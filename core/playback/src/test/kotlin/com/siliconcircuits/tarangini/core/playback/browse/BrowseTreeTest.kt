@@ -9,6 +9,7 @@ package com.siliconcircuits.tarangini.core.playback.browse
 import androidx.media3.common.MediaItem
 import androidx.media3.session.MediaConstants
 import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
+import com.siliconcircuits.tarangini.core.testing.library.FakeGenreRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryLetters
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakePlayHistory
@@ -32,6 +33,7 @@ class BrowseTreeTest {
     private val favourites = FakeFavouriteRepository()
     private val history = FakePlayHistory()
     private val playlists = FakePlaylistRepository()
+    private val genres = FakeGenreRepository()
     private val library = FakeLibraryRepository()
     private val labels =
         BrowseLabels(
@@ -41,11 +43,13 @@ class BrowseTreeTest {
             recent = "Recent",
             recentIcon = null,
             playlists = "Playlists",
+            genres = "Genres",
+            unknownGenre = "Unknown",
             mostPlayed = "Most played",
             mostPlayedIcon = null,
         )
     private val tree =
-        BrowseTree(library, FakeLibraryLetters(library), BrowseItems(labels), favourites, history, playlists)
+        BrowseTree(library, FakeLibraryLetters(library), BrowseItems(labels), favourites, history, playlists, genres)
 
     private suspend fun under(id: MediaId, tabLimit: Int = MAX_TABS): List<MediaItem> =
         requireNotNull(tree.children(id, tabLimit))
@@ -112,9 +116,12 @@ class BrowseTreeTest {
     }
 
     @Test
-    fun `the top shows the three tabs, and the Library shows its five lists`() = runTest {
+    fun `the top shows its tabs, and the Library shows its six lists`() = runTest {
         assertEquals(listOf("Library", "Favourites", "Recent", "Most played"), under(MediaId.Root).titles())
-        assertEquals(listOf("Songs", "Albums", "Artists", "Folders", "Playlists"), under(MediaId.Library).titles())
+        assertEquals(
+            listOf("Songs", "Albums", "Artists", "Genres", "Folders", "Playlists"),
+            under(MediaId.Library).titles(),
+        )
     }
 
     @Test
@@ -165,6 +172,29 @@ class BrowseTreeTest {
 
         assertTrue(under(MediaId.Letter(LibraryList.SONGS, 'z'.code)).isEmpty())
         assertTrue(under(MediaId.Letter(LibraryList.ALBUMS, 'z'.code)).isEmpty())
+    }
+
+    @Test
+    fun `the genres open their songs, a song is under each of its genres, and no genre shows as Unknown`() = runTest {
+        val rock = testSong(1, "Rock song")
+        val both = testSong(2, "Rock and pop song")
+        val plain = testSong(3, "Song with no genre")
+        library.songs = listOf(rock, both, plain)
+        genres.songsByGenre = linkedMapOf("Pop" to listOf(both), "Rock" to listOf(rock, both), "" to listOf(plain))
+
+        assertEquals(listOf("Pop", "Rock", "Unknown"), under(MediaId.Genres).titles())
+        assertEquals(listOf(MediaId.Genre(1), MediaId.Genre(2), MediaId.Genre(3)), under(MediaId.Genres).ids())
+        assertEquals(
+            listOf(MediaId.SongIn(1, MediaId.Genre(2)), MediaId.SongIn(2, MediaId.Genre(2))),
+            under(MediaId.Genre(2)).ids(),
+        )
+        assertEquals(
+            listOf(rock, both) to 1,
+            tree.queue(MediaId.SongIn(2, MediaId.Genre(2)))?.let {
+                it.songs to
+                    it.index
+            },
+        )
     }
 
     @Test

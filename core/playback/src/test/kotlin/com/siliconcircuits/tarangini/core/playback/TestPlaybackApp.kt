@@ -11,6 +11,7 @@ import com.siliconcircuits.tarangini.core.domain.playback.ResumeStore
 import com.siliconcircuits.tarangini.core.domain.premium.CrashReporter
 import com.siliconcircuits.tarangini.core.domain.repository.AudioAccess
 import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
+import com.siliconcircuits.tarangini.core.domain.repository.GenreRepository
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryLetters
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
 import com.siliconcircuits.tarangini.core.domain.repository.PlayHistory
@@ -21,6 +22,7 @@ import com.siliconcircuits.tarangini.core.domain.repository.StationStreams
 import com.siliconcircuits.tarangini.core.playback.service.PlaybackService
 import com.siliconcircuits.tarangini.core.playback.sleep.DefaultSleepTimer
 import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
+import com.siliconcircuits.tarangini.core.testing.library.FakeGenreRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryLetters
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakePlayHistory
@@ -71,6 +73,8 @@ internal class TestPlaybackApp :
         override fun playHistory(): PlayHistory = history
 
         override fun playlistRepository(): PlaylistRepository = playlists
+
+        override fun genreRepository(): GenreRepository = FakeGenreRepository()
 
         override fun audioAccess(): AudioAccess = AudioAccess { audioAllowed }
 

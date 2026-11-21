@@ -21,6 +21,7 @@ import com.siliconcircuits.tarangini.feature.library.album.AlbumScreen
 import com.siliconcircuits.tarangini.feature.library.artist.ArtistScreen
 import com.siliconcircuits.tarangini.feature.library.favourites.FavouritesScreen
 import com.siliconcircuits.tarangini.feature.library.folder.FolderScreen
+import com.siliconcircuits.tarangini.feature.library.genre.GenreScreen
 import com.siliconcircuits.tarangini.feature.library.playlist.PlaylistScreen
 
 /**
@@ -36,6 +37,7 @@ fun NavGraphBuilder.libraryGraph(navController: NavController, onSearch: () -> U
             LibraryScreen(
                 onOpenAlbum = { navController.open(entry, it.route()) },
                 onOpenArtist = { navController.open(entry, it.route()) },
+                onOpenGenre = { navController.open(entry, GenreRoute(it.id, it.name.take(MAX_TITLE))) },
                 onOpenFolder = { navController.open(entry, it.route()) },
                 onOpenPlaylist = { navController.open(entry, PlaylistRoute(it.id, it.name.take(MAX_TITLE))) },
                 onSearch = { if (entry.isShown()) onSearch() },
@@ -49,6 +51,7 @@ fun NavGraphBuilder.libraryGraph(navController: NavController, onSearch: () -> U
             )
         }
         composable<PlaylistRoute> { entry -> PlaylistScreen(onBack = { navController.back(entry) }) }
+        composable<GenreRoute> { entry -> GenreScreen(onBack = { navController.back(entry) }) }
         composable<FolderRoute> { entry ->
             FolderScreen(
                 onBack = { navController.back(entry) },

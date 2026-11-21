@@ -18,6 +18,7 @@ import androidx.media3.session.MediaConstants
 import com.siliconcircuits.tarangini.core.domain.model.Album
 import com.siliconcircuits.tarangini.core.domain.model.Artist
 import com.siliconcircuits.tarangini.core.domain.model.Folder
+import com.siliconcircuits.tarangini.core.domain.model.Genre
 import com.siliconcircuits.tarangini.core.domain.model.Playlist
 import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.playback.R
@@ -48,6 +49,8 @@ internal data class BrowseLabels(
     val playlists: String,
     val mostPlayed: String,
     val mostPlayedIcon: Uri?,
+    val genres: String = "",
+    val unknownGenre: String = "",
 )
 
 /** The labels from the string resources of the app. */
@@ -59,6 +62,8 @@ internal fun browseLabels(context: Context) = BrowseLabels(
     folders = context.getString(R.string.car_folders),
     unknownAlbum = context.getString(R.string.car_unknown_album),
     unknownArtist = context.getString(R.string.car_unknown_artist),
+    genres = context.getString(R.string.car_genres),
+    unknownGenre = context.getString(R.string.car_unknown_genre),
     libraryIcon = context.iconAddress(R.drawable.ic_car_library),
     favourites = context.getString(R.string.car_favourites),
     favouritesIcon = context.iconAddress(R.drawable.ic_car_favourites),
@@ -106,6 +111,7 @@ internal class BrowseItems(private val labels: BrowseLabels) {
         node(MediaId.Section(LibraryList.SONGS), labels.songs, MediaMetadata.MEDIA_TYPE_FOLDER_MIXED),
         node(MediaId.Section(LibraryList.ALBUMS), labels.albums, MediaMetadata.MEDIA_TYPE_FOLDER_ALBUMS),
         node(MediaId.Section(LibraryList.ARTISTS), labels.artists, MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS),
+        node(MediaId.Genres, labels.genres, MediaMetadata.MEDIA_TYPE_FOLDER_GENRES),
         node(MediaId.Folders, labels.folders, MediaMetadata.MEDIA_TYPE_FOLDER_MIXED),
         node(MediaId.Playlists, labels.playlists, MediaMetadata.MEDIA_TYPE_FOLDER_PLAYLISTS),
     )
@@ -121,6 +127,10 @@ internal class BrowseItems(private val labels: BrowseLabels) {
         subtitle = album.artist.ifEmpty { null },
         icon = ArtworkAddress.ofAlbum(album.id),
     ).asGridTile()
+
+    /** A genre. It opens the songs of the genre. */
+    fun genre(genre: Genre): MediaItem =
+        node(MediaId.Genre(genre.id), genre.name.ifEmpty { labels.unknownGenre }, MediaMetadata.MEDIA_TYPE_GENRE)
 
     /** An artist. It opens the songs of the artist. */
     fun artist(artist: Artist): MediaItem =

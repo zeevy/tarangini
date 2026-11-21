@@ -45,6 +45,7 @@ class DefaultLibraryScannerTest {
 
     private val database = testDatabase()
     private val library = database.libraryDao()
+    private val store = ScanStore(library, database.genreDao())
     private val source = FakeAudioFileSource()
     private var now = 1_000_000L
 
@@ -57,7 +58,9 @@ class DefaultLibraryScannerTest {
         PreferenceDataStoreFactory.create(scope = backgroundScope) { folder.newFile("settings.preferences_pb") }
 
     private fun TestScope.scanner(settings: DataStore<Preferences> = settings()) =
-        DefaultLibraryScanner(source, library, settings, { now }, StandardTestDispatcher(testScheduler), crashes)
+        DefaultLibraryScanner(source, store, settings, {
+            now
+        }, StandardTestDispatcher(testScheduler), crashes)
 
     private suspend fun DefaultLibraryScanner.summary(): ScanSummary = (scan() as ScanOutcome.Success).summary
 
@@ -82,6 +85,54 @@ class DefaultLibraryScannerTest {
         assertEquals("Music", music.name)
         assertEquals(listOf("Yaman"), library.songsInFolder(music.id, limit = 10, offset = 0).map { it.song.title })
         assertEquals(listOf("Ragas"), library.childFolders(music.id).map { it.name })
+    }
+
+    private val genres = database.genreDao()
+
+    private suspend fun genreList() = genres.genres(limit = 20, offset = 0).map { it.name to it.songCount }
+
+    @Test
+    fun `a song is under each genre of its tag, and a song with no genre is under the one with no name`() = runTest {
+        source.files = listOf(
+            audioFile("1", title = "One", genre = "Rock; Pop"),
+            audioFile("2", title = "Two", genre = "rock"),
+            audioFile("3", title = "Three", genre = null),
+        )
+
+        scanner().scan()
+
+        assertEquals(listOf("Pop" to 1, "Rock" to 2, "" to 1), genreList())
+        val rock = genres.genres(20, 0).first { it.name == "Rock" }
+        assertEquals(listOf("One", "Two"), genres.songsOfGenre(rock.id, 20, 0).map { it.song.title })
+        assertEquals(rock, genres.genre(rock.id))
+    }
+
+    @Test
+    fun `a changed genre tag moves the song, and a genre with no song left is removed`() = runTest {
+        source.files = listOf(audioFile("1", genre = "Rock"), audioFile("2", genre = "Jazz"))
+        val scanner = scanner()
+        scanner.scan()
+
+        source.files = listOf(audioFile("1", genre = "Jazz", dateModified = 2_000), audioFile("2", genre = "Jazz"))
+        scanner.scan()
+
+        assertEquals(listOf("Jazz" to 2), genreList())
+    }
+
+    @Test
+    fun `a song saved before genres were read is read again by the next scan, once`() = runTest {
+        source.files = listOf(audioFile("1", genre = "Rock"))
+        val scanner = scanner()
+        scanner.scan()
+        // The state after an update of the app: the song is there, its genre was never read.
+        genres.setGenres(library.songKeys(SongSource.LOCAL).single().id, emptyList())
+
+        val first = scanner.summary()
+        val second = scanner.summary()
+
+        assertEquals(ScanSummary(added = 0, updated = 1, removed = 0, unchanged = 0), first)
+        assertEquals(ScanSummary(added = 0, updated = 0, removed = 0, unchanged = 1), second)
+        assertEquals(listOf("Rock" to 1), genreList())
     }
 
     @Test
@@ -368,7 +419,9 @@ class DefaultLibraryScannerTest {
             }
         }
         val scanner =
-            DefaultLibraryScanner(probe, library, settings(), { now }, StandardTestDispatcher(testScheduler), crashes)
+            DefaultLibraryScanner(probe, store, settings(), {
+                now
+            }, StandardTestDispatcher(testScheduler), crashes)
 
         val scans = List(2) { launch { scanner.scan() } }
         scans.forEach { it.join() }
