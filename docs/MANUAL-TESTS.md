@@ -207,6 +207,7 @@ Use wired headphones or a Bluetooth speaker, and a song with steady bass and voi
 | 143 | Tag two albums of very different loudness with ReplayGain (for example with foobar2000 or Mp3tag), set "Volume levelling" to "Same loudness for every song" and play songs of both in one queue, with the equalizer off and then on | The songs sound about as loud as each other, with no click or gap at the start of a song and no distortion in loud parts |
 | 144 | With the albums of row 143, switch to "Same loudness for every album" and play an album from start to end | The steps in loudness between the songs of the album stay as they are; the album as a whole is about as loud as the other one |
 | 145 | With levelling on, play a song with no ReplayGain tags and a radio station | Both play at their own level, as with levelling off |
+| 146 | On a foldable or a tablet, play a song, open the Library tab, scroll down the songs list, then fold or unfold the device (or turn the tablet) | The rail shows on the wide window and the bottom bar on the narrow one; the tablet shows the now playing pane at the right. The Library tab stays open at the same place in the list, and the song plays on with no break |
 
 ## Results
 
