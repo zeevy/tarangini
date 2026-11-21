@@ -199,6 +199,19 @@ class DefaultBackupFilesTest {
     }
 
     @Test
+    fun `a file name with a joiner of an Indian script is found again`() = runTest {
+        val storage = database.libraryDao().saveFolder("external_primary", "external_primary", parentId = null)
+        val id = database.addSong("അവന\u0D4D\u200D", sourceId = "1", folderId = storage)
+        favourites.setFavourite(id, true)
+        val text = backup()
+        favourites.setFavourite(id, false)
+
+        val done = restore(text)
+
+        assertEquals(BackupRestore.Done(favourites = 1, playlists = 0, songsNotFound = 0), done)
+    }
+
+    @Test
     fun `an empty backup with replace leaves no favourite and no playlist`() = runTest {
         thingsOfThePerson(library())
 

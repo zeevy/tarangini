@@ -12,11 +12,13 @@ package com.siliconcircuits.tarangini.core.playback.di
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackController
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackQueue
 import com.siliconcircuits.tarangini.core.domain.playback.SleepTimer
+import com.siliconcircuits.tarangini.core.domain.repository.SongLyrics
 import com.siliconcircuits.tarangini.core.domain.station.StreamTester
 import com.siliconcircuits.tarangini.core.playback.controller.MediaControllerConnector
 import com.siliconcircuits.tarangini.core.playback.controller.SessionConnector
 import com.siliconcircuits.tarangini.core.playback.controller.SessionPlaybackController
 import com.siliconcircuits.tarangini.core.playback.controller.SessionPlaybackQueue
+import com.siliconcircuits.tarangini.core.playback.lyrics.DefaultSongLyrics
 import com.siliconcircuits.tarangini.core.playback.sleep.DefaultSleepTimer
 import com.siliconcircuits.tarangini.core.playback.stream.DefaultStreamTester
 import dagger.Binds
@@ -44,6 +46,9 @@ internal abstract class PlaybackModule {
 
     @Binds
     abstract fun sleepTimer(timer: DefaultSleepTimer): SleepTimer
+
+    @Binds
+    abstract fun songLyrics(lyrics: DefaultSongLyrics): SongLyrics
 
     @Binds
     abstract fun streamTester(tester: DefaultStreamTester): StreamTester

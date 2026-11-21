@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -37,19 +38,28 @@ import com.siliconcircuits.tarangini.core.ui.component.PlaylistPick
 import com.siliconcircuits.tarangini.core.ui.component.formatDuration
 import com.siliconcircuits.tarangini.core.ui.theme.Spacing
 import com.siliconcircuits.tarangini.feature.player.R
+import com.siliconcircuits.tarangini.feature.player.lyrics.LyricsDialog
 
 /** One line to pick in a dialog. */
 private class Choice(val label: String, val isPicked: Boolean = false, val onPick: () -> Unit)
 
 /**
- * The menu of the top bar: add the song to a playlist, the speed and the sleep timer. The lines of
+ * The menu of the top bar: the lyrics, add the song to a playlist, the speed and the sleep timer. The lines of
  * the speed and the timer say what is set. A live stream has no speed to set, and an item that is
  * no song of the library cannot go into a playlist.
  */
 @Composable
-internal fun PlaybackOptionsMenu(state: NowPlayingUiState, actions: PlaybackOptionActions, playlists: PlaylistPick?) {
+internal fun PlaybackOptionsMenu(
+    state: NowPlayingUiState,
+    actions: PlaybackOptionActions,
+    playlists: PlaylistPick?,
+    lyrics: String? = null,
+) {
     var isOpen by rememberSaveable { mutableStateOf(false) }
     var asking by rememberSaveable { mutableStateOf<String?>(null) }
+    // A new song takes the lyrics away. The open lyrics then close for good, and do not come back
+    // by themselves when a later song has lyrics.
+    LaunchedEffect(lyrics == null) { if (lyrics == null && asking == LYRICS) asking = null }
     Box {
         IconButton(onClick = { isOpen = true }) {
             Icon(
@@ -58,6 +68,16 @@ internal fun PlaybackOptionsMenu(state: NowPlayingUiState, actions: PlaybackOpti
             )
         }
         DropdownMenu(expanded = isOpen, onDismissRequest = { isOpen = false }) {
+            // Only a song with lyrics in its tags has this line.
+            if (lyrics != null) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.now_playing_lyrics)) },
+                    onClick = {
+                        isOpen = false
+                        asking = LYRICS
+                    },
+                )
+            }
             if (state.songId != null && playlists != null) {
                 DropdownMenuItem(
                     text = { Text(stringResource(CoreUiR.string.song_add_to_playlist)) },
@@ -86,6 +106,8 @@ internal fun PlaybackOptionsMenu(state: NowPlayingUiState, actions: PlaybackOpti
         }
     }
     when (asking) {
+        LYRICS -> if (lyrics != null) LyricsDialog(lyrics, state.title) { asking = null }
+
         PLAYLIST -> if (state.songId != null && playlists != null) {
             AddToPlaylistDialog(playlists, state.songId) { asking = null }
         }
@@ -157,6 +179,7 @@ private fun ChoiceDialog(title: String, choices: List<Choice>, onDismiss: () -> 
     )
 }
 
+private const val LYRICS = "lyrics"
 private const val PLAYLIST = "playlist"
 private const val SPEED = "speed"
 private const val SLEEP = "sleep"
