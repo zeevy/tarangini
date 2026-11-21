@@ -71,6 +71,16 @@ class SearchScreenshotTest {
     @Test
     fun `no result`() = capture("search_none", nothingFound)
 
+    @Test
+    fun `results with the largest font`() {
+        RuntimeEnvironment.setFontScale(2f)
+        capture("search_results_largest_font", SearchUiState("mor", results))
+    }
+
+    @Test
+    @Config(qualifiers = "w640dp-h320dp-xhdpi")
+    fun `results on a wide screen`() = capture("search_results_wide", SearchUiState("mor", results))
+
     private fun capture(name: String, state: SearchUiState) {
         val picture = File("src/test/screenshots/$name.png")
         // Without this, a test with no saved picture passes: there is nothing to compare with.

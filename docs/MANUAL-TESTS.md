@@ -159,6 +159,8 @@ These need the Desktop Head Unit or a car. The steps are in [ANDROID-AUTO.md](AN
 | 102 | Set the shortest track to 1 minute, then close the app from the recent apps and open it again | Files shorter than a minute are gone from the lists. After the restart Settings still says 1 minute |
 | 103 | Tap "Clear history" and answer Clear. Open Home and the Recent tab of the car | "Recently played" is gone from Home and the Recent tab is empty |
 | 104 | In Settings open "Open source licences". Scroll the list, open the licence of a library and of Manrope, scroll each text to its end, press Back | The list holds the libraries by name with version and licence. Each text opens and scrolls to its end. Back returns to the list, and Back again to Settings |
+| 105 | Switch TalkBack on. Go through Home, Favourites, a playlist, now playing, the mini player, Settings with its three dialogs and the licences screen by swipes | Every control is reached in a sensible order and says what it is and what it does. A row offers its menu entries as actions. Nothing is read twice and nothing is silent |
+| 106 | Set the font size and the display size of the phone to the largest. Open every screen, in portrait and in landscape | No text is cut in the middle of a letter or lies over another text. Every control can still be reached, by scrolling where needed |
 
 ## Results
 

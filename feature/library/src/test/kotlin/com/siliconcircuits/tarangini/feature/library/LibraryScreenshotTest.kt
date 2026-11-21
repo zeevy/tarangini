@@ -29,6 +29,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
@@ -139,6 +140,32 @@ class LibraryScreenshotTest {
     @Test
     fun `a playlist with no songs`() = shot("library_playlist_empty") {
         PlaylistContent("Drive", PagedItems(isLoading = false), PlaylistActions(), onBack = {})
+    }
+
+    @Test
+    fun `songs with the largest font`() {
+        RuntimeEnvironment.setFontScale(2f)
+        shot("library_songs_largest_font") { LibraryContent(lists, songActions, LibraryActions()) }
+    }
+
+    @Test
+    @Config(qualifiers = "w640dp-h320dp-xhdpi")
+    fun `songs on a wide screen`() = shot("library_songs_wide") { LibraryContent(lists, songActions, LibraryActions()) }
+
+    @Test
+    fun `a playlist with the largest font`() {
+        RuntimeEnvironment.setFontScale(2f)
+        val places = PagedItems(songs.items.mapIndexed { index, song -> PlaylistSong(index + 1L, song) }, false)
+        shot("library_playlist_largest_font") { PlaylistContent("Drive", places, PlaylistActions(), onBack = {}) }
+    }
+
+    @Test
+    fun `an album with the largest font`() {
+        RuntimeEnvironment.setFontScale(2f)
+        shot("library_album_largest_font") {
+            AlbumContent("Morning Ragas", "Ravi Shankar", songs, songActions, onMoreSongs = {
+            }, onRetry = {}, onBack = {})
+        }
     }
 
     private fun shot(name: String, screen: @Composable () -> Unit) {

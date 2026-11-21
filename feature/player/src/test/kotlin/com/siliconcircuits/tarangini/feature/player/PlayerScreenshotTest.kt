@@ -23,6 +23,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
@@ -75,6 +76,24 @@ class PlayerScreenshotTest {
 
     @Test
     fun `the queue`() = shot("queue") { QueueContent(queue, QueueActions({}, { _, _ -> }, {}), {}) }
+
+    @Test
+    fun `a song with the largest font`() {
+        RuntimeEnvironment.setFontScale(2f)
+        shot("now_playing_song_largest_font") { NowPlayingContent(song, actions, {}, {}) }
+    }
+
+    @Test
+    fun `the queue with the largest font`() {
+        RuntimeEnvironment.setFontScale(2f)
+        shot("queue_largest_font") { QueueContent(queue, QueueActions({}, { _, _ -> }, {}), {}) }
+    }
+
+    @Test
+    @Config(qualifiers = "w640dp-h320dp-xhdpi")
+    fun `the queue on a wide screen`() = shot("queue_wide") {
+        QueueContent(queue, QueueActions({}, { _, _ -> }, {}), {})
+    }
 
     private fun shot(name: String, content: @Composable () -> Unit) {
         val picture = File("src/test/screenshots/$name.png")

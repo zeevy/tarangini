@@ -42,6 +42,7 @@ import androidx.compose.ui.zIndex
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackItem
 import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
 import com.siliconcircuits.tarangini.core.ui.component.AlbumArt
+import com.siliconcircuits.tarangini.core.ui.component.rowTextLines
 import com.siliconcircuits.tarangini.core.ui.theme.Spacing
 import com.siliconcircuits.tarangini.feature.player.ItemTexts
 import com.siliconcircuits.tarangini.feature.player.R
@@ -137,7 +138,13 @@ private fun RowBody(item: PlaybackItem, isCurrent: Boolean, drag: RowDrag, actio
         verticalAlignment = Alignment.CenterVertically,
     ) {
         AlbumArt(item.artworkUri)
-        ItemTexts(item.title, item.artist, Modifier.weight(1f).padding(horizontal = Spacing.medium), item.isStream)
+        ItemTexts(
+            item.title,
+            item.artist,
+            Modifier.weight(1f).padding(horizontal = Spacing.medium),
+            item.isStream,
+            lines = rowTextLines(),
+        )
         DragHandle(drag)
     }
 }

@@ -28,6 +28,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeLeft
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackItem
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
+import com.siliconcircuits.tarangini.feature.player.checkAccessibility
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -38,6 +39,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.annotation.GraphicsMode
 
 @RunWith(RobolectricTestRunner::class)
 class QueueContentTest {
@@ -199,5 +201,14 @@ class QueueContentTest {
     private companion object {
         const val HANDLE_FROM_END_PX = 20f
         const val DRAG_STEPS = 12
+    }
+
+    @Test
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    fun `the screen passes the accessibility checks`() {
+        // Without the song that is in the test list twice: two rows that say the same are a finding.
+        show(QueueUiState(songs.take(3), currentIndex = 1))
+
+        composeRule.checkAccessibility()
     }
 }

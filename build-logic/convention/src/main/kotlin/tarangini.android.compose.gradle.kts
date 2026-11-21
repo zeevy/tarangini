@@ -39,4 +39,5 @@ dependencies {
     "testImplementation"(libs.findLibrary("androidx-compose-ui-test-junit4").get())
     "testImplementation"(libs.findLibrary("roborazzi").get())
     "testImplementation"(libs.findLibrary("roborazzi-compose").get())
+    "testImplementation"(libs.findLibrary("roborazzi-accessibility-check").get())
 }

@@ -23,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import com.siliconcircuits.tarangini.core.domain.model.Playlist
 import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.ui.R
@@ -33,7 +32,7 @@ import com.siliconcircuits.tarangini.core.ui.R
 fun PlaylistRow(playlist: Playlist, onClick: () -> Unit, modifier: Modifier = Modifier) {
     ListItem(
         colors = clearRowColors(),
-        headlineContent = { Text(playlist.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        headlineContent = { OneLine(playlist.name) },
         supportingContent = {
             Text(pluralStringResource(R.plurals.song_count, playlist.songCount, playlist.songCount))
         },
@@ -58,13 +57,9 @@ fun PlaylistSongRow(
     var open by remember { mutableStateOf(false) }
     ListItem(
         colors = clearRowColors(),
-        headlineContent = { Text(song.title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        headlineContent = { OneLine(song.title) },
         supportingContent = {
-            Text(
-                song.artist.ifEmpty { stringResource(R.string.unknown_artist) },
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+            OneLine(song.artist.ifEmpty { stringResource(R.string.unknown_artist) })
         },
         leadingContent = { AlbumArt(song.artworkUri) },
         trailingContent = {

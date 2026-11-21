@@ -123,6 +123,7 @@ The calls the app needs: `/json/stations/search` (`name`, `countrycode`, `langua
 | One dark look | Dark screens with glass panels, white main buttons, one cyan accent and the Manrope font. The same look on the phone and in the car (decision D51) | [MVP] | Yes | - |
 | Light theme and wallpaper colours | Not built. The app is dark only (decision D51) | Not planned | - | - |
 | Mini player | Bar above the bottom navigation on every screen | [MVP] | Yes | - |
+| Accessibility | Every control has a label for a screen reader and a touch target of 48 dp. Text keeps WCAG AA contrast. Screens work at the largest font on a 320 dp wide phone and in landscape (decision D61) | [MVP] | Yes | - |
 | Full screen now playing | Large art, seek bar, queue, sleep timer, speed | [MVP] | Yes | - |
 | Home screen widget | Art, title, play and pause, next. Built with Jetpack Glance | [v1.1] | Yes | - |
 | Tablet and foldable layout | Two pane layout for large screens | [Future] | Yes | - |
@@ -431,6 +432,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D58 | Settings has hidden folders, the shortest track (Off, 15 s, 30 s, 1 min, 2 min), "Rescan now", "Clear history" (asks first), the version and a link to the source code. A change of what is left out scans at once. There is no theme choice and no "scan only these folders" list | 21 Nov 2026 | The app has one look. One list of hidden folders is enough to keep voice notes and call recordings out. See `docs/adr/0034-settings.md` |
 | D59 | The "Open source licences" screen in Settings lists every library of the build with its version and licence, and the font. The list is the one the licence check of the build writes, shipped as an asset. The licence texts ship as assets too, one file per licence. The screen starts with the notice of the app itself (GPL-3.0, no warranty, where the source is) | 21 Nov 2026 | The check that fails the build for an unknown licence and the screen read the same list, so they cannot differ, and a new library needs no manual step. See `docs/adr/0035-open-source-licences.md` |
 | D60 | Caught errors worth knowing about go to `CrashReporter`, which takes only a problem from a fixed list and a fixed name from the code, and no exception. The public build binds a version that does nothing. Reported today: a scan that got no file list from the phone, and a player error other than a file that is gone | 21 Nov 2026 | The message of an exception often holds a file path or an address. An interface that cannot take one cannot leak one. See `docs/adr/0036-crash-reporter.md` |
+| D61 | Accessibility is checked in the tests: the Compose test of each main screen runs the checks of the Accessibility Test Framework (labels, touch targets, contrast), and each main screen has a saved picture at the largest font on a 320 dp wide phone and one in landscape. With a large font the texts of a list row take two lines | 21 Nov 2026 | A fault then fails CI and does not wait for a manual run. See `docs/adr/0037-accessibility-checks.md` |
 
 ## 9. Checks before building
 

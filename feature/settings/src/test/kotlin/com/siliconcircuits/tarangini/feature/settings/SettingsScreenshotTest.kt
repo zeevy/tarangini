@@ -17,6 +17,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
@@ -28,14 +29,23 @@ class SettingsScreenshotTest {
     @Test
     fun `a new install`() = shot("settings_first", SettingsUiState())
 
-    @Test
-    fun `with things left out and a scan that ended`() = shot(
-        "settings_set",
-        SettingsUiState(
-            scan = ScanSettings(120, setOf("external_primary/Calls", "external_primary/WhatsApp")),
-            scanState = ScanState.Finished(ScanOutcome.Success(ScanSummary(12, 0, 3, 100))),
-        ),
+    private val set = SettingsUiState(
+        scan = ScanSettings(120, setOf("external_primary/Calls", "external_primary/WhatsApp")),
+        scanState = ScanState.Finished(ScanOutcome.Success(ScanSummary(12, 0, 3, 100))),
     )
+
+    @Test
+    fun `with things left out and a scan that ended`() = shot("settings_set", set)
+
+    @Test
+    fun `with the largest font`() {
+        RuntimeEnvironment.setFontScale(2f)
+        shot("settings_set_largest_font", set)
+    }
+
+    @Test
+    @Config(qualifiers = "w640dp-h320dp-xhdpi")
+    fun `on a wide screen`() = shot("settings_set_wide", set)
 
     private fun shot(name: String, state: SettingsUiState) {
         val picture = File("src/test/screenshots/$name.png")

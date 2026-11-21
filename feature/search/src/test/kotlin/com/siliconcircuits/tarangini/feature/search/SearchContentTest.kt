@@ -46,6 +46,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.annotation.GraphicsMode
 
 @RunWith(RobolectricTestRunner::class)
 class SearchContentTest {
@@ -198,5 +199,13 @@ class SearchContentTest {
         composeRule.onNodeWithContentDescription("Back").performClick()
 
         assertEquals(listOf("back"), done)
+    }
+
+    @Test
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    fun `the screen passes the accessibility checks`() {
+        show(SearchUiState("mor", results))
+
+        composeRule.checkAccessibility()
     }
 }
