@@ -31,10 +31,12 @@ import javax.inject.Singleton
 internal object DatabaseModule {
     @Provides
     @Singleton
-    fun database(@ApplicationContext context: Context): TaranginiDatabase =
-        Room.databaseBuilder<TaranginiDatabase>(context, TaranginiDatabase.FILE_NAME)
-            .setDriver(AndroidSQLiteDriver())
-            .build()
+    fun database(@ApplicationContext context: Context): TaranginiDatabase = TaranginiDatabase.MIGRATIONS
+        .fold(Room.databaseBuilder<TaranginiDatabase>(context, TaranginiDatabase.FILE_NAME)) { builder, step ->
+            builder.addMigrations(step)
+        }
+        .setDriver(AndroidSQLiteDriver())
+        .build()
 
     @Provides
     fun favouriteDao(database: TaranginiDatabase): FavouriteDao = database.favouriteDao()

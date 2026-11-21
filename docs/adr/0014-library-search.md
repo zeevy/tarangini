@@ -28,5 +28,5 @@ The names of a song are read and the songs of an album or artist are counted onl
 
 - A word must start a word of the name: "aga" does not find "Raga". That is how the full text table works, and it keeps the search fast.
 - The start of a name is compared in the form the lists are sorted by, so "Rock roll" does not count as the start of "Rock - Roll". Such a song is still found, only not first.
-- The full text table splits a word of an Indian script at its vowel signs. A search in Telugu or Hindi finds the right songs, and also some that only share the first consonants. A name that starts with the text still comes first. A better split needs a change of the table and is its own issue.
+- A word of an Indian script is kept whole since database version 2: the vowel signs and the other marks of the scripts from Devanagari to Malayalam are part of a word (the `tokenchars` option of the table, `SEARCH_TOKEN_CHARS`). A search for "గా" no longer finds "గోవిందా". Before that the table took a vowel sign as the end of a word. A search column prepared in code was the other way; the option needs no second copy of the text and no change to any query.
 - The reader of a search field waits a short moment after the last key before it asks. That code comes with the search screen.

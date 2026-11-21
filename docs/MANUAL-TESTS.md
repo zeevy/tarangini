@@ -177,6 +177,7 @@ These need the Desktop Head Unit or a car. The steps are in [ANDROID-AUTO.md](AN
 | 120 | Play a queue. In the menu of now playing set the sleep timer to 15 minutes, switch the screen off and wait. Then set "At the end of this song" and wait for the song to end | After 15 minutes the sound fades for a few seconds and stops; the next play is at full volume. With the second choice the song plays to its end and the next one does not start. A timer that is turned off stops nothing |
 | 121 | Play a long recording and set the speed to 0.5x, 1.5x and 2x. Then play another album from the Library | Each speed plays with the natural pitch of the voice. The new album starts at 1x |
 | 122 | With songs on the phone and on a memory card, open Library, Folders | The built-in storage shows as "Phone storage". The card shows with the name Android gives it, or as "Memory card" |
+| 123 | On a phone with a build of database version 1 and a scanned library with favourites and a playlist, install the new build over it and search for a Telugu or Hindi word | The app opens with the library, the favourites and the playlist as before. The search finds the word by its start and not by the same consonant with another vowel |
 
 ## Results
 
