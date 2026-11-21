@@ -49,7 +49,7 @@ internal class LibraryChangeNotices(
             // A new mark or a counted play changes one list only. The list the driver looks at is
             // not read again for it.
             scope.launch { personal.favourites.songIds().drop(1).collectLatest { tellAfterQuiet(FAVOURITES::equals) } },
-            scope.launch { personal.history.changes().drop(1).collectLatest { tellAfterQuiet(RECENT::equals) } },
+            scope.launch { personal.history.changes().drop(1).collectLatest { tellAfterQuiet(HEARD::contains) } },
             scope.launch {
                 personal.playlists.changes().drop(1).collectLatest { tellAfterQuiet { it.startsWith(PLAYLIST) } }
             },
@@ -70,7 +70,9 @@ internal class LibraryChangeNotices(
     private companion object {
         const val QUIET_MS = 1_000L
         val FAVOURITES = MediaId.Favourites.encode()
-        val RECENT = MediaId.Recent.encode()
+
+        // The two lists that a counted play changes.
+        val HEARD = setOf(MediaId.Recent.encode(), MediaId.MostPlayed.encode())
 
         // The list of playlists and every playlist start with this word.
         val PLAYLIST = MediaId.Playlists.encode().dropLast(1)

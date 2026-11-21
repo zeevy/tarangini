@@ -52,6 +52,8 @@ import com.siliconcircuits.tarangini.core.playback.session.CertificateCallers
 import com.siliconcircuits.tarangini.core.playback.session.FavouriteButton
 import com.siliconcircuits.tarangini.core.playback.session.NothingToPlay
 import com.siliconcircuits.tarangini.core.playback.session.PlaybackSessionCallback
+import com.siliconcircuits.tarangini.core.playback.session.SessionButtons
+import com.siliconcircuits.tarangini.core.playback.session.modeLabels
 import com.siliconcircuits.tarangini.core.playback.stream.StreamFailover
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -178,8 +180,8 @@ internal class PlaybackService : MediaLibraryService() {
     }
 
     /**
-     * Puts the heart button next to the player buttons and keeps it in step with the song that plays.
-     * The returned job ends the watching.
+     * Puts the heart, shuffle and repeat buttons next to the player buttons and keeps them in step with
+     * the song that plays and with the player. The returned job ends the watching of the heart.
      */
     // The buttons of a session are API of Media3 that may still change.
     @OptIn(UnstableApi::class)
@@ -199,7 +201,10 @@ internal class PlaybackService : MediaLibraryService() {
                     button.nowPlaying(mediaItem?.mediaId)
             },
         )
-        return button.start(session::setMediaButtonPreferences)
+        val buttons = SessionButtons(session.player, modeLabels(this), session::setMediaButtonPreferences)
+        callback.buttons = buttons
+        session.player.addListener(buttons)
+        return button.start(buttons::heart)
     }
 
     /**

@@ -17,6 +17,12 @@ interface PlayHistory {
     /** The songs heard last whose file is there, the newest first, each song once. At most [MAX_RECENT]. */
     suspend fun recentSongs(limit: Int = MAX_RECENT): List<Song>
 
+    /**
+     * The songs heard most often whose file is there, the one with the most plays first. Songs with
+     * the same count come in the order they were heard last. At most [MAX_RECENT].
+     */
+    suspend fun mostPlayedSongs(limit: Int = MAX_RECENT): List<Song>
+
     /** Fires at the start and after every play that was counted, and after the history was cleared. */
     fun changes(): Flow<Unit>
 

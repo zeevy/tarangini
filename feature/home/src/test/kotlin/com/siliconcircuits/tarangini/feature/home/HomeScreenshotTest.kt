@@ -35,34 +35,41 @@ class HomeScreenshotTest {
             testSong(1, "Bhairavi", artist = "Ravi Shankar"),
             testSong(2, "ఎందరో మహానుభావులు", artist = ""),
         ),
+        mostPlayed = listOf(testSong(3, "Yaman", artist = "Ravi Shankar")),
         playlists = listOf(Playlist(1, "Drive", 12), Playlist(2, "Morning", 1)),
     )
 
     @Test
-    fun `first use`() = shot("home_first_use") { HomeContent(HomeUiState(isLoading = false), songActions, HomeLinks()) }
+    fun `first use`() = shot("home_first_use") {
+        HomeContent(HomeUiState(isLoading = false), songActions, songActions, HomeLinks())
+    }
 
     @Test
-    fun `every section`() = shot("home_full") { HomeContent(full, songActions, HomeLinks()) }
+    fun `every section`() = shot("home_full") { HomeContent(full, songActions, songActions, HomeLinks()) }
 
     @Test
     fun `only playlists`() = shot("home_playlists_only") {
-        HomeContent(full.copy(paused = null, recent = emptyList()), songActions, HomeLinks())
+        HomeContent(full.copy(paused = null, recent = emptyList()), songActions, songActions, HomeLinks())
     }
 
     @Test
     fun `every section with the largest font`() {
         RuntimeEnvironment.setFontScale(2f)
-        shot("home_full_largest_font") { HomeContent(full, songActions, HomeLinks()) }
+        shot("home_full_largest_font") { HomeContent(full, songActions, songActions, HomeLinks()) }
     }
 
     @Test
     @Config(qualifiers = "w640dp-h320dp-xhdpi")
-    fun `every section on a wide screen`() = shot("home_full_wide") { HomeContent(full, songActions, HomeLinks()) }
+    fun `every section on a wide screen`() = shot("home_full_wide") {
+        HomeContent(full, songActions, songActions, HomeLinks())
+    }
 
     @Test
     fun `first use with the largest font`() {
         RuntimeEnvironment.setFontScale(2f)
-        shot("home_first_use_largest_font") { HomeContent(HomeUiState(isLoading = false), songActions, HomeLinks()) }
+        shot("home_first_use_largest_font") {
+            HomeContent(HomeUiState(isLoading = false), songActions, songActions, HomeLinks())
+        }
     }
 
     private fun shot(name: String, body: @Composable () -> Unit) {

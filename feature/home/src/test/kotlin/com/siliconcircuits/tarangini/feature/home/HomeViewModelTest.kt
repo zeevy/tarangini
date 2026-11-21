@@ -104,4 +104,21 @@ class HomeViewModelTest {
         assertEquals(listOf("play [test:3, test:2, test:1] from 1"), playback.commands)
         assertEquals(listOf(1L), favourites.ids.value)
     }
+
+    @Test
+    fun `most played shows once a song was heard more than once, and a tap plays that list`() =
+        runTest(mainDispatcher.dispatcher) {
+            listOf(1L, 2L, 3L).forEach { history.songPlayed(it) }
+            val viewModel = watched()
+            val heardOnce = viewModel.state.value.mostPlayed
+
+            listOf(1L, 1L, 2L).forEach { history.songPlayed(it) }
+            runCurrent()
+            viewModel.mostPlayedActions.onPlay(songs[1])
+
+            // While every song was heard once the list would repeat the recent songs.
+            assertEquals(emptyList<String>(), heardOnce.map { it.title })
+            assertEquals(listOf("One", "Two", "Three"), viewModel.state.value.mostPlayed.map { it.title })
+            assertEquals(listOf("play [test:1, test:2, test:3] from 1"), playback.commands)
+        }
 }

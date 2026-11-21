@@ -143,10 +143,8 @@ class PlaybackSessionCallbackTest {
         ).forEach { command -> assertTrue(result.availablePlayerCommands.contains(command)) }
         assertFalse(result.availablePlayerCommands.contains(Player.COMMAND_SET_MEDIA_ITEM))
         assertFalse(result.availablePlayerCommands.contains(Player.COMMAND_CHANGE_MEDIA_ITEMS))
-        // It cannot read the library either: the lists are for this app and the car.
+        // It cannot read or search the library either: the lists are for this app and the car.
         listOf(
-            SessionCommand.COMMAND_CODE_LIBRARY_GET_LIBRARY_ROOT,
-            SessionCommand.COMMAND_CODE_LIBRARY_GET_CHILDREN,
             SessionCommand.COMMAND_CODE_LIBRARY_GET_ITEM,
             SessionCommand.COMMAND_CODE_LIBRARY_SUBSCRIBE,
             SessionCommand.COMMAND_CODE_LIBRARY_SEARCH,
@@ -171,7 +169,7 @@ class PlaybackSessionCallbackTest {
 
         assertEquals(MediaId.Root.encode(), root.value?.mediaId)
         assertEquals(true, root.value?.mediaMetadata?.isBrowsable)
-        assertEquals(listOf("Library", "Favourites", "Recent"), tabs.map { it.mediaMetadata.title })
+        assertEquals(listOf("Library", "Favourites", "Recent", "Most played"), tabs.map { it.mediaMetadata.title })
         assertEquals(listOf("Songs", "Albums", "Artists", "Folders", "Playlists"), lists.map { it.mediaMetadata.title })
     }
 
@@ -538,7 +536,7 @@ class PlaybackSessionCallbackTest {
 
         assertEquals(LibraryResult.RESULT_SUCCESS, sections.resultCode)
         assertEquals(0, sections.value?.size)
-        assertEquals(3, tabs.value?.size)
+        assertEquals(4, tabs.value?.size)
     }
 
     @Test
@@ -574,6 +572,8 @@ private val labels =
         recent = "Recent",
         recentIcon = null,
         playlists = "Playlists",
+        mostPlayed = "Most played",
+        mostPlayedIcon = null,
     )
 
 private fun caller(packageName: String, uid: Int, trusted: Boolean): MediaSession.ControllerInfo =

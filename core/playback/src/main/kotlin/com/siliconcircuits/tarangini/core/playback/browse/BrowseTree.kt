@@ -45,22 +45,14 @@ internal class BrowseTree(
      */
     suspend fun children(parent: MediaId, tabLimit: Int): List<MediaItem>? = when (parent) {
         MediaId.Root -> items.tabs().take(tabLimit)
-
         MediaId.Library -> items.sections()
-
         is MediaId.Section -> section(parent)
-
         is MediaId.Letter -> rows(parent.list, parent, group(parent))
-
         MediaId.Folders -> library.folders(null).map(items::folder)
-
         MediaId.Playlists -> playlists.playlists().take(Page.MAX_LIMIT).map(items::playlist)
-
         is MediaId.Folder -> library.folders(parent.id).map(items::folder) + songItems(parent)
-
-        is MediaId.Album, is MediaId.Artist, is MediaId.Playlist, MediaId.Favourites, MediaId.Recent ->
-            songItems(parent)
-
+        is MediaId.Album, is MediaId.Artist, is MediaId.Playlist -> songItems(parent)
+        MediaId.Favourites, MediaId.Recent, MediaId.MostPlayed -> songItems(parent)
         is MediaId.SongIn -> null
     }
 
@@ -125,6 +117,8 @@ internal class BrowseTree(
         MediaId.Favourites -> favourites.songs(Page(Page.MAX_LIMIT))
 
         MediaId.Recent -> history.recentSongs()
+
+        MediaId.MostPlayed -> history.mostPlayedSongs()
 
         // A song that is in the playlist twice is one row in the car: the car tells rows apart by the song.
         is MediaId.Playlist ->

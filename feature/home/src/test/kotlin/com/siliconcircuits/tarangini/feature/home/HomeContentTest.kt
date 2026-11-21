@@ -55,7 +55,8 @@ class HomeContentTest {
     private fun show(state: HomeUiState) = composeRule.setContent {
         // Inside the frame of the screen, which gives the dark background and the text colour.
         TaranginiTheme {
-            HomeScreen(onSettingsClick = {}) { HomeContent(state, SongRowActions({}, {}, {}), HomeLinks()) }
+            val actions = SongRowActions({}, {}, {})
+            HomeScreen(onSettingsClick = {}) { HomeContent(state, actions, actions, HomeLinks()) }
         }
     }
 

@@ -170,6 +170,10 @@ These need the Desktop Head Unit or a car. The steps are in [ANDROID-AUTO.md](AN
 | 113 | Build the release app (`assembleCoreRelease`), sign it with a test key and install it. Scan, play a song, use search, a playlist, favourites, Settings with the licences screen, and connect to Android Auto | Everything works as in the debug build. No crash from a class or resource that R8 removed |
 | 114 | Look at the app icon in the launcher, as a round and a square shape, and with themed icons switched on | The five bars are whole in every shape, and the themed icon takes the colours of the wallpaper |
 | 115 | In Settings tap "Privacy policy" | The browser opens the policy page |
+| 116 | In Android Auto play a song and press the shuffle and the repeat button on the now playing screen. Then change both on the phone | Each button shows its state and changes the playback. A change on the phone shows in the car |
+| 117 | In Android Auto open Library, Albums | The albums show as a grid of covers (a head unit may still choose a list) |
+| 118 | Play a song, pause it, and restart the phone. Pull down the quick settings without opening the app | The media panel shows the last song. Play starts it at the saved place, with the queue as it was |
+| 119 | Play one song three times and two others once, each for more than 10 seconds. Open Home, then the Most played tab in Android Auto. Run "Rescan" in Settings and look again | Both lists start with the song played three times. After the rescan the lists are the same |
 
 ## Results
 

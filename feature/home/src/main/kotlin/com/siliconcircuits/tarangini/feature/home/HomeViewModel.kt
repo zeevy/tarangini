@@ -37,12 +37,14 @@ import kotlinx.coroutines.launch
  * @property isLoading true until the lists were read once
  * @property paused the item to go on with: what is loaded in the player while it does not play
  * @property recent the songs heard last, the newest first
+ * @property mostPlayed the songs heard most often, shown once a song was heard more than once
  * @property playlists the playlists by name
  */
 internal data class HomeUiState(
     val isLoading: Boolean = true,
     val paused: PlaybackItem? = null,
     val recent: List<Song> = emptyList(),
+    val mostPlayed: List<Song> = emptyList(),
     val playlists: List<Playlist> = emptyList(),
 ) {
     /** True on a new install: nothing was heard and nothing was made yet. */
@@ -66,18 +68,27 @@ internal class HomeViewModel @Inject constructor(
             isLoading = read == null,
             paused = now.currentItem.takeUnless { now.isPlaying || now.playWhenReady },
             recent = read?.recent.orEmpty(),
+            mostPlayed = read?.mostPlayed.orEmpty(),
             playlists = read?.playlists.orEmpty(),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_AFTER_MS), HomeUiState())
 
+    private val marks = favourites.songIds().stateIn(viewModelScope, SharingStarted.Eagerly, emptySet())
+    private val pick = playlists.pickIn(viewModelScope)
+
     /** A tap on a recent song plays the recent songs from that song on. */
-    val songActions = SongRowActions(
-        onPlay = ::play,
+    val songActions = actions { lists.value?.recent }
+
+    /** A tap on a most played song plays the most played songs from that song on. */
+    val mostPlayedActions = actions { lists.value?.mostPlayed }
+
+    private fun actions(list: () -> List<Song>?) = SongRowActions(
+        onPlay = { song -> play(song, list().orEmpty()) },
         onPlayNext = { queue.playNext(listOf(it.mediaUri)) },
         onAddToQueue = { queue.addToEnd(listOf(it.mediaUri)) },
-        favourites = favourites.songIds().stateIn(viewModelScope, SharingStarted.Eagerly, emptySet()),
+        favourites = marks,
         onSetFavourite = { song, on -> viewModelScope.launch { attempt { favourites.setFavourite(song.id, on) } } },
-        playlists = playlists.pickIn(viewModelScope),
+        playlists = pick,
     )
 
     init {
@@ -90,8 +101,8 @@ internal class HomeViewModel @Inject constructor(
     /** Goes on with the item that is loaded. */
     fun resume() = playback.resume()
 
-    private fun play(song: Song) {
-        val uris = lists.value?.recent.orEmpty().map { it.mediaUri }
+    private fun play(song: Song, list: List<Song>) {
+        val uris = list.map { it.mediaUri }
         val index = uris.indexOf(song.mediaUri)
         if (index >= 0) playback.play(uris, index) else playback.play(listOf(song.mediaUri))
     }
@@ -104,16 +115,19 @@ internal class HomeViewModel @Inject constructor(
         val before = lists.value
         val recent = attempt { history.recentSongs(RECENT_SONGS) } ?: before?.recent
         val made = attempt { playlists.playlists().take(PLAYLISTS) } ?: before?.playlists
-        if (recent != null && made != null) lists.value = Lists(recent, made)
+        // While every song was heard once, the list would only repeat the recent songs.
+        val most = attempt { history.mostPlayedSongs(MOST_PLAYED) }?.takeIf { it != recent?.take(it.size) }
+        if (recent != null && made != null) lists.value = Lists(recent, most.orEmpty(), made)
     }
 
-    private data class Lists(val recent: List<Song>, val playlists: List<Playlist>)
+    private data class Lists(val recent: List<Song>, val mostPlayed: List<Song>, val playlists: List<Playlist>)
 
     private companion object {
         const val STOP_AFTER_MS = 5_000L
 
         /** Home is a start page, not the whole list: the rest is in the Library. */
         const val RECENT_SONGS = 10
+        const val MOST_PLAYED = 5
         const val PLAYLISTS = 10
     }
 }

@@ -38,6 +38,18 @@ class DefaultPlayHistoryTest {
     }
 
     @Test
+    fun `most played songs come by their plays, and songs with the same count by the last play`() = runTest {
+        val once = database.addSong("Once", sourceId = "1")
+        val often = database.addSong("Often", sourceId = "2")
+        val late = database.addSong("Late", sourceId = "3")
+
+        listOf(once, often, often, late).forEach { history.songPlayed(it) }
+
+        assertEquals(listOf("Often", "Late", "Once"), history.mostPlayedSongs().map { it.title })
+        assertEquals(listOf("Often"), history.mostPlayedSongs(limit = 1).map { it.title })
+    }
+
+    @Test
     fun `a song that is not there is not counted, and a clear forgets every play`() = runTest {
         val song = database.addSong("Song", sourceId = "3")
         history.songPlayed(song)

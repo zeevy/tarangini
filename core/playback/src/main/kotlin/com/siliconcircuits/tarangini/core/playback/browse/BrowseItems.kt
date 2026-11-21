@@ -9,8 +9,12 @@ package com.siliconcircuits.tarangini.core.playback.browse
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
+import android.os.Bundle
+import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.MediaConstants
 import com.siliconcircuits.tarangini.core.domain.model.Album
 import com.siliconcircuits.tarangini.core.domain.model.Artist
 import com.siliconcircuits.tarangini.core.domain.model.Folder
@@ -26,6 +30,7 @@ import com.siliconcircuits.tarangini.core.playback.mapper.toMediaItem
  * @property libraryIcon the white icon of the Library tab, as an address the car can read
  * @property favouritesIcon the white icon of the Favourites tab, as an address the car can read
  * @property recentIcon the white icon of the Recent tab, as an address the car can read
+ * @property mostPlayedIcon the white icon of the Most played tab, as an address the car can read
  */
 internal data class BrowseLabels(
     val library: String,
@@ -41,6 +46,8 @@ internal data class BrowseLabels(
     val recent: String,
     val recentIcon: Uri?,
     val playlists: String,
+    val mostPlayed: String,
+    val mostPlayedIcon: Uri?,
 )
 
 /** The labels from the string resources of the app. */
@@ -58,6 +65,8 @@ internal fun browseLabels(context: Context) = BrowseLabels(
     recent = context.getString(R.string.car_recent),
     recentIcon = context.iconAddress(R.drawable.ic_car_recent),
     playlists = context.getString(R.string.car_playlists),
+    mostPlayed = context.getString(R.string.car_most_played),
+    mostPlayedIcon = context.iconAddress(R.drawable.ic_car_most_played),
 )
 
 /** The address of a drawable of this app. The car loads the icon of a tab from it. */
@@ -84,6 +93,12 @@ internal class BrowseItems(private val labels: BrowseLabels) {
             icon = labels.favouritesIcon,
         ),
         node(MediaId.Recent, labels.recent, MediaMetadata.MEDIA_TYPE_FOLDER_MIXED, icon = labels.recentIcon),
+        node(
+            MediaId.MostPlayed,
+            labels.mostPlayed,
+            MediaMetadata.MEDIA_TYPE_FOLDER_MIXED,
+            icon = labels.mostPlayedIcon,
+        ),
     )
 
     /** The lists under the Library tab. */
@@ -105,7 +120,7 @@ internal class BrowseItems(private val labels: BrowseLabels) {
         MediaMetadata.MEDIA_TYPE_ALBUM,
         subtitle = album.artist.ifEmpty { null },
         icon = ArtworkAddress.ofAlbum(album.id),
-    )
+    ).asGridTile()
 
     /** An artist. It opens the songs of the artist. */
     fun artist(artist: Artist): MediaItem =
@@ -124,6 +139,19 @@ internal class BrowseItems(private val labels: BrowseLabels) {
         .setMediaId(MediaId.SongIn(song.id, list).encode())
         .setMediaMetadata(song.toMediaItem().mediaMetadata)
         .build()
+}
+
+/**
+ * Asks the car to show this row as a tile with its cover. The hint is on each album and not on the
+ * list, so the letters of a long list of albums stay a plain list. A car is free to ignore it.
+ */
+// The names of the content style hints are API of Media3 that may still change.
+@OptIn(UnstableApi::class)
+private fun MediaItem.asGridTile(): MediaItem {
+    val hint = Bundle().apply {
+        putInt(MediaConstants.EXTRAS_KEY_CONTENT_STYLE_SINGLE_ITEM, MediaConstants.EXTRAS_VALUE_CONTENT_STYLE_GRID_ITEM)
+    }
+    return buildUpon().setMediaMetadata(mediaMetadata.buildUpon().setExtras(hint).build()).build()
 }
 
 /** A node that opens a list. */

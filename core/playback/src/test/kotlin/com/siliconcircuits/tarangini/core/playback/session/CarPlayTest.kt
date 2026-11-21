@@ -55,6 +55,8 @@ class CarPlayTest {
                 recent = "Recent",
                 recentIcon = null,
                 playlists = "Playlists",
+                mostPlayed = "Most played",
+                mostPlayedIcon = null,
             ),
         )
     private val search = CarSearch(found, library, items)

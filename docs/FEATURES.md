@@ -135,7 +135,7 @@ The calls the app needs: `/json/stations/search` (`name`, `countrycode`, `langua
 | Media notification | Media3 builds it from the session | [MVP] | Yes | - |
 | Lock screen controls | From the media session | [MVP] | Yes | - |
 | Media session | One `MediaLibrarySession` for the phone, Auto, Assistant, Bluetooth and the system media controls | [MVP] | Yes | Yes |
-| Playback resumption | Show Tarangini in the system media controls after reboot (Android 13+) | [v1.1] | Yes | - |
+| Playback resumption | Show Tarangini in the system media controls after reboot (Android 13+). Built (D65) | [v1.1] | Yes | - |
 | Wear OS controls | Basic controls show on the watch from the media session. A full watch app is extra work | [Future] | Watch | - |
 
 ### 2.7 Audio
@@ -436,6 +436,8 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D62 | A debug build runs with StrictMode (log only) and with LeakCanary. A release build has neither | 21 Nov 2026 | A slow read on the main thread or a leak shows while the app is built and used, not after a release. See `docs/adr/0038-debug-checks.md` |
 | D63 | The release build is shrunk with R8 (code and resources). The version has one place, `appVersion` in the app build file; the version code is worked out from it (1.4.2 gives 1004002). A tag `v<version>` builds the unsigned core release in a workflow. The app has an adaptive icon with a one colour layer | 21 Nov 2026 | The release app is 5.7 MB against 50 MB unshrunk. A tag that does not match the version fails. See `docs/adr/0039-release-build.md` |
 | D64 | The privacy policy is `docs/PRIVACY.md` in this repository, and Settings links to it. The draft of the Play listing is `docs/play/LISTING.md` | 21 Nov 2026 | The policy changes with the code and its history is public. No web site is needed for it |
+| D65 | The session shows three buttons of its own next to the player buttons: the heart, shuffle and repeat. The Albums list of the car asks for a grid. The media panel of the phone may ask for the item played last, and for nothing else of the library | 21 Nov 2026 | The driver switches shuffle and repeat without the phone. After a restart of the phone the panel shows the last song with a play button. See `docs/adr/0040-session-buttons-and-last-item.md` |
+| D66 | "Most played" is a section of Home (5 songs, shown once it differs from the recent songs) and the fourth tab of the car (50 songs). The order is by play count, then by the last play. There is no own list in the Library tab | 21 Nov 2026 | Home and the car are where a way back to a favourite song is needed. The counts are the ones the play history already keeps, so a rescan does not touch them |
 
 ## 9. Checks before building
 

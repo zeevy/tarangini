@@ -7,6 +7,7 @@
 package com.siliconcircuits.tarangini.core.playback.browse
 
 import androidx.media3.common.MediaItem
+import androidx.media3.session.MediaConstants
 import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryLetters
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
@@ -40,6 +41,8 @@ class BrowseTreeTest {
             recent = "Recent",
             recentIcon = null,
             playlists = "Playlists",
+            mostPlayed = "Most played",
+            mostPlayedIcon = null,
         )
     private val tree =
         BrowseTree(library, FakeLibraryLetters(library), BrowseItems(labels), favourites, history, playlists)
@@ -110,7 +113,7 @@ class BrowseTreeTest {
 
     @Test
     fun `the top shows the three tabs, and the Library shows its five lists`() = runTest {
-        assertEquals(listOf("Library", "Favourites", "Recent"), under(MediaId.Root).titles())
+        assertEquals(listOf("Library", "Favourites", "Recent", "Most played"), under(MediaId.Root).titles())
         assertEquals(listOf("Songs", "Albums", "Artists", "Folders", "Playlists"), under(MediaId.Library).titles())
     }
 
@@ -178,6 +181,33 @@ class BrowseTreeTest {
         assertEquals(listOf("Unknown artist", "Miles"), artists.titles())
         assertEquals(listOf(MediaId.SongIn(1, MediaId.Album(1))), under(MediaId.Album(1)).ids())
         assertEquals(listOf(MediaId.SongIn(2, MediaId.Artist(2))), under(MediaId.Artist(2)).ids())
+    }
+
+    @Test
+    fun `the Most played tab lists the songs by their plays, and a tap plays them from that song on`() = runTest {
+        library.songs = listOf(testSong(1), testSong(2), testSong(3))
+        history.known = library.songs
+        listOf(1L, 2L, 2L, 3L, 3L, 3L).forEach { history.songPlayed(it) }
+
+        val rows = under(MediaId.MostPlayed)
+        val queue = tree.queue(MediaId.SongIn(2, MediaId.MostPlayed))
+
+        assertEquals(listOf(3L, 2L, 1L).map { MediaId.SongIn(it, MediaId.MostPlayed) }, rows.ids())
+        assertEquals(listOf(3L, 2L, 1L) to 1, queue?.songs?.map { it.id } to queue?.index)
+    }
+
+    @Test
+    fun `an album asks the car for a tile with its cover, and no other row does`() = runTest {
+        library.albums = listOf(testAlbum(1, "Kind of Blue", artist = "Miles"))
+        library.artists = listOf(testArtist(1, "Miles"))
+        val grid = MediaConstants.EXTRAS_VALUE_CONTENT_STYLE_GRID_ITEM
+        val key = MediaConstants.EXTRAS_KEY_CONTENT_STYLE_SINGLE_ITEM
+        fun MediaItem?.style() = this?.mediaMetadata?.extras?.getInt(key)
+
+        assertEquals(grid, under(MediaId.Section(LibraryList.ALBUMS)).single().style())
+        assertEquals(null, under(MediaId.Section(LibraryList.ARTISTS)).single().style())
+        assertEquals(null, tree.item(MediaId.Section(LibraryList.ALBUMS)).style())
+        assertEquals(null, tree.item(MediaId.Letter(LibraryList.ALBUMS, 'k'.code)).style())
     }
 
     @Test

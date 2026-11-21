@@ -46,6 +46,7 @@ import com.siliconcircuits.tarangini.core.ui.theme.Spacing
 internal fun HomeContent(
     state: HomeUiState,
     songActions: SongRowActions,
+    mostPlayedActions: SongRowActions,
     links: HomeLinks,
     modifier: Modifier = Modifier,
 ) {
@@ -69,6 +70,13 @@ internal fun HomeContent(
             if (state.recent.isNotEmpty()) {
                 item(key = "recent") { SectionTitle(stringResource(R.string.home_recent)) }
                 items(items = state.recent, key = Song::id) { song -> SongRow(song, songActions) }
+            }
+            if (state.mostPlayed.isNotEmpty()) {
+                item(key = "most played") { SectionTitle(stringResource(R.string.home_most_played)) }
+                // A song can be in both lists, so the key says which list the row is in.
+                items(items = state.mostPlayed, key = { "most played ${it.id}" }) { song ->
+                    SongRow(song, mostPlayedActions)
+                }
             }
             if (state.playlists.isNotEmpty()) {
                 item(key = "playlists") { SectionTitle(stringResource(R.string.home_playlists)) }

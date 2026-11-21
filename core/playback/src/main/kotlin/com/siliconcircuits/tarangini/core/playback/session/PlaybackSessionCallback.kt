@@ -19,6 +19,7 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionCommands
+import androidx.media3.session.SessionError
 import androidx.media3.session.SessionResult
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
@@ -58,6 +59,9 @@ internal class PlaybackSessionCallback(
     /** The heart button of the session. The service sets it once the session exists, as the button needs it. */
     var favourite: FavouriteButton? = null
 
+    /** The shuffle and repeat buttons of the session. The service sets them once the session exists. */
+    var buttons: SessionButtons? = null
+
     override fun onConnect(
         session: MediaSession,
         controller: MediaSession.ControllerInfo,
@@ -66,13 +70,13 @@ internal class PlaybackSessionCallback(
             // The car needs the library commands to browse and the player commands to play what it picked.
             // What it may play is still checked item by item in onAddMediaItems.
             CallerAccess.FULL, CallerAccess.CAR -> MediaSession.ConnectionResult.accept(
-                MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS.withFavourite(),
+                MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS.withButtons(),
                 MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS,
             )
 
             // The media panel of the phone is such a caller. Its heart button marks only the song that plays.
             CallerAccess.TRANSPORT_ONLY -> MediaSession.ConnectionResult.accept(
-                MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS.withFavourite(),
+                MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS.withButtons().withLastItemFor(controller),
                 MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS.buildUpon()
                     .removeAll(Player.COMMAND_SET_MEDIA_ITEM, Player.COMMAND_CHANGE_MEDIA_ITEMS)
                     .build(),
@@ -92,6 +96,7 @@ internal class PlaybackSessionCallback(
         browser: MediaSession.ControllerInfo,
         params: MediaLibraryService.LibraryParams?,
     ): ListenableFuture<LibraryResult<MediaItem>> {
+        if (!callers.letsBrowse(browser)) return Futures.immediateFuture(refusedList())
         val asked = params?.extras?.getInt(MediaConstants.EXTRAS_KEY_ROOT_CHILDREN_LIMIT, MAX_TABS) ?: MAX_TABS
         tabLimit = asked.coerceIn(1, MAX_TABS)
         return Futures.immediateFuture(LibraryResult.ofItem(car.tree.root, params))
@@ -110,7 +115,7 @@ internal class PlaybackSessionCallback(
         pageSize: Int,
         params: MediaLibraryService.LibraryParams?,
     ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = scope.fromLibrary {
-        val parent = MediaId.parse(parentId)
+        val parent = MediaId.parse(parentId).takeIf { callers.letsBrowse(browser) }
         val refused = car.problems.noAccess()
         val empty = if (parent == MediaId.Library && refused == null) car.problems.noSongs() else null
         // A list that was asked for is told when the library changes, also when it could not be shown now.
@@ -129,7 +134,9 @@ internal class PlaybackSessionCallback(
         browser: MediaSession.ControllerInfo,
         mediaId: String,
     ): ListenableFuture<LibraryResult<MediaItem>> = scope.fromLibrary {
-        MediaId.parse(mediaId)?.let { id -> car.tree.item(id) }?.let { item -> LibraryResult.ofItem(item, null) }
+        MediaId.parse(mediaId).takeIf { callers.letsBrowse(browser) }
+            ?.let { id -> car.tree.item(id) }
+            ?.let { item -> LibraryResult.ofItem(item, null) }
     }
 
     /**
@@ -146,7 +153,8 @@ internal class PlaybackSessionCallback(
     ): ListenableFuture<LibraryResult<Void>> {
         // The count is sent after this call has returned: Media3 listens for it only from then on.
         scope.launch {
-            val count = runCatching { car.search.results(query).size }.getOrDefault(0)
+            val found = if (callers.letsBrowse(browser)) runCatching { car.search.results(query).size } else null
+            val count = found?.getOrNull() ?: 0
             session.notifySearchResultChanged(browser, query, count, params)
         }
         return Futures.immediateFuture(LibraryResult.ofVoid(params))
@@ -162,7 +170,7 @@ internal class PlaybackSessionCallback(
     ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = scope.fromLibrary {
         // Without the audio permission nothing found could play, so the search says what to do, as a list does.
         car.problems.noAccess()?.let { refused -> refused.asResult(params) }
-            ?: car.search.results(query).asPage(page, pageSize, params)
+            ?: car.search.results(query).takeIf { callers.letsBrowse(browser) }?.asPage(page, pageSize, params)
     }
 
     /**
@@ -183,17 +191,20 @@ internal class PlaybackSessionCallback(
         ?.let { item -> car.play.queueFor(item) { missing -> spokenDone(mediaSession, controller, missing) } }
         ?: super.onSetMediaItems(mediaSession, controller, mediaItems, startIndex, startPositionMs)
 
-    /** The one command of our own: a press of the heart button. Only a caller that was let in gets this far. */
+    /** A press of the heart, shuffle or repeat button. Only a caller that was let in gets this far. */
     override fun onCustomCommand(
         session: MediaSession,
         controller: MediaSession.ControllerInfo,
         customCommand: SessionCommand,
         args: Bundle,
-    ): ListenableFuture<SessionResult> = if (customCommand.customAction == FavouriteButton.COMMAND.customAction) {
-        favourite?.toggle()
-        Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
-    } else {
-        super.onCustomCommand(session, controller, customCommand, args)
+    ): ListenableFuture<SessionResult> {
+        val isHeart = customCommand.customAction == FavouriteButton.COMMAND.customAction
+        if (isHeart) favourite?.toggle()
+        return if (isHeart || buttons?.press(customCommand.customAction) == true) {
+            Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+        } else {
+            super.onCustomCommand(session, controller, customCommand, args)
+        }
     }
 
     override fun onAddMediaItems(
@@ -243,7 +254,38 @@ internal class PlaybackSessionCallback(
     }
 }
 
-private fun SessionCommands.withFavourite(): SessionCommands = buildUpon().add(FavouriteButton.COMMAND).build()
+private fun SessionCommands.withButtons(): SessionCommands =
+    buildUpon().apply { SessionButtons.COMMANDS.forEach(::add) }.build()
+
+/**
+ * After a restart of the phone its media panel asks for "the item played last" to show a card with
+ * a play button. It asks as a browser, so it needs the two commands a browser starts with. Media3
+ * answers that request itself, from [PlaybackSessionCallback.onPlaybackResumption]. Every other
+ * list the panel could ask for is refused in the callback: the library is for this app and the car.
+ */
+private fun SessionCommands.withLastItemFor(caller: MediaSession.ControllerInfo): SessionCommands =
+    if (caller.packageName == SYSTEM_UI) {
+        buildUpon()
+            .add(SessionCommand.COMMAND_CODE_LIBRARY_GET_LIBRARY_ROOT)
+            .add(SessionCommand.COMMAND_CODE_LIBRARY_GET_CHILDREN)
+            .build()
+    } else {
+        this
+    }
+
+/** True for a caller that may read the lists of the library: this app and the car. */
+// The "trusted by the system" flag of a caller is API of Media3 that may still change.
+@OptIn(UnstableApi::class)
+private fun CallerPolicy.letsBrowse(caller: MediaSession.ControllerInfo): Boolean =
+    when (accessFor(caller.packageName, caller.uid, caller.isTrusted)) {
+        CallerAccess.FULL, CallerAccess.CAR -> true
+        CallerAccess.TRANSPORT_ONLY, CallerAccess.REFUSED -> false
+    }
+
+private fun refusedList(): LibraryResult<MediaItem> = LibraryResult.ofError(SessionError.ERROR_PERMISSION_DENIED)
+
+/** The package of the system that draws the media panel of the phone. */
+private const val SYSTEM_UI = "com.android.systemui"
 
 /** The most tabs a car shows. A car can ask for fewer. */
 private const val MAX_TABS = 4
