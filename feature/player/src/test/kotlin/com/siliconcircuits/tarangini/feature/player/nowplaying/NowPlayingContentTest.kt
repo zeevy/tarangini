@@ -18,6 +18,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
+import com.siliconcircuits.tarangini.core.domain.model.SleepState
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import com.siliconcircuits.tarangini.feature.player.checkAccessibility
 import org.junit.Assert.assertEquals
@@ -60,6 +61,12 @@ class NowPlayingContentTest {
         onToggleShuffle = { done += "shuffle" },
         onCycleRepeat = { done += "repeat" },
     )
+    private val options = PlaybackOptionActions(
+        onSetSpeed = { done += "speed $it" },
+        onSleepAfter = { done += "sleep $it" },
+        onSleepAtEnd = { done += "sleep at end" },
+        onCancelSleep = { done += "sleep off" },
+    )
     private val song = NowPlayingUiState(
         title = "Bhairavi",
         artist = "Ravi",
@@ -76,7 +83,7 @@ class NowPlayingContentTest {
     private fun show(state: NowPlayingUiState?) {
         composeRule.setContent {
             TaranginiTheme {
-                NowPlayingContent(state, actions, { done += "back" }, { done += "queue" })
+                NowPlayingContent(state, actions, { done += "back" }, { done += "queue" }, options = options)
             }
         }
     }
@@ -88,6 +95,37 @@ class NowPlayingContentTest {
         listOf("Bhairavi", "Ravi", "Morning Ragas", "1:05", "3:05").forEach {
             composeRule.onNodeWithText(it).assertIsDisplayed()
         }
+    }
+
+    private fun openOption(line: String) {
+        composeRule.onNodeWithContentDescription("More options").performClick()
+        composeRule.onNodeWithText(line).performClick()
+    }
+
+    @Test
+    fun `the menu says what speed and timer are set, and a pick in their list is passed on`() {
+        show(song.copy(speed = 1.5f, sleep = SleepState.Timed(125_000)))
+
+        openOption("Speed 1.5x")
+        composeRule.onNodeWithText("2x").performClick()
+        openOption("Sleep in 2:05")
+        composeRule.onNodeWithText("30 minutes").performClick()
+        openOption("Sleep in 2:05")
+        composeRule.onNodeWithText("At the end of this song").performClick()
+        openOption("Sleep in 2:05")
+        composeRule.onNodeWithText("Turn the timer off").performClick()
+
+        assertEquals(listOf("speed 2.0", "sleep 30", "sleep at end", "sleep off"), done)
+    }
+
+    @Test
+    fun `a live stream has no speed to set`() {
+        show(song.copy(durationMs = null))
+
+        composeRule.onNodeWithContentDescription("More options").performClick()
+
+        composeRule.onNodeWithText("Speed 1x").assertDoesNotExist()
+        composeRule.onNodeWithText("Sleep timer").assertIsDisplayed()
     }
 
     @Test

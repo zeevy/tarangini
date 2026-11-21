@@ -21,3 +21,17 @@ internal data class NowPlayingActions(
     val onCycleRepeat: () -> Unit,
     val onToggleFavourite: () -> Unit = {},
 )
+
+/**
+ * What the person can set for the playback as a whole.
+ *
+ * @property onSetSpeed sets how fast the queue plays: 1 is the normal speed
+ * @property onSleepAfter pauses after this many minutes
+ * @property onSleepAtEnd pauses at the end of the item that plays
+ */
+internal data class PlaybackOptionActions(
+    val onSetSpeed: (Float) -> Unit = {},
+    val onSleepAfter: (Int) -> Unit = {},
+    val onSleepAtEnd: () -> Unit = {},
+    val onCancelSleep: () -> Unit = {},
+)

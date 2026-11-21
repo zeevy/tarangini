@@ -10,6 +10,7 @@ import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackItem
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
+import com.siliconcircuits.tarangini.core.domain.model.SleepState
 import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakePlaylistRepository
@@ -17,6 +18,7 @@ import com.siliconcircuits.tarangini.core.testing.library.FakeSongLookup
 import com.siliconcircuits.tarangini.core.testing.library.testSong
 import com.siliconcircuits.tarangini.core.testing.playback.FakePlaybackController
 import com.siliconcircuits.tarangini.core.testing.playback.FakePlaybackQueue
+import com.siliconcircuits.tarangini.core.testing.playback.FakeSleepTimer
 import com.siliconcircuits.tarangini.feature.player.MainDispatcherRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
@@ -44,10 +46,11 @@ class NowPlayingViewModelTest {
     private fun loaded(state: PlaybackState = PlaybackState()) = state.copy(queue = listOf(song), currentIndex = 0)
 
     private val favourites = FakeFavouriteRepository()
+    private val sleep = FakeSleepTimer()
     private var songs = emptyList<Song>()
 
     private fun TestScope.watched(): NowPlayingViewModel =
-        NowPlayingViewModel(playback, queue, favourites, FakeSongLookup(songs), playlists).also { viewModel ->
+        NowPlayingViewModel(playback, queue, favourites, FakeSongLookup(songs), playlists, sleep).also { viewModel ->
             backgroundScope.launch { viewModel.state.collect() }
             runCurrent()
         }
@@ -250,4 +253,26 @@ class NowPlayingViewModelTest {
 
         assertEquals(listOf("Drive" to 1), playlists.playlists().map { it.name to it.songCount })
     }
+
+    @Test
+    fun `the speed and the sleep timer show, and a pick reaches the player and the timer`() =
+        runTest(mainDispatcher.dispatcher) {
+            playback.state.value = loaded(PlaybackState(speed = 1.5f))
+            val viewModel = watched()
+
+            viewModel.options.onSetSpeed(2f)
+            viewModel.options.onSleepAfter(30)
+            runCurrent()
+            val timed = viewModel.state.value
+            viewModel.options.onSleepAtEnd()
+            runCurrent()
+            val atEnd = viewModel.state.value?.sleep
+            viewModel.options.onCancelSleep()
+            runCurrent()
+
+            assertEquals(1.5f to SleepState.Timed(1_800_000), timed?.speed to timed?.sleep)
+            assertEquals(SleepState.EndOfTrack, atEnd)
+            assertEquals(SleepState.Off, viewModel.state.value?.sleep)
+            assertEquals(listOf("setSpeed 2.0"), playback.commands)
+        }
 }

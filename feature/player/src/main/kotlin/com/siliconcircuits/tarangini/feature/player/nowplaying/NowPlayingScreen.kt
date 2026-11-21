@@ -43,7 +43,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
-import com.siliconcircuits.tarangini.core.ui.component.AddToPlaylistDialog
 import com.siliconcircuits.tarangini.core.ui.component.AlbumArt
 import com.siliconcircuits.tarangini.core.ui.component.BackButton
 import com.siliconcircuits.tarangini.core.ui.component.MessageState
@@ -71,7 +70,7 @@ internal fun NowPlayingScreen(
         onCycleRepeat = viewModel::cycleRepeat,
         onToggleFavourite = viewModel::toggleFavourite,
     )
-    NowPlayingContent(state, actions, onBackClick, onOpenQueue, modifier, viewModel.playlistPick)
+    NowPlayingContent(state, actions, onBackClick, onOpenQueue, modifier, viewModel.playlistPick, viewModel.options)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -83,6 +82,7 @@ internal fun NowPlayingContent(
     onOpenQueue: () -> Unit,
     modifier: Modifier = Modifier,
     playlists: PlaylistPick? = null,
+    options: PlaybackOptionActions = PlaybackOptionActions(),
 ) {
     Scaffold(
         modifier = modifier.glassBackground(),
@@ -95,13 +95,13 @@ internal fun NowPlayingContent(
                 navigationIcon = { BackButton(onClick = onBackClick) },
                 actions = {
                     state?.isFavourite?.let { on -> FavouriteButton(on, actions.onToggleFavourite) }
-                    state?.songId?.let { songId -> playlists?.let { pick -> AddToPlaylistButton(pick, songId) } }
                     IconButton(onClick = onOpenQueue) {
                         Icon(
                             painter = painterResource(CoreUiR.drawable.ic_queue),
                             contentDescription = stringResource(R.string.queue_open),
                         )
                     }
+                    state?.let { now -> PlaybackOptionsMenu(now, options, playlists) }
                 },
             )
         },
@@ -229,20 +229,6 @@ private fun LiveLine(isBuffering: Boolean) {
 }
 
 private const val LARGEST_COVER = 7
-
-/** Opens the question which playlist the song that plays goes into. */
-@Composable
-private fun AddToPlaylistButton(pick: PlaylistPick, songId: Long) {
-    // The question is about one song. It closes when another song starts.
-    var asking by rememberSaveable(songId) { mutableStateOf(false) }
-    IconButton(onClick = { asking = true }) {
-        Icon(
-            painter = painterResource(CoreUiR.drawable.ic_add),
-            contentDescription = stringResource(CoreUiR.string.song_add_to_playlist),
-        )
-    }
-    if (asking) AddToPlaylistDialog(pick, songId) { asking = false }
-}
 
 /** The heart in the top bar. Its name for a screen reader is what a tap does. */
 @Composable

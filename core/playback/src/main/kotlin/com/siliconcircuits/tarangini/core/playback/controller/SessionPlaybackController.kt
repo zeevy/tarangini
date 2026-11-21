@@ -58,7 +58,7 @@ internal class SessionPlaybackController @Inject constructor(
     init {
         link.onPlayerChanged = ::follow
         follow(link.player)
-        scope.launch { followPositionWhileWatched() }
+        scope.launch { current.followPositionWhileWatched { shown } }
     }
 
     override fun play(mediaUris: List<String>, startIndex: Int) = loader.replace(mediaUris, startIndex)
@@ -88,6 +88,14 @@ internal class SessionPlaybackController @Inject constructor(
 
     override fun previous() = send(Player::seekToPrevious)
 
+    // Media3 keeps the pitch when only the speed is set.
+    override fun setSpeed(speed: Float) = send { player ->
+        // A value that is no number has no place between the limits, and the player would refuse it.
+        if (!speed.isNaN()) {
+            player.setPlaybackSpeed(speed.coerceIn(PlaybackController.MIN_SPEED, PlaybackController.MAX_SPEED))
+        }
+    }
+
     private fun send(command: (Player) -> Unit) {
         scope.launch { link.send(command) }
     }
@@ -99,20 +107,20 @@ internal class SessionPlaybackController @Inject constructor(
         player?.addListener(playerListener)
         current.value = player?.toPlaybackState() ?: PlaybackState()
     }
+}
 
-    /**
-     * The player sends no event while the position moves, so the position is read on a timer.
-     * The timer runs only while somebody collects the state: with no screen there is nothing to wake up for.
-     */
-    private suspend fun followPositionWhileWatched() {
-        current.subscriptionCount.map { it > 0 }.distinctUntilChanged().collectLatest { watched ->
-            while (watched) {
-                val player = shown
-                if (player != null && current.value.isPlaying) {
-                    current.value = current.value.copy(positionMs = player.currentPosition.coerceAtLeast(0))
-                }
-                delay(POSITION_STEP)
+/**
+ * The player sends no event while the position moves, so the position is read on a timer.
+ * The timer runs only while somebody collects the state: with no screen there is nothing to wake up for.
+ */
+private suspend fun MutableStateFlow<PlaybackState>.followPositionWhileWatched(shown: () -> Player?) {
+    subscriptionCount.map { it > 0 }.distinctUntilChanged().collectLatest { watched ->
+        while (watched) {
+            val player = shown()
+            if (player != null && value.isPlaying) {
+                value = value.copy(positionMs = player.currentPosition.coerceAtLeast(0))
             }
+            delay(POSITION_STEP)
         }
     }
 }

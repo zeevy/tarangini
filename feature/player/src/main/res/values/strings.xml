@@ -22,6 +22,16 @@
     <string name="now_playing_repeat_off">Repeat is off</string>
     <string name="now_playing_repeat_all">Repeat all</string>
     <string name="now_playing_repeat_one">Repeat this song</string>
+    <string name="now_playing_options">More options</string>
+    <string name="now_playing_speed">Speed %1$s</string>
+    <string name="now_playing_speed_title">Speed</string>
+    <string name="now_playing_speed_value">%1$sx</string>
+    <string name="now_playing_sleep">Sleep timer</string>
+    <string name="now_playing_sleep_in">Sleep in %1$s</string>
+    <string name="now_playing_sleep_at_end">Sleep after this song</string>
+    <string name="now_playing_sleep_minutes">%1$d minutes</string>
+    <string name="now_playing_sleep_end">At the end of this song</string>
+    <string name="now_playing_sleep_off">Turn the timer off</string>
     <string name="queue_title">Queue</string>
     <string name="queue_open">Open the queue</string>
     <string name="queue_empty_title">The queue is empty</string>
