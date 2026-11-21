@@ -13,6 +13,7 @@ import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.siliconcircuits.tarangini.feature.player.equalizer.EqualizerScreen
 import com.siliconcircuits.tarangini.feature.player.nowplaying.NowPlayingScreen
 import com.siliconcircuits.tarangini.feature.player.queue.QueueScreen
 
@@ -27,14 +28,20 @@ fun NavController.navigateToNowPlaying() {
  */
 fun NavDestination.isPlayerScreen(): Boolean = hasRoute<NowPlayingRoute>() || hasRoute<QueueRoute>()
 
-/** The now playing screen and the queue that opens from it. */
+/** The now playing screen, and the queue and the equalizer that open from it. */
 fun NavGraphBuilder.playerScreens(navController: NavController) {
     composable<NowPlayingRoute> { entry ->
         // A second tap that comes while the screen already changes is dropped.
         NowPlayingScreen(
             onBackClick = { if (entry.isShown()) navController.popBackStack() },
             onOpenQueue = { if (entry.isShown()) navController.navigate(QueueRoute) { launchSingleTop = true } },
+            onOpenEqualizer = {
+                if (entry.isShown()) navController.navigate(EqualizerRoute) { launchSingleTop = true }
+            },
         )
+    }
+    composable<EqualizerRoute> { entry ->
+        EqualizerScreen(onBackClick = { if (entry.isShown()) navController.popBackStack() })
     }
     composable<QueueRoute> { entry ->
         QueueScreen(onBackClick = { if (entry.isShown()) navController.popBackStack() })

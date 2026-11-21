@@ -59,6 +59,7 @@ internal fun NowPlayingScreen(
     onBackClick: () -> Unit,
     onOpenQueue: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenEqualizer: () -> Unit = {},
     viewModel: NowPlayingViewModel = hiltViewModel(),
     lyricsViewModel: LyricsViewModel = hiltViewModel(),
 ) {
@@ -80,7 +81,7 @@ internal fun NowPlayingScreen(
         onOpenQueue,
         modifier,
         viewModel.playlistPick,
-        viewModel.options,
+        viewModel.options.copy(onOpenEqualizer = onOpenEqualizer),
         lyrics,
     )
 }

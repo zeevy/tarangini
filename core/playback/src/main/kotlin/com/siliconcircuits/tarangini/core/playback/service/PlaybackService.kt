@@ -21,7 +21,9 @@ import com.siliconcircuits.tarangini.core.domain.model.SongSort
 import com.siliconcircuits.tarangini.core.domain.playback.NowPlayingCards
 import com.siliconcircuits.tarangini.core.domain.playback.ResumeStore
 import com.siliconcircuits.tarangini.core.domain.premium.CrashReporter
+import com.siliconcircuits.tarangini.core.domain.premium.EqualizerBands
 import com.siliconcircuits.tarangini.core.domain.repository.AudioAccess
+import com.siliconcircuits.tarangini.core.domain.repository.EqualizerRepository
 import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
 import com.siliconcircuits.tarangini.core.domain.repository.GenreRepository
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryLetters
@@ -32,6 +34,8 @@ import com.siliconcircuits.tarangini.core.domain.repository.SearchRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SongLookup
 import com.siliconcircuits.tarangini.core.domain.repository.StationStreams
 import com.siliconcircuits.tarangini.core.playback.R
+import com.siliconcircuits.tarangini.core.playback.audio.EqualizerProcessor
+import com.siliconcircuits.tarangini.core.playback.audio.followEqualizer
 import com.siliconcircuits.tarangini.core.playback.browse.BrowseItems
 import com.siliconcircuits.tarangini.core.playback.browse.BrowseTree
 import com.siliconcircuits.tarangini.core.playback.browse.CarSearch
@@ -82,6 +86,7 @@ internal class PlaybackService : MediaLibraryService() {
     private var scope: CoroutineScope? = null
     private var sleep: DefaultSleepTimer? = null
     private var feed: NowPlayingFeed? = null
+    private var equalizer: Job? = null
 
     /** What the service needs for the lists the car shows. */
     interface CarDependencies {
@@ -100,10 +105,19 @@ internal class PlaybackService : MediaLibraryService() {
         fun genreRepository(): GenreRepository
     }
 
+    /** What the service needs for the sound. */
+    interface SoundDependencies {
+        fun equalizerRepository(): EqualizerRepository
+
+        fun equalizerBands(): EqualizerBands
+    }
+
     /** What the service takes from the app. The system makes a service, so nothing can be handed to its constructor. */
     @EntryPoint
     @InstallIn(SingletonComponent::class)
-    interface Dependencies : CarDependencies {
+    interface Dependencies :
+        CarDependencies,
+        SoundDependencies {
         fun resumeStore(): ResumeStore
 
         fun songLookup(): SongLookup
@@ -129,7 +143,9 @@ internal class PlaybackService : MediaLibraryService() {
         super.onCreate()
         val app = EntryPointAccessors.fromApplication(applicationContext, Dependencies::class.java)
         val sound = LastSound()
-        val player = createPlayer(this, sound, app::httpClient)
+        val sounds = EqualizerProcessor()
+        val player = createPlayer(this, sound, listOf(sounds), app::httpClient)
+        equalizer = followEqualizer(app.equalizerRepository(), app.equalizerBands(), sounds, app.playbackScope())
         player.addListener(StreamFailover(player, app.stationStreams(), app.playbackScope()))
         player.addListener(SkipSilentEnd(player, sound, app.playbackScope()))
         player.addListener(playCounter(app))
@@ -285,6 +301,8 @@ internal class PlaybackService : MediaLibraryService() {
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? = session
 
     override fun onDestroy() {
+        equalizer?.cancel()
+        equalizer = null
         favouriteButton?.cancel()
         favouriteButton = null
         notices?.end()

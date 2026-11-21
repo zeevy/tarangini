@@ -97,6 +97,13 @@ internal fun PlaybackOptionsMenu(
                 )
             }
             DropdownMenuItem(
+                text = { Text(stringResource(R.string.now_playing_equalizer)) },
+                onClick = {
+                    isOpen = false
+                    actions.onOpenEqualizer()
+                },
+            )
+            DropdownMenuItem(
                 text = { Text(sleepText(state.sleep)) },
                 onClick = {
                     isOpen = false

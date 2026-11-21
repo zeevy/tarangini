@@ -15,11 +15,13 @@ import android.os.Handler
 import androidx.annotation.OptIn
 import androidx.media3.common.Format
 import androidx.media3.common.MimeTypes
+import androidx.media3.common.audio.AudioProcessor
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.Renderer
 import androidx.media3.exoplayer.audio.AudioRendererEventListener
 import androidx.media3.exoplayer.audio.AudioSink
+import androidx.media3.exoplayer.audio.DefaultAudioSink
 import androidx.media3.exoplayer.audio.MediaCodecAudioRenderer
 import androidx.media3.exoplayer.mediacodec.MediaCodecAdapter
 import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
@@ -53,11 +55,27 @@ internal fun Format.forDecoder(decoderName: String?): Format {
         .build()
 }
 
-/** Makes the renderers of the player. It differs from the default only in the audio renderer. */
+/**
+ * Makes the renderers of the player. It differs from the default in the audio renderer, and in the
+ * audio sink, which runs [audioProcessors] (the equalizer) before the processors of Media3.
+ */
 // A renderers factory is API that may still change.
 @OptIn(UnstableApi::class)
-internal class GaplessRenderersFactory(context: Context, private val sound: LastSound) :
-    DefaultRenderersFactory(context) {
+internal class GaplessRenderersFactory(
+    context: Context,
+    private val sound: LastSound,
+    private val audioProcessors: List<AudioProcessor> = emptyList(),
+) : DefaultRenderersFactory(context) {
+    override fun buildAudioSink(
+        context: Context,
+        enableFloatOutput: Boolean,
+        enableAudioTrackPlaybackParams: Boolean,
+    ): AudioSink = DefaultAudioSink.Builder(context)
+        .setEnableFloatOutput(enableFloatOutput)
+        .setEnableAudioOutputPlaybackParameters(enableAudioTrackPlaybackParams)
+        .setAudioProcessors(audioProcessors.toTypedArray())
+        .build()
+
     override fun buildAudioRenderers(
         context: Context,
         extensionRendererMode: Int,

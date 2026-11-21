@@ -36,4 +36,16 @@ internal object SettingsKeys {
 
     /** Folders a scan skips. */
     val EXCLUDED_FOLDERS = stringSetPreferencesKey("excluded_folders")
+
+    /** True when the equalizer is on. */
+    val EQUALIZER_ON = booleanPreferencesKey("equalizer_on")
+
+    /** The name of the picked `EqualizerPreset`, or no value when the bands were set by hand. */
+    val EQUALIZER_PRESET = stringPreferencesKey("equalizer_preset")
+
+    /** The gain of each band in dB, as numbers with a comma between them. */
+    val EQUALIZER_GAINS = stringPreferencesKey("equalizer_gains")
+
+    /** The bass boost in percent. */
+    val EQUALIZER_BASS = intPreferencesKey("equalizer_bass")
 }
