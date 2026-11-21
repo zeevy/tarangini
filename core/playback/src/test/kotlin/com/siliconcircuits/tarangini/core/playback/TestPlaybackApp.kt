@@ -8,6 +8,7 @@ package com.siliconcircuits.tarangini.core.playback
 
 import android.app.Application
 import com.siliconcircuits.tarangini.core.domain.playback.ResumeStore
+import com.siliconcircuits.tarangini.core.domain.premium.CrashReporter
 import com.siliconcircuits.tarangini.core.domain.repository.AudioAccess
 import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryLetters
@@ -26,6 +27,7 @@ import com.siliconcircuits.tarangini.core.testing.library.FakePlaylistRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeSearchRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeSongLookup
 import com.siliconcircuits.tarangini.core.testing.playback.FakeResumeStore
+import com.siliconcircuits.tarangini.core.testing.premium.FakeCrashReporter
 import com.siliconcircuits.tarangini.core.testing.station.FakeStationStreams
 import dagger.hilt.internal.GeneratedComponent
 import dagger.hilt.internal.GeneratedComponentManager
@@ -73,6 +75,8 @@ internal class TestPlaybackApp :
         override fun httpClient(): OkHttpClient = OkHttpClient()
 
         override fun stationStreams(): StationStreams = FakeStationStreams()
+
+        override fun crashReporter(): CrashReporter = FakeCrashReporter()
 
         override fun playbackScope(): CoroutineScope = scope
     }

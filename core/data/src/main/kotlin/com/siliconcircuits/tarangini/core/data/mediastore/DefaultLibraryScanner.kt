@@ -19,6 +19,8 @@ import com.siliconcircuits.tarangini.core.domain.library.ScanFailure
 import com.siliconcircuits.tarangini.core.domain.library.ScanOutcome
 import com.siliconcircuits.tarangini.core.domain.library.ScanState
 import com.siliconcircuits.tarangini.core.domain.library.ScanSummary
+import com.siliconcircuits.tarangini.core.domain.premium.CrashReporter
+import com.siliconcircuits.tarangini.core.domain.premium.ReportedProblem
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
@@ -48,12 +50,16 @@ internal class DefaultLibraryScanner @Inject constructor(
     private val settings: DataStore<Preferences>,
     private val time: TimeSource,
     @IoDispatcher private val io: CoroutineDispatcher,
+    private val crashes: CrashReporter,
 ) : LibraryScanner {
     private val scanState = MutableStateFlow<ScanState>(ScanState.Idle)
     override val state: StateFlow<ScanState> = scanState.asStateFlow()
 
     /** Two scans at once would both add the same new file. */
     private val oneScan = Mutex()
+
+    // Only read and written inside a scan, so the lock of the scan guards it.
+    private var failureReported = false
 
     override suspend fun scan(): ScanOutcome = oneScan.withLock {
         scanState.value = ScanState.Running(done = 0, total = 0)
@@ -72,8 +78,13 @@ internal class DefaultLibraryScanner @Inject constructor(
         val files = withContext(io) { source.files() }
         // No answer is never read as "all files are gone".
         return if (files == null) {
+            // A missing permission is the choice of the person. This one is a fault of the phone.
+            // It is reported once, not at every rescan while the storage is away.
+            if (!failureReported) crashes.report(ReportedProblem.SCAN_FAILED, ScanFailure.STORAGE_UNAVAILABLE.name)
+            failureReported = true
             ScanOutcome.Failure(ScanFailure.STORAGE_UNAVAILABLE)
         } else {
+            failureReported = false
             ScanOutcome.Success(bringInStep(files, filterFromSettings()))
         }
     }

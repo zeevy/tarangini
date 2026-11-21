@@ -19,6 +19,7 @@ import androidx.media3.session.SessionError
 import com.siliconcircuits.tarangini.core.domain.model.Page
 import com.siliconcircuits.tarangini.core.domain.model.SongSort
 import com.siliconcircuits.tarangini.core.domain.playback.ResumeStore
+import com.siliconcircuits.tarangini.core.domain.premium.CrashReporter
 import com.siliconcircuits.tarangini.core.domain.repository.AudioAccess
 import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryLetters
@@ -39,6 +40,7 @@ import com.siliconcircuits.tarangini.core.playback.di.PlaybackCoroutineScope
 import com.siliconcircuits.tarangini.core.playback.mapper.LibraryTexts
 import com.siliconcircuits.tarangini.core.playback.player.CountPlays
 import com.siliconcircuits.tarangini.core.playback.player.LastSound
+import com.siliconcircuits.tarangini.core.playback.player.ReportPlayerErrors
 import com.siliconcircuits.tarangini.core.playback.player.SkipSilentEnd
 import com.siliconcircuits.tarangini.core.playback.player.createPlayer
 import com.siliconcircuits.tarangini.core.playback.resume.PlaybackResume
@@ -101,6 +103,8 @@ internal class PlaybackService : MediaLibraryService() {
 
         fun stationStreams(): StationStreams
 
+        fun crashReporter(): CrashReporter
+
         @PlaybackCoroutineScope
         fun playbackScope(): CoroutineScope
     }
@@ -113,6 +117,7 @@ internal class PlaybackService : MediaLibraryService() {
         player.addListener(StreamFailover(player, app.stationStreams(), app.playbackScope()))
         player.addListener(SkipSilentEnd(player, sound, app.playbackScope()))
         player.addListener(playCounter(app))
+        player.addListener(ReportPlayerErrors(app.crashReporter()))
         val texts = LibraryTexts(app.songLookup(), app.stationStreams())
         val resume = PlaybackResume(player, app.resumeStore(), app.playbackScope(), texts::addTo)
         scope = app.playbackScope()
