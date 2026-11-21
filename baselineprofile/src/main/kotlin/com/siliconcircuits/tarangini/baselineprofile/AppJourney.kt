@@ -17,9 +17,20 @@ internal const val TARGET_PACKAGE = "com.siliconcircuits.tarangini"
 private const val WAIT_MS = 5_000L
 
 /**
+ * Gives the app the audio permission, so the songs list shows in place of the reason screen. The
+ * name of the permission depends on the Android version; the one the device does not know fails
+ * quietly.
+ */
+internal fun MacrobenchmarkScope.allowAudio() {
+    listOf("android.permission.READ_MEDIA_AUDIO", "android.permission.READ_EXTERNAL_STORAGE").forEach { name ->
+        device.executeShellCommand("pm grant $packageName $name")
+    }
+}
+
+/**
  * Opens the Library tab and scrolls the songs list down and back up. This is the path a person
  * takes most after the start, so its code goes into the profile and its frames are measured.
- * The device needs some music and the audio permission given; with no list it only opens the tab.
+ * The device needs some music; with no songs it only opens the tab.
  */
 internal fun MacrobenchmarkScope.scrollTheSongs() {
     device.wait(Until.findObject(By.text("Library")), WAIT_MS)?.click()

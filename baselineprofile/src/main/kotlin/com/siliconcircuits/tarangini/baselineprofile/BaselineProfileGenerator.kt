@@ -26,6 +26,7 @@ class BaselineProfileGenerator {
     /** Starts the app and scrolls the songs list. */
     @Test
     fun startAndScrollTheSongs() = rule.collect(packageName = TARGET_PACKAGE) {
+        allowAudio()
         pressHome()
         startActivityAndWait()
         scrollTheSongs()

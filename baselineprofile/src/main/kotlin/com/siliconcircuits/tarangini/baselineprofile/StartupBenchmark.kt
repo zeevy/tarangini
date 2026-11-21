@@ -44,6 +44,7 @@ class StartupBenchmark {
         compilationMode = CompilationMode.Partial(BaselineProfileMode.Require),
         startupMode = StartupMode.WARM,
         iterations = ITERATIONS,
+        setupBlock = { allowAudio() },
     ) {
         startActivityAndWait()
         scrollTheSongs()
