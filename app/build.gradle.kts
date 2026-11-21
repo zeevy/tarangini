@@ -17,10 +17,13 @@ if (!hasPremium) {
     logger.lifecycle("The play build is not configured: the private premium module is not in premium/.")
 }
 
+// The one place of the version. A release is the tag v<this version>; the release workflow checks it.
+val appVersion = "0.1.0"
+
 android {
     defaultConfig {
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = TaranginiBuild.versionCodeOf(appVersion)
+        versionName = appVersion
     }
 
     flavorDimensions += "distribution"

@@ -95,6 +95,11 @@ internal fun SettingsContent(
             stringResource(R.string.settings_licences_text),
             actions.onOpenLicences,
         )
+        Row(
+            stringResource(R.string.settings_privacy),
+            stringResource(R.string.settings_privacy_text),
+            actions.onOpenPrivacy,
+        )
     }
 }
 

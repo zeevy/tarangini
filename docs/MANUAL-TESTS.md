@@ -167,6 +167,9 @@ These need the Desktop Head Unit or a car. The steps are in [ANDROID-AUTO.md](AN
 | 110 | Open ten other large apps so the system ends this one in the background while it is paused. Open it again | The queue and the place are back, paused. Nothing is lost |
 | 111 | Install a debug build, use every screen for ten minutes and play a few songs. Read the log for "StrictMode" and watch for a LeakCanary notice | No LeakCanary notice. Every StrictMode line is from a library, or has its own issue |
 | 112 | Close the app from the recent apps. Tap its icon and time until the first screen can be used. Do it five times | Under 1.5 seconds each time on the test phone. Write the times down |
+| 113 | Build the release app (`assembleCoreRelease`), sign it with a test key and install it. Scan, play a song, use search, a playlist, favourites, Settings with the licences screen, and connect to Android Auto | Everything works as in the debug build. No crash from a class or resource that R8 removed |
+| 114 | Look at the app icon in the launcher, as a round and a square shape, and with themed icons switched on | The five bars are whole in every shape, and the themed icon takes the colours of the wallpaper |
+| 115 | In Settings tap "Privacy policy" | The browser opens the policy page |
 
 ## Results
 

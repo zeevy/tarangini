@@ -68,6 +68,11 @@ jobs:
       - name: Build the core debug app
         run: ./gradlew assembleCoreDebug --stacktrace
 
+      # Shows a library update that R8 cannot build. It does not prove the shrunk app runs:
+      # that is a manual test until the end to end test exists.
+      - name: Build the core release app
+        run: ./gradlew assembleCoreRelease --stacktrace
+
       - name: Upload the reports of a failed run
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
