@@ -18,6 +18,7 @@ import com.siliconcircuits.tarangini.core.domain.model.Playlist
 import com.siliconcircuits.tarangini.core.domain.model.PlaylistSong
 import com.siliconcircuits.tarangini.core.testing.library.testSong
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
+import com.siliconcircuits.tarangini.feature.library.checkAccessibility
 import com.siliconcircuits.tarangini.feature.library.list.PagedItems
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -29,6 +30,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.annotation.GraphicsMode
 
 @RunWith(RobolectricTestRunner::class)
 class PlaylistContentTest {
@@ -120,5 +122,13 @@ class PlaylistContentTest {
         composeRule.onNodeWithText("Create").performClick()
 
         assertEquals(listOf("open Drive", "create Morning"), done)
+    }
+
+    @Test
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    fun `the screen passes the accessibility checks`() {
+        show()
+
+        composeRule.checkAccessibility()
     }
 }

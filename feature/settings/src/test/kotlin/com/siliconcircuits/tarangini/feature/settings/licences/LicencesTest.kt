@@ -21,6 +21,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
@@ -68,6 +69,12 @@ class LicencesTest {
     fun `a licence text`() {
         val text = "Apache License\nVersion 2.0, January 2004\n\n" + "Terms. ".repeat(80)
         shot("licences_text", LicencesUiState(libraries, OpenedLicence("Apache License 2.0", text)))
+    }
+
+    @Test
+    fun `the list with the largest font`() {
+        RuntimeEnvironment.setFontScale(2f)
+        shot("licences_list_largest_font", LicencesUiState(libraries))
     }
 
     private fun shot(name: String, state: LicencesUiState) {

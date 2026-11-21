@@ -69,6 +69,12 @@ class MiniPlayerScreenshotTest {
     @Test
     fun `buffering`() = capture("mini_player_buffering", buffering)
 
+    @Test
+    fun `playing with the largest font`() {
+        RuntimeEnvironment.setFontScale(2f)
+        capture("mini_player_largest_font", song)
+    }
+
     private fun capture(name: String, state: MiniPlayerUiState) {
         val picture = File("src/test/screenshots/$name.png")
         // Without this, a test with no saved picture passes: there is nothing to compare with.

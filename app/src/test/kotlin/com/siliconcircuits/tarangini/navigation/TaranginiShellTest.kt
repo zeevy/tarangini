@@ -18,6 +18,7 @@ import androidx.compose.ui.test.performClick
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import com.siliconcircuits.tarangini.testing.NoPlaybackServiceRule
 import com.siliconcircuits.tarangini.testing.RegisterComponentActivityRule
+import com.siliconcircuits.tarangini.testing.checkAccessibility
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -25,6 +26,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.GraphicsMode
 
 @RunWith(RobolectricTestRunner::class)
 class TaranginiShellTest {
@@ -108,4 +110,10 @@ class TaranginiShellTest {
     private fun tab(label: String): SemanticsMatcher = hasText(label) and isSelectable()
 
     private fun title(text: String): SemanticsMatcher = hasText(text) and isSelectable().not()
+
+    @Test
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    fun `the shell passes the accessibility checks`() {
+        composeRule.checkAccessibility()
+    }
 }

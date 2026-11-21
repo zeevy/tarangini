@@ -27,6 +27,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 
 @RunWith(RobolectricTestRunner::class)
 @Config(qualifiers = "w360dp-h800dp-xhdpi")
@@ -59,7 +60,8 @@ class SettingsContentTest {
     )
 
     private fun show() = composeRule.setContent {
-        TaranginiTheme { SettingsContent(state, "1.0", actions) }
+        // Inside the frame of the screen, which gives the dark background and the text colour.
+        TaranginiTheme { SettingsScreen(onBackClick = {}) { SettingsContent(state, "1.0", actions) } }
     }
 
     @Test
@@ -128,5 +130,13 @@ class SettingsContentTest {
 
         assertEquals(emptyList<String>(), afterCancel)
         assertEquals(listOf("clear"), done)
+    }
+
+    @Test
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    fun `the screen passes the accessibility checks`() {
+        show()
+
+        composeRule.checkAccessibility()
     }
 }

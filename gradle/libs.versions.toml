@@ -95,6 +95,7 @@ roborazzi = { group = "io.github.takahirom.roborazzi", name = "roborazzi", versi
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
 coil-test = { group = "io.coil-kt.coil3", name = "coil-test", version.ref = "coil" }
 roborazzi-compose = { group = "io.github.takahirom.roborazzi", name = "roborazzi-compose", version.ref = "roborazzi" }
+roborazzi-accessibility-check = { group = "io.github.takahirom.roborazzi", name = "roborazzi-accessibility-check", version.ref = "roborazzi" }
 
 [plugins]
 # Only for the build logic's own build file. Modules get these through the convention plugins.

@@ -18,6 +18,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
@@ -46,6 +47,22 @@ class HomeScreenshotTest {
     @Test
     fun `only playlists`() = shot("home_playlists_only") {
         HomeContent(full.copy(paused = null, recent = emptyList()), songActions, HomeLinks())
+    }
+
+    @Test
+    fun `every section with the largest font`() {
+        RuntimeEnvironment.setFontScale(2f)
+        shot("home_full_largest_font") { HomeContent(full, songActions, HomeLinks()) }
+    }
+
+    @Test
+    @Config(qualifiers = "w640dp-h320dp-xhdpi")
+    fun `every section on a wide screen`() = shot("home_full_wide") { HomeContent(full, songActions, HomeLinks()) }
+
+    @Test
+    fun `first use with the largest font`() {
+        RuntimeEnvironment.setFontScale(2f)
+        shot("home_first_use_largest_font") { HomeContent(HomeUiState(isLoading = false), songActions, HomeLinks()) }
     }
 
     private fun shot(name: String, body: @Composable () -> Unit) {

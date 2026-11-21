@@ -14,8 +14,10 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.unit.dp
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -102,5 +104,19 @@ class MiniPlayerBarTest {
         composeRule.onNodeWithContentDescription("Pause").performClick()
 
         assertEquals(listOf("toggle"), done)
+    }
+
+    @Test
+    fun `each button of the bar can be touched on 48 dp`() {
+        show(playing)
+
+        // Measured here and not with the framework check: on the JVM it reads the buttons as 46 dp high.
+        listOf("Pause", "Next").forEach { button ->
+            val touch = composeRule.onNodeWithContentDescription(button).fetchSemanticsNode().touchBoundsInRoot
+            with(composeRule.density) {
+                assertTrue("$button is ${touch.width} x ${touch.height} px", touch.width >= 48.dp.toPx())
+                assertTrue("$button is ${touch.width} x ${touch.height} px", touch.height >= 48.dp.toPx())
+            }
+        }
     }
 }

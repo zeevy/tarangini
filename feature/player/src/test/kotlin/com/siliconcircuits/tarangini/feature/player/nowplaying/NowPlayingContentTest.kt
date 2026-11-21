@@ -19,6 +19,7 @@ import androidx.compose.ui.test.performSemanticsAction
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
+import com.siliconcircuits.tarangini.feature.player.checkAccessibility
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -30,6 +31,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 
 // A screen as high as a phone: on the small default screen of the tests the buttons are below the fold.
 @RunWith(RobolectricTestRunner::class)
@@ -174,5 +176,13 @@ class NowPlayingContentTest {
         composeRule.onNodeWithContentDescription("Back").performClick()
 
         assertEquals(listOf("queue", "back"), done)
+    }
+
+    @Test
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    fun `the screen passes the accessibility checks`() {
+        show(song)
+
+        composeRule.checkAccessibility()
     }
 }

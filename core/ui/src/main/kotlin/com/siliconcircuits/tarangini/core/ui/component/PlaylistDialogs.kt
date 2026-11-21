@@ -28,7 +28,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.siliconcircuits.tarangini.core.domain.model.MAX_PLAYLIST_NAME
 import com.siliconcircuits.tarangini.core.domain.model.Playlist
@@ -58,7 +57,7 @@ fun AddToPlaylistDialog(pick: PlaylistPick, songId: Long, onDismiss: () -> Unit)
                     items(items = playlists, key = Playlist::id) { playlist ->
                         ListItem(
                             colors = clearRowColors(),
-                            headlineContent = { Text(playlist.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                            headlineContent = { OneLine(playlist.name) },
                             modifier = Modifier.clickable {
                                 pick.onAdd(songId, playlist.id)
                                 onDismiss()
