@@ -178,6 +178,8 @@ These need the Desktop Head Unit or a car. The steps are in [ANDROID-AUTO.md](AN
 | 121 | Play a long recording and set the speed to 0.5x, 1.5x and 2x. Then play another album from the Library | Each speed plays with the natural pitch of the voice. The new album starts at 1x |
 | 122 | With songs on the phone and on a memory card, open Library, Folders | The built-in storage shows as "Phone storage". The card shows with the name Android gives it, or as "Memory card" |
 | 123 | On a phone with a build of database version 1 and a scanned library with favourites and a playlist, install the new build over it and search for a Telugu or Hindi word | The app opens with the library, the favourites and the playlist as before. The search finds the word by its start and not by the same consonant with another vowel |
+| 124 | Open a playlist with songs, choose "Export to a file" in its menu and save it in Downloads. Open the file in a file app. Then in Library, Playlists choose "Import a playlist file" and pick that file | The file picker of the system opens both times. The file has one path per song. The import makes a new playlist with the name of the file and the same songs in the same order, and says how many were found |
+| 125 | Import a playlist file made on a computer (Windows paths or relative paths) with some songs that are not on the phone, and then a large file that is no playlist (a video) | The songs that are on the phone are found, the others are listed as not found. The large file is refused with a clear text and no playlist is made |
 
 ## Results
 

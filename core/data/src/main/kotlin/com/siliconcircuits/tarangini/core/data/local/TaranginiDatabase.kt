@@ -15,6 +15,7 @@ import com.siliconcircuits.tarangini.core.data.local.dao.HistoryDao
 import com.siliconcircuits.tarangini.core.data.local.dao.LetterDao
 import com.siliconcircuits.tarangini.core.data.local.dao.LibraryDao
 import com.siliconcircuits.tarangini.core.data.local.dao.PlaylistDao
+import com.siliconcircuits.tarangini.core.data.local.dao.PlaylistFileDao
 import com.siliconcircuits.tarangini.core.data.local.dao.QueueDao
 import com.siliconcircuits.tarangini.core.data.local.dao.StationDao
 import com.siliconcircuits.tarangini.core.data.local.dao.StationStreamDao
@@ -73,6 +74,8 @@ internal abstract class TaranginiDatabase : RoomDatabase() {
     abstract fun letterDao(): LetterDao
 
     abstract fun playlistDao(): PlaylistDao
+
+    abstract fun playlistFileDao(): PlaylistFileDao
 
     abstract fun queueDao(): QueueDao
 

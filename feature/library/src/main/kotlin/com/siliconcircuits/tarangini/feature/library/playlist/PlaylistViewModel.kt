@@ -13,6 +13,7 @@ import com.siliconcircuits.tarangini.core.domain.model.Page
 import com.siliconcircuits.tarangini.core.domain.model.PlaylistSong
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackController
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
+import com.siliconcircuits.tarangini.core.domain.repository.PlaylistFiles
 import com.siliconcircuits.tarangini.core.domain.repository.PlaylistRepository
 import com.siliconcircuits.tarangini.feature.library.list.PagedList
 import com.siliconcircuits.tarangini.feature.library.list.attempt
@@ -42,8 +43,12 @@ internal class PlaylistViewModel @Inject constructor(
     private val playlists: PlaylistRepository,
     library: LibraryRepository,
     private val playback: PlaybackController,
+    files: PlaylistFiles,
 ) : ViewModel() {
     private val playlistId: Long = checkNotNull(saved[PlaylistRoute.PLAYLIST_ID])
+
+    /** Writes this playlist to a file. */
+    val export = PlaylistFileExport(viewModelScope, files, playlistId)
     private val shown = MutableStateFlow(PlaylistUiState(saved.get<String>(PlaylistRoute.NAME).orEmpty()))
 
     val state: StateFlow<PlaylistUiState> = shown.asStateFlow()
