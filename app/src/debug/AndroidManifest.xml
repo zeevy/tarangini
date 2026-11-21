@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (C) Silicon Circuits and the Tarangini contributors. This file
+  is part of Tarangini, free software under the GNU General Public License,
+  version 3 only. See the LICENSE file. SPDX-License-Identifier: GPL-3.0-only
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- LeakCanary asks for this to save its files in Downloads. Without it the files stay in the
+         folder of the app, which is enough. The app asks for no write access to shared files. -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:node="remove" />
+</manifest>

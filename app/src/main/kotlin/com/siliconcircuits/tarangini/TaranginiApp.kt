@@ -33,6 +33,7 @@ class TaranginiApp :
 
     override fun onCreate() {
         super.onCreate()
+        installDebugChecks()
         installArtworkLoader()
         // The playback connection is open while a screen is open, so it must hear of every screen from the first one.
         registerActivityLifecycleCallbacks(playbackScreenWatcher)

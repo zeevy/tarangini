@@ -47,6 +47,8 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.work.runtime)
 
+    // Finds memory leaks while a debug build is used. It is never part of a release build.
+    debugImplementation(libs.leakcanary.android)
     if (hasPremium) {
         "playImplementation"(project(":premium"))
     }
