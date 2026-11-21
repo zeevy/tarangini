@@ -17,7 +17,6 @@ import com.siliconcircuits.tarangini.core.data.local.dao.PlaylistFileRow
 import com.siliconcircuits.tarangini.core.domain.model.MAX_PLAYLIST_NAME
 import com.siliconcircuits.tarangini.core.domain.playlist.M3u
 import com.siliconcircuits.tarangini.core.domain.playlist.M3uSong
-import com.siliconcircuits.tarangini.core.domain.playlist.SongFile
 import com.siliconcircuits.tarangini.core.domain.repository.PlaylistFiles
 import com.siliconcircuits.tarangini.core.domain.repository.PlaylistImport
 import com.siliconcircuits.tarangini.core.domain.repository.PlaylistRepository
@@ -41,6 +40,8 @@ internal class DefaultPlaylistFiles @Inject constructor(
     private val playlists: PlaylistRepository,
     @param:IoDispatcher private val io: CoroutineDispatcher,
 ) : PlaylistFiles {
+    private val finder = SongFileFinder(files::filesNamed)
+
     override suspend fun exportTo(playlistId: Long, target: String): Boolean = withContext(io) {
         runCatching {
             val songs = files.filesOf(playlistId).map { it.toM3uSong() }
@@ -87,15 +88,7 @@ internal class DefaultPlaylistFiles @Inject constructor(
     }
 
     private suspend fun playlistOf(entries: List<String>, name: String): PlaylistImport {
-        // The table compares without regard to case only for the letters a to z. So each name is also
-        // asked for as the file writes it: "Été.mp3" is then found when the file writes it the same way.
-        val names = entries.flatMap { entry -> listOfNotNull(M3u.fileNameOf(entry), writtenNameOf(entry)) }.distinct()
-        val known = names.chunked(NAMES_PER_QUERY)
-            .flatMap { part -> files.filesNamed(part) }
-            .distinctBy { it.songId }
-            .map { SongFile(it.songId, it.folderPath, it.fileName) }
-            .groupBy { it.fileName.lowercase() }
-        val found = entries.map { entry -> entry to M3u.match(entry, known[M3u.fileNameOf(entry)].orEmpty()) }
+        val found = entries.zip(finder.find(entries))
         val songIds = found.mapNotNull { it.second }
         val playlistId = if (songIds.isEmpty()) null else playlists.create(name)
         return if (playlistId == null) {
@@ -125,9 +118,6 @@ internal class DefaultPlaylistFiles @Inject constructor(
         return name.ifEmpty { context.getString(R.string.playlist_imported) }
     }
 
-    /** The file name as the line writes it, for a path with either kind of slash. */
-    private fun writtenNameOf(entry: String): String = entry.replace('\\', '/').substringAfterLast('/')
-
     /**
      * A text of a file as it may be shown: no control character, and no character that changes the
      * direction of the text and so could make a line read as something else.
@@ -137,7 +127,6 @@ internal class DefaultPlaylistFiles @Inject constructor(
 
     private companion object {
         const val BROKEN_CHARACTER = '\uFFFD'
-        const val NAMES_PER_QUERY = 400
         const val MAX_SHOWN_LINE = 200
     }
 }

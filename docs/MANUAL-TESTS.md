@@ -184,6 +184,8 @@ These need the Desktop Head Unit or a car. The steps are in [ANDROID-AUTO.md](AN
 | 127 | On a phone with songs that have genre tags, some with two genres and some with none, open Library, Genres and a genre | Each genre shows with its number of songs, a song with two genres is under both, the songs with none are under "Unknown" at the end. A tap on a song plays the genre from that song on |
 | 128 | Install the build with genres over a build without them and open the app. Then open Library, Genres in the car | After the first scan the Genres list is filled; favourites and playlists are as before. The car shows Genres under Library and plays a genre |
 | 129 | In the release build open Settings, Open source licences, and tap "Jakarta Dependency Injection" (or another library with a notice) | The text starts with "Notice of the library" and the notice, then the licence text. A library with no notice shows only the licence |
+| 130 | Mark some favourites, make two playlists, hide a folder. Settings, "Back up to a file", save it. Clear the data of the app (or install it on another phone with the same music), open Library and allow access, then Settings, "Restore from a file", "Add" | The picker opens both times. The result names the numbers. Favourites are in the same order, both playlists have their songs in order, the folder is hidden again |
+| 131 | With other favourites and one more playlist on the phone, restore the same file with "Replace". Then pick a photo or a text file as the backup | After "Replace" only the favourites and playlists of the file are left. The other file is refused with "This file is no backup of Tarangini." and nothing changes |
 
 ## Results
 

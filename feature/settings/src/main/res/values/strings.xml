@@ -30,6 +30,27 @@
     <string name="settings_rescan_done">Done: %1$d added, %2$d removed</string>
     <string name="settings_rescan_no_permission">Allow access to audio in the Library tab first</string>
     <string name="settings_rescan_no_storage">The storage of the phone is not ready. Try again later.</string>
+    <string name="settings_backup">Backup</string>
+    <string name="settings_backup_save">Back up to a file</string>
+    <string name="settings_backup_save_text">Favourites, playlists and library settings</string>
+    <string name="settings_backup_restore">Restore from a file</string>
+    <string name="settings_backup_restore_text">Read a backup that this app wrote</string>
+    <string name="backup_busy">Working. Please wait.</string>
+    <string name="backup_saved">The backup was saved.</string>
+    <string name="backup_save_failed">The backup could not be saved.</string>
+    <string name="backup_restore_question">Add to what is here, or replace it? Replace removes the favourites, playlists and hidden folders that are not in the file.</string>
+    <string name="backup_restore_add">Add</string>
+    <string name="backup_restore_replace">Replace</string>
+    <string name="backup_restore_done">Restored. Favourites: %1$d. Playlists: %2$d.</string>
+    <plurals name="backup_restore_not_found">
+        <item quantity="one">%d song of the file is not in your library.</item>
+        <item quantity="other">%d songs of the file are not in your library.</item>
+    </plurals>
+    <string name="backup_restore_too_large">This file is too large to be a backup.</string>
+    <string name="backup_restore_not_a_backup">This file is no backup of Tarangini.</string>
+    <string name="backup_restore_newer">This backup was written by a newer version of the app. Update the app and try again.</string>
+    <string name="backup_restore_no_library">Your library is empty. Open the Library tab, allow access to your music, and restore again when the songs show.</string>
+    <string name="backup_restore_failed">The file could not be read.</string>
     <string name="settings_history">History</string>
     <string name="settings_clear_history">Clear history</string>
     <string name="settings_clear_history_text">Forget what was played and how often</string>
