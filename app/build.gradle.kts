@@ -24,6 +24,8 @@ android {
     defaultConfig {
         versionCode = TaranginiBuild.versionCodeOf(appVersion)
         versionName = appVersion
+        // The end to end test of the main flows runs on a device or an emulator.
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     flavorDimensions += "distribution"
@@ -55,6 +57,14 @@ dependencies {
     debugImplementation(libs.leakcanary.android)
 
     testImplementation(project(":core:testing"))
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    // The Compose test library brings espresso 3.5, which fails on Android 17 (no InputManager.getInstance).
+    androidTestImplementation(libs.androidx.test.espresso.core)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.media3.session)
     if (hasPremium) {
         "playImplementation"(project(":premium"))
     }
