@@ -22,6 +22,7 @@ import coil3.annotation.DelicateCoilApi
 import coil3.annotation.ExperimentalCoilApi
 import coil3.test.FakeImageLoaderEngine
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.siliconcircuits.tarangini.core.testing.savedPicture
 import com.siliconcircuits.tarangini.core.ui.theme.Spacing
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import java.io.File
@@ -59,9 +60,7 @@ class AlbumArtScreenshotTest {
     fun `a picture, no picture and no address`() = capture("album_art")
 
     private fun capture(name: String) {
-        val picture = File("src/test/screenshots/$name.png")
-        // Without this, a test with no saved picture passes: there is nothing to compare with.
-        assertTrue("No saved picture $picture. Run the tests with -PrecordScreenshots.", recording || picture.exists())
+        val picture = savedPicture("$name")
         captureRoboImage(picture.path) {
             TaranginiTheme {
                 Surface {
@@ -81,4 +80,3 @@ private const val WITH_PICTURE = "content://media/external/audio/media/1/albumar
 private const val NO_PICTURE = "content://media/external/audio/media/2/albumart"
 private const val PICTURE = 0xFFC83C14
 private val LARGE = 144.dp
-private val recording = System.getProperty("roborazzi.test.record").toBoolean()

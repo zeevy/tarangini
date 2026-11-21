@@ -8,12 +8,12 @@ package com.siliconcircuits.tarangini.feature.library.playlist
 
 import androidx.lifecycle.SavedStateHandle
 import com.siliconcircuits.tarangini.core.domain.repository.PlaylistImport
+import com.siliconcircuits.tarangini.core.testing.MainDispatcherRule
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakePlaylistFiles
 import com.siliconcircuits.tarangini.core.testing.library.FakePlaylistRepository
 import com.siliconcircuits.tarangini.core.testing.library.testSong
 import com.siliconcircuits.tarangini.core.testing.playback.FakePlaybackController
-import com.siliconcircuits.tarangini.feature.library.MainDispatcherRule
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest

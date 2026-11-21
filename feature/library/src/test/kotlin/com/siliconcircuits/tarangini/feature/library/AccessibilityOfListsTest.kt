@@ -17,9 +17,11 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.github.takahirom.roborazzi.captureScreenRoboImage
 import com.siliconcircuits.tarangini.core.domain.model.Playlist
+import com.siliconcircuits.tarangini.core.testing.RegisterComponentActivityRule
 import com.siliconcircuits.tarangini.core.testing.library.testAlbum
 import com.siliconcircuits.tarangini.core.testing.library.testFolder
 import com.siliconcircuits.tarangini.core.testing.library.testSong
+import com.siliconcircuits.tarangini.core.testing.savedPicture
 import com.siliconcircuits.tarangini.core.ui.component.PlaylistPick
 import com.siliconcircuits.tarangini.core.ui.component.SongRowActions
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
@@ -51,16 +53,9 @@ import org.robolectric.annotation.GraphicsMode
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class AccessibilityOfListsTest {
-    private val app: Application = RuntimeEnvironment.getApplication()
     private val composeRule = createAndroidComposeRule<ComponentActivity>()
 
-    /** The manifest of a library has no activity, so the plain one is added before Compose starts it. */
-    private val registerActivity = object : TestWatcher() {
-        override fun starting(description: Description) {
-            shadowOf(app.packageManager)
-                .addActivityIfNotPresent(ComponentName(app.packageName, ComponentActivity::class.java.name))
-        }
-    }
+    private val registerActivity = RegisterComponentActivityRule()
 
     @get:Rule
     val rules: RuleChain = RuleChain.outerRule(registerActivity).around(composeRule)
@@ -212,9 +207,7 @@ class AccessibilityOfListsTest {
 
     /** A picture of the whole screen, so a dialog is in it: a dialog is a window of its own. */
     private fun shot(name: String) {
-        val picture = File("src/test/screenshots/$name.png")
-        // Without this, a test with no saved picture passes: there is nothing to compare with.
-        assertTrue("No saved picture $picture. Run the tests with -PrecordScreenshots.", recording || picture.exists())
+        val picture = savedPicture("$name")
         // The dialog opens in a later frame than the tap.
         composeRule.waitForIdle()
         captureScreenRoboImage(picture.path)
@@ -222,4 +215,3 @@ class AccessibilityOfListsTest {
 }
 
 private const val LARGEST_FONT = 2f
-private val recording = System.getProperty("roborazzi.test.record").toBoolean()

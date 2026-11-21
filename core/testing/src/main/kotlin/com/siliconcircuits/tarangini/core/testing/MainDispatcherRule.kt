@@ -4,7 +4,10 @@
  * version 3 only. See the LICENSE file. SPDX-License-Identifier: GPL-3.0-only
  */
 
-package com.siliconcircuits.tarangini.feature.library
+// Main code may not use Dispatchers (K3). This rule exists to swap the main dispatcher in tests.
+@file:Suppress("ForbiddenImport")
+
+package com.siliconcircuits.tarangini.core.testing
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.TestDispatcher

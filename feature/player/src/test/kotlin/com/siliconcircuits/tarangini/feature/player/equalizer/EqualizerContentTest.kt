@@ -30,6 +30,8 @@ import com.siliconcircuits.tarangini.core.domain.audio.EqualizerSettings
 import com.siliconcircuits.tarangini.core.domain.audio.FIVE_BANDS_HZ
 import com.siliconcircuits.tarangini.core.domain.audio.VolumeLevelling
 import com.siliconcircuits.tarangini.core.domain.model.Genre
+import com.siliconcircuits.tarangini.core.testing.RegisterComponentActivityRule
+import com.siliconcircuits.tarangini.core.testing.savedPicture
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import com.siliconcircuits.tarangini.feature.player.checkAccessibility
 import java.io.File
@@ -51,16 +53,9 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(qualifiers = "w360dp-h800dp-xhdpi")
 class EqualizerContentTest {
-    private val app: Application = RuntimeEnvironment.getApplication()
     private val composeRule = createAndroidComposeRule<ComponentActivity>()
 
-    /** The manifest of a library has no activity, so the plain one is added before Compose starts it. */
-    private val registerActivity = object : TestWatcher() {
-        override fun starting(description: Description) {
-            shadowOf(app.packageManager)
-                .addActivityIfNotPresent(ComponentName(app.packageName, ComponentActivity::class.java.name))
-        }
-    }
+    private val registerActivity = RegisterComponentActivityRule()
 
     @get:Rule
     val rules: RuleChain = RuleChain.outerRule(registerActivity).around(composeRule)
@@ -223,9 +218,7 @@ class EqualizerContentTest {
     fun `the equalizer off`() = shot("equalizer_off") { show(EqualizerUiState(EqualizerSettings(), FIVE_BANDS_HZ)) }
 
     private fun shot(name: String, content: () -> Unit) {
-        val picture = File("src/test/screenshots/$name.png")
-        // Without this, a test with no saved picture passes: there is nothing to compare with.
-        assertTrue("No saved picture $picture. Run the tests with -PrecordScreenshots.", recording || picture.exists())
+        val picture = savedPicture("$name")
         content()
         composeRule.onRoot().captureRoboImage(picture.path)
     }
@@ -234,5 +227,3 @@ class EqualizerContentTest {
         const val LARGEST_FONT = 2f
     }
 }
-
-private val recording = System.getProperty("roborazzi.test.record").toBoolean()

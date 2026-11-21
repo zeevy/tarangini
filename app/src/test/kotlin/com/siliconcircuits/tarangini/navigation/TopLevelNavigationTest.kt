@@ -22,10 +22,10 @@ import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.siliconcircuits.tarangini.core.testing.RegisterComponentActivityRule
 import com.siliconcircuits.tarangini.feature.home.navigation.HomeRoute
 import com.siliconcircuits.tarangini.feature.library.navigation.LibraryRoute
 import com.siliconcircuits.tarangini.testing.NoPlaybackServiceRule
-import com.siliconcircuits.tarangini.testing.RegisterComponentActivityRule
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith

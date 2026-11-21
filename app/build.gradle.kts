@@ -53,6 +53,8 @@ dependencies {
 
     // Finds memory leaks while a debug build is used. It is never part of a release build.
     debugImplementation(libs.leakcanary.android)
+
+    testImplementation(project(":core:testing"))
     if (hasPremium) {
         "playImplementation"(project(":premium"))
     }

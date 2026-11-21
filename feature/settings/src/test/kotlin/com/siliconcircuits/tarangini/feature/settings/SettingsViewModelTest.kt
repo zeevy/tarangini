@@ -8,6 +8,7 @@ package com.siliconcircuits.tarangini.feature.settings
 
 import com.siliconcircuits.tarangini.core.domain.library.ScanState
 import com.siliconcircuits.tarangini.core.domain.model.ScanSettings
+import com.siliconcircuits.tarangini.core.testing.MainDispatcherRule
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryScanner
 import com.siliconcircuits.tarangini.core.testing.library.FakePlayHistory
 import com.siliconcircuits.tarangini.core.testing.settings.FakeSettingsRepository
