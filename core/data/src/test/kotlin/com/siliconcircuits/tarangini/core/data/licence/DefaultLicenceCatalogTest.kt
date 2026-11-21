@@ -45,6 +45,24 @@ class DefaultLicenceCatalogTest {
     }
 
     @Test
+    fun `a library gets the notice the build collected for it, cleaned`() {
+        val libraries = """
+            [{"groupId": "org.a", "artifactId": "one", "version": "1", "spdxLicenses": [{"identifier": "Apache-2.0"}]},
+             {"groupId": "org.a", "artifactId": "two", "version": "1", "spdxLicenses": [{"identifier": "Apache-2.0"}]}]
+        """.trimIndent()
+        val notices = """
+            [{"groupId": "org.a", "artifactId": "one", "notice": " Made\u0007 by\tA\u202E\nIn 2020 "},
+             {"groupId": "org.a", "artifactId": "empty", "notice": "  "}, "no entry"]
+        """.trimIndent()
+
+        val read = parseNotices(notices)
+
+        assertEquals(mapOf("org.a:one" to "Made by A\nIn 2020"), read)
+        assertEquals(listOf("Made by A\nIn 2020", null), parseArtifacts(libraries, read).map { it.notice })
+        assertEquals(emptyMap<String, String>(), parseNotices("{}"))
+    }
+
+    @Test
     fun `a list that is no list gives nothing`() {
         assertEquals(emptyList<OpenSourceLibrary>(), parseArtifacts("{}"))
         assertEquals(emptyList<OpenSourceLibrary>(), parseArtifacts(""))

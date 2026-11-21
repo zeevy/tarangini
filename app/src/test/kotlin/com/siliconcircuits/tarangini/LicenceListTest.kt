@@ -32,6 +32,22 @@ class LicenceListTest {
     }
 
     @Test
+    fun `the app holds the notices the build collected, each for a library of the list`() {
+        val list = JSONArray(assets.open("app/cash/licensee/artifacts.json").bufferedReader().use { it.readText() })
+        val libraries = (0 until list.length()).map { index ->
+            list.getJSONObject(index).let { it.optString("groupId") + ":" + it.optString("artifactId") }
+        }.toSet()
+        val notices = JSONArray(assets.open("licences/notices.json").bufferedReader().use { it.readText() })
+        val withNotice = (0 until notices.length()).map { index ->
+            notices.getJSONObject(index).let { it.optString("groupId") + ":" + it.optString("artifactId") }
+        }
+
+        // A notice of a library that is not in the list would never show on the licences screen.
+        assertTrue("No notice: the build step did not run, or no library has one any more", withNotice.isNotEmpty())
+        assertTrue("Not in the list: ${withNotice - libraries}", libraries.containsAll(withNotice))
+    }
+
+    @Test
     fun `the font has its licence text`() {
         assertTrue(hasText("Manrope-OFL"))
     }

@@ -23,4 +23,7 @@ Every screen must work with TalkBack, with large fonts and on small phones. A ru
 - The helper is a small file in the test folder of each module, as the other test helpers are. Sharing them is its own piece of work.
 - The checks do not replace a run with TalkBack: the order of the items and what an action says can only be judged by a person. Those runs are rows in `docs/MANUAL-TESTS.md`.
 - The mini player keeps one line of text at every font size, so the bar keeps its height.
-- Not checked yet: dialogs and menus (each is a window of its own, which the helper does not read), the Favourites tab, the album, artist and folder screens and the licences screen.
+- A dialog or a menu is a window of its own. `checkAccessibilityOfDialog()` and `checkAccessibilityOfMenu()` read the window on top and fail when none is open. They are in the helper files of the library and the settings feature.
+- For a menu the contrast is not measured: Robolectric hands the checker the picture of the screen under the menu, so the number would say nothing. Labels and touch targets of a menu are checked. A dialog is checked in full.
+- A dialog is checked with its main button on (a name typed). A button that is off is dim on purpose, and the contrast rule does not ask more of it.
+- Each dialog has a picture at the largest font, taken of the whole screen (`captureScreenRoboImage`) after `waitForIdle()`.

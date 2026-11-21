@@ -72,6 +72,24 @@ class LicencesTest {
     }
 
     @Test
+    fun `a licence text with the notice of the library above it`() {
+        val opened = OpenedLicence("Apache License 2.0", "Apache License\nVersion 2.0", "Made by A\nCopyright 2020 A")
+        shot("licences_text_notice", LicencesUiState(libraries, opened))
+    }
+
+    @Test
+    fun `a library with a notice opens with it`() = runTest(mainDispatcher.dispatcher) {
+        val viewModel = LicencesViewModel(catalog)
+
+        viewModel.open(libraries[0].copy(notice = "Made by A"))
+
+        assertEquals(
+            OpenedLicence("Apache License 2.0", "Text of Apache-2.0", "Made by A"),
+            viewModel.state.value.opened,
+        )
+    }
+
+    @Test
     fun `the list with the largest font`() {
         RuntimeEnvironment.setFontScale(2f)
         shot("licences_list_largest_font", LicencesUiState(libraries))
