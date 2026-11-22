@@ -22,7 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -30,28 +29,6 @@ import androidx.navigation.compose.rememberNavController
 import com.siliconcircuits.tarangini.core.ui.theme.glassBackground
 import com.siliconcircuits.tarangini.feature.player.navigation.isPlayerScreen
 import com.siliconcircuits.tarangini.feature.player.navigation.navigateToNowPlaying
-
-/** How the shell lays out the tabs, from the width of the window. */
-internal enum class ShellLayout {
-    /** A phone held upright: the bottom bar. */
-    COMPACT,
-
-    /** A small tablet, an open foldable or a phone on its side: the rail. */
-    MEDIUM,
-
-    /** A tablet: the rail, and the now playing pane beside the tab screens. */
-    EXPANDED,
-    ;
-
-    companion object {
-        /** The layout for a window [width] wide, at the window size class limits of Material. */
-        fun of(width: Dp): ShellLayout = when {
-            width >= ExpandedWidth -> EXPANDED
-            width >= MediumWidth -> MEDIUM
-            else -> COMPACT
-        }
-    }
-}
 
 /**
  * The frame every screen sits in: the screens, then the [miniPlayer] slot,
@@ -83,7 +60,7 @@ internal fun TaranginiShell(
     val currentTab = destination?.topLevelDestination()
 
     BoxWithConstraints(modifier = modifier.glassBackground()) {
-        val layout = ShellLayout.of(maxWidth)
+        val layout = ShellLayout.of(maxWidth, maxHeight)
         val withPane = layout == ShellLayout.EXPANDED && currentTab != null
         // The now playing screen shows the same item with all its controls, so the bar would be a second copy.
         val showMiniPlayer = destination?.isPlayerScreen() != true && !withPane
@@ -125,10 +102,6 @@ internal fun TaranginiShell(
         }
     }
 }
-
-// The window size class limits of Material 3.
-private val MediumWidth = 600.dp
-private val ExpandedWidth = 840.dp
 
 // Wide enough for the cover and every button, and the tab screen keeps most of the window.
 private val NowPlayingPaneWidth = 400.dp
