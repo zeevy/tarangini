@@ -24,22 +24,29 @@ import kotlinx.coroutines.flow.stateIn
  *
  * @property items the items in the order of the queue
  * @property currentIndex the place of the item that plays, or null when the queue is empty
+ * @property playOrder with shuffle on, the places from the item that plays on, in the order they play
  */
-internal data class QueueUiState(val items: List<PlaybackItem> = emptyList(), val currentIndex: Int? = null)
+internal data class QueueUiState(
+    val items: List<PlaybackItem> = emptyList(),
+    val currentIndex: Int? = null,
+    val playOrder: List<Int>? = null,
+)
 
 /** The queue screen: what plays next, in an order the person can change. */
 @HiltViewModel
 internal class QueueViewModel @Inject constructor(playback: PlaybackController, private val queue: PlaybackQueue) :
     ViewModel() {
     val state: StateFlow<QueueUiState> = playback.state
-        .map { QueueUiState(it.queue, it.currentIndex) }
+        .map { QueueUiState(it.queue, it.currentIndex, it.playOrder) }
         // The player reports its place several times a second with the same list. Comparing a list
         // of many thousand items each time would cost more than drawing it.
-        .distinctUntilChanged { old, new -> old.items === new.items && old.currentIndex == new.currentIndex }
+        .distinctUntilChanged { old, new ->
+            old.items === new.items && old.currentIndex == new.currentIndex && old.playOrder == new.playOrder
+        }
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(STOP_AFTER_MS),
-            QueueUiState(playback.state.value.queue, playback.state.value.currentIndex),
+            playback.state.value.let { QueueUiState(it.queue, it.currentIndex, it.playOrder) },
         )
 
     fun playAt(index: Int) = queue.playAt(index)

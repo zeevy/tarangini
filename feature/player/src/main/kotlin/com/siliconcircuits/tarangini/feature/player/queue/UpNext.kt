@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackItem
+import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
 import com.siliconcircuits.tarangini.core.ui.component.formatDuration
 import com.siliconcircuits.tarangini.core.ui.theme.DigitsFont
 import com.siliconcircuits.tarangini.feature.player.R
@@ -51,11 +52,15 @@ import com.siliconcircuits.tarangini.feature.player.R
 internal fun LazyListScope.upNext(state: QueueUiState, maxWidth: Dp, onPlay: (Int) -> Unit, onEdit: () -> Unit) {
     val current = state.currentIndex ?: return
     if (state.items.getOrNull(current)?.isStream != false) return
-    val left = state.items.size - current - 1
+    // With shuffle on the player plays the queue in its own order, so the rows follow that order.
+    val order = state.playOrder?.filter { it in state.items.indices }
+    val count = order?.size ?: (state.items.size - current)
+    val left = count - 1
     item(key = TITLE_KEY) { UpNextTitle(left, onEdit, Modifier.widthIn(max = maxWidth).fillMaxWidth()) }
     // Keyed by place: the same song can be in the queue twice.
-    items(count = left + 1, key = { current + it }) { offset ->
-        val index = current + offset
+    val placeAt = { row: Int -> order?.get(row) ?: (current + row) }
+    items(count = count, key = placeAt) { row ->
+        val index = placeAt(row)
         UpNextRow(index, state.items[index], index == current, { onPlay(index) }, Modifier.widthIn(max = maxWidth))
     }
     if (left == 0) {
@@ -114,9 +119,9 @@ private fun UpNextRow(
         title,
         item.artist,
         length,
-        stringResource(R.string.up_next_playing).takeIf { isCurrent },
+        stringResource(R.string.queue_playing_now).takeIf { isCurrent },
     ).joinToString(", ")
-    val playLabel = stringResource(R.string.up_next_play)
+    val playLabel = stringResource(CoreUiR.string.action_play)
     Row(
         modifier = modifier.fillMaxWidth().heightIn(min = RowHeight)
             .clickable(onClickLabel = playLabel, onClick = onPlay)

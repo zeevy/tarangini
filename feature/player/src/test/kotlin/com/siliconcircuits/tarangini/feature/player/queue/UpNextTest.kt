@@ -7,6 +7,7 @@
 package com.siliconcircuits.tarangini.feature.player.queue
 
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
@@ -115,7 +116,7 @@ class UpNextTest {
         composeRule.onNodeWithText("Up next").assertExists()
         composeRule.onNodeWithText("2 songs left").assertExists()
         composeRule.onNodeWithContentDescription(
-            "Number 2, Evening raga, Zakir Hussain, 4:05, playing now",
+            "Number 2, Evening raga, Zakir Hussain, 4:05, Playing now",
         ).assertExists()
         composeRule.onNodeWithContentDescription("Number 4, Night raga, 1:02").assertExists()
         // The song already played is on the queue screen, not here.
@@ -141,6 +142,19 @@ class UpNextTest {
         ).performScrollToNode(androidx.compose.ui.test.hasText("Nothing after this song"))
 
         composeRule.onNodeWithText("0 songs left").assertExists()
+    }
+
+    @Test
+    fun `with shuffle on the rows follow the order the player plays them`() {
+        show(short.copy(currentIndex = 1, playOrder = listOf(1, 3, 0)))
+        scrollTo("Number 1,")
+
+        composeRule.onNodeWithText("2 songs left").assertExists()
+        val spoken = composeRule.onAllNodes(hasContentDescription("Number", substring = true) and hasClickAction())
+            .fetchSemanticsNodes().map {
+                it.config[SemanticsProperties.ContentDescription].first().substringBefore(",")
+            }
+        assertEquals(listOf("Number 2", "Number 4", "Number 1"), spoken)
     }
 
     @Test
