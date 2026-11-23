@@ -21,4 +21,5 @@ The now playing screen shows the card (ADR 0055) and the equalizer (ADR 0056). T
 ## What follows
 
 - Rows are keyed by their place, as a song can be in the queue twice.
+- With shuffle on, the player plays the queue in its own order. `PlaybackState.playOrder` carries that order from the current item, read from the timeline of the player without repeat, and the rows follow it.
 - `QueueViewModel` serves both the queue screen and up next.
