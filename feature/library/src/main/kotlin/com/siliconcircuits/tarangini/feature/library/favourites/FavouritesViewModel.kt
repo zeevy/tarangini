@@ -8,6 +8,8 @@ package com.siliconcircuits.tarangini.feature.library.favourites
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.siliconcircuits.tarangini.core.domain.model.QueueSource
+import com.siliconcircuits.tarangini.core.domain.model.QueueSourceKind
 import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.domain.repository.FavouriteRepository
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
@@ -29,7 +31,9 @@ internal class FavouritesViewModel @Inject constructor(
     val songs = PagedList(viewModelScope, Song::id) { favourites.songs(it) }
 
     /** A tap plays the song with the favourites as the queue. */
-    val songActions = actions.rowActions(viewModelScope) { favourites.songs(it) }
+    val songActions = actions.rowActions(viewModelScope, QueueSource(QueueSourceKind.FAVOURITES)) {
+        favourites.songs(it)
+    }
 
     init {
         // A rescan can take the file of a favourite away or bring it back.

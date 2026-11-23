@@ -9,6 +9,8 @@ package com.siliconcircuits.tarangini.feature.library.album
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.siliconcircuits.tarangini.core.domain.model.QueueSource
+import com.siliconcircuits.tarangini.core.domain.model.QueueSourceKind
 import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
 import com.siliconcircuits.tarangini.feature.library.list.PagedList
@@ -33,7 +35,9 @@ internal class AlbumViewModel @Inject constructor(
     val songs = PagedList(viewModelScope, Song::id) { library.songsOfAlbum(albumId, it) }
 
     /** A tap plays the song with the whole album as the queue. */
-    val songActions = actions.rowActions(viewModelScope) { library.songsOfAlbum(albumId, it) }
+    val songActions = actions.rowActions(viewModelScope, QueueSource.named(QueueSourceKind.ALBUM, title)) {
+        library.songsOfAlbum(albumId, it)
+    }
 
     init {
         readOnLibraryChange(library) { songs.refresh() }

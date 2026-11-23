@@ -9,6 +9,7 @@ package com.siliconcircuits.tarangini.core.playback.controller
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
+import com.siliconcircuits.tarangini.core.domain.model.QueueSource
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackController
 import com.siliconcircuits.tarangini.core.playback.di.PlaybackCoroutineScope
 import javax.inject.Inject
@@ -61,7 +62,8 @@ internal class SessionPlaybackController @Inject constructor(
         scope.launch { current.followPositionWhileWatched { shown } }
     }
 
-    override fun play(mediaUris: List<String>, startIndex: Int) = loader.replace(mediaUris, startIndex)
+    override fun play(mediaUris: List<String>, startIndex: Int, source: QueueSource?) =
+        loader.replace(mediaUris, startIndex, source)
 
     // The words go to the session as a search request, the way a voice assistant sends them, so a
     // request spoken on the phone and one spoken in the car are answered by the same code.

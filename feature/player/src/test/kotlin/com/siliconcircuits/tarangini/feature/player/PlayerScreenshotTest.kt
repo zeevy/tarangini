@@ -14,6 +14,8 @@ import com.siliconcircuits.tarangini.core.domain.audio.FIVE_BANDS_HZ
 import com.siliconcircuits.tarangini.core.domain.audio.LevelReading
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackItem
+import com.siliconcircuits.tarangini.core.domain.model.QueueSource
+import com.siliconcircuits.tarangini.core.domain.model.QueueSourceKind
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
 import com.siliconcircuits.tarangini.core.domain.model.SongFormat
 import com.siliconcircuits.tarangini.core.testing.savedPicture
@@ -82,6 +84,36 @@ class PlayerScreenshotTest {
 
     @Test
     fun `a song`() = shot("now_playing_song") { NowPlayingContent(song, actions, {}, {}, levels = { loud }) }
+
+    @Test
+    fun `a song from an album`() = shot("now_playing_from_album") {
+        NowPlayingContent(song.copy(source = QueueSource(QueueSourceKind.ALBUM, "Morning Ragas")), actions, {}, {})
+    }
+
+    @Test
+    fun `a song from a playlist`() = shot("now_playing_from_playlist") {
+        NowPlayingContent(song.copy(source = QueueSource(QueueSourceKind.PLAYLIST, "Long drive")), actions, {}, {})
+    }
+
+    @Test
+    fun `a song from an artist`() = shot("now_playing_from_artist") {
+        NowPlayingContent(song.copy(source = QueueSource(QueueSourceKind.ARTIST, "Ravi Shankar")), actions, {}, {})
+    }
+
+    @Test
+    fun `a song from a genre`() = shot("now_playing_from_genre") {
+        NowPlayingContent(song.copy(source = QueueSource(QueueSourceKind.GENRE, "Classical")), actions, {}, {})
+    }
+
+    @Test
+    fun `a song from a folder`() = shot("now_playing_from_folder") {
+        NowPlayingContent(song.copy(source = QueueSource(QueueSourceKind.FOLDER, "Download")), actions, {}, {})
+    }
+
+    @Test
+    fun `a song from the favourites`() = shot("now_playing_from_favourites") {
+        NowPlayingContent(song.copy(source = QueueSource(QueueSourceKind.FAVOURITES)), actions, {}, {})
+    }
 
     @Test
     @Config(qualifiers = "w360dp-h800dp-xhdpi")

@@ -51,6 +51,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.siliconcircuits.tarangini.core.domain.audio.LevelReading
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
+import com.siliconcircuits.tarangini.core.domain.model.QueueSource
+import com.siliconcircuits.tarangini.core.domain.model.QueueSourceKind
 import com.siliconcircuits.tarangini.core.domain.model.SongFormat
 import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
 import com.siliconcircuits.tarangini.core.ui.component.BackButton
@@ -138,7 +140,7 @@ internal fun NowPlayingContent(
         topBar = {
             CenterAlignedTopAppBar(
                 colors = clearTopBarColors(),
-                title = { TopBarTitle(state?.album) },
+                title = { TopBarTitle(state?.source, state?.album) },
                 // As a pane beside the tabs there is nothing to go back to.
                 navigationIcon = { onBackClick?.let { BackButton(onClick = it) } },
                 actions = {
@@ -184,19 +186,37 @@ internal fun NowPlayingContent(
     }
 }
 
-/** "Now playing" with the album of the song under it. */
+/**
+ * "Playing from album" with the name of the list the queue came from, or "Now playing" with the
+ * album of the song when the queue has no such list.
+ */
 @Composable
-private fun TopBarTitle(album: String?) {
+private fun TopBarTitle(source: QueueSource?, album: String?) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            text = stringResource(R.string.now_playing_title).uppercase(),
+            text = stringResource(source?.kind?.label() ?: R.string.now_playing_title).uppercase(),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        album?.let {
+        val name = when {
+            source == null -> album
+            source.kind == QueueSourceKind.FAVOURITES -> stringResource(R.string.source_favourites_name)
+            else -> source.name
+        }
+        name?.takeIf { it.isNotBlank() }?.let {
             Text(text = it, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
     }
+}
+
+/** The words above the name of the list a queue came from. */
+private fun QueueSourceKind.label(): Int = when (this) {
+    QueueSourceKind.ALBUM -> R.string.source_album
+    QueueSourceKind.ARTIST -> R.string.source_artist
+    QueueSourceKind.PLAYLIST -> R.string.source_playlist
+    QueueSourceKind.GENRE -> R.string.source_genre
+    QueueSourceKind.FOLDER -> R.string.source_folder
+    QueueSourceKind.FAVOURITES -> R.string.source_favourites
 }
 
 @Composable

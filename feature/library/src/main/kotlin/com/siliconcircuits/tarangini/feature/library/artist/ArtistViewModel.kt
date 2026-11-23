@@ -10,6 +10,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.siliconcircuits.tarangini.core.domain.model.Album
+import com.siliconcircuits.tarangini.core.domain.model.QueueSource
+import com.siliconcircuits.tarangini.core.domain.model.QueueSourceKind
 import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
 import com.siliconcircuits.tarangini.feature.library.list.PagedList
@@ -39,7 +41,9 @@ internal class ArtistViewModel @Inject constructor(
     val songs = PagedList(viewModelScope, Song::id) { library.songsOfArtist(artistId, it) }
 
     /** A tap plays the song with all songs of the artist as the queue. */
-    val songActions = actions.rowActions(viewModelScope) { library.songsOfArtist(artistId, it) }
+    val songActions = actions.rowActions(viewModelScope, QueueSource.named(QueueSourceKind.ARTIST, name)) {
+        library.songsOfArtist(artistId, it)
+    }
 
     init {
         readOnLibraryChange(library) {

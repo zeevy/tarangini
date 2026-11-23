@@ -10,6 +10,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.siliconcircuits.tarangini.core.domain.model.Folder
+import com.siliconcircuits.tarangini.core.domain.model.QueueSource
+import com.siliconcircuits.tarangini.core.domain.model.QueueSourceKind
 import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
 import com.siliconcircuits.tarangini.feature.library.list.PagedList
@@ -39,7 +41,9 @@ internal class FolderViewModel @Inject constructor(
     val songs = PagedList(viewModelScope, Song::id) { library.songsInFolder(folderId, it) }
 
     /** A tap plays the song with the songs of this folder as the queue. */
-    val songActions = actions.rowActions(viewModelScope) { library.songsInFolder(folderId, it) }
+    val songActions = actions.rowActions(viewModelScope, QueueSource.named(QueueSourceKind.FOLDER, name)) {
+        library.songsInFolder(folderId, it)
+    }
 
     init {
         readOnLibraryChange(library) {

@@ -7,7 +7,9 @@
 package com.siliconcircuits.tarangini.core.playback.controller
 
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
+import com.siliconcircuits.tarangini.core.domain.model.QueueSource
 import com.siliconcircuits.tarangini.core.playback.di.PlaybackCoroutineScope
 import com.siliconcircuits.tarangini.core.playback.mapper.playableItem
 import javax.inject.Inject
@@ -40,19 +42,25 @@ internal class QueueLoader @Inject constructor(
     /** The loads that were asked for and have not ended, oldest first. */
     private val loads = mutableListOf<Job>()
 
-    /** Replaces the queue with the files and plays from [startIndex]. A load that still runs is given up. */
-    fun replace(mediaUris: List<String>, startIndex: Int) {
+    /**
+     * Replaces the queue with the files and plays from [startIndex]. A load that still runs is given up.
+     * [source] goes into the playlist metadata of the player, where every controller can read it.
+     */
+    fun replace(mediaUris: List<String>, startIndex: Int, source: QueueSource? = null) {
         if (mediaUris.isEmpty()) return
         val items = mediaUris.map(::playableItem)
         val start = startIndex.coerceIn(items.indices)
         cancel()
+        // The name goes in with the first songs, in one call: a load given up before that leaves the old
+        // queue with its old name.
+        val metadata = source.toPlaylistMetadata()
         start {
             if (items.size <= FIRST_PART) {
-                link.send { player -> player.startWith(items, start) }
+                link.send { player -> player.startWith(items, start, metadata) }
                 return@start
             }
             val firstEnd = min(start + FIRST_PART, items.size)
-            link.send { player -> player.startWith(items.subList(start, firstEnd), 0) }
+            link.send { player -> player.startWith(items.subList(start, firstEnd), 0, metadata) }
             waitForSound()
             addInParts(items.subList(firstEnd, items.size)) { player, _ -> player.mediaItemCount }
             addInParts(items.subList(0, start)) { _, added -> added }
@@ -77,7 +85,11 @@ internal class QueueLoader @Inject constructor(
                 start + added
             }
             val head = min(FIRST_PART, items.size)
-            link.send { player -> wasEmpty = player.mediaItemCount == 0 }
+            // Songs added by hand make the queue something else than the list it came from.
+            link.send { player ->
+                wasEmpty = player.mediaItemCount == 0
+                player.playlistMetadata = MediaMetadata.EMPTY
+            }
             addInParts(items.subList(0, head), placeOfNext)
             link.send { player ->
                 if (wasEmpty) {
@@ -103,8 +115,9 @@ internal class QueueLoader @Inject constructor(
         job.start()
     }
 
-    private fun Player.startWith(items: List<MediaItem>, startIndex: Int) {
+    private fun Player.startWith(items: List<MediaItem>, startIndex: Int, metadata: MediaMetadata) {
         setMediaItems(items, startIndex, 0)
+        playlistMetadata = metadata
         prepare()
         play()
     }

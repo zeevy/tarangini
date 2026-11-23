@@ -11,14 +11,21 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
+import com.siliconcircuits.tarangini.core.domain.model.QueueSource
 import com.siliconcircuits.tarangini.core.domain.playback.ResumePlace
 import com.siliconcircuits.tarangini.core.domain.playback.SavedPlayback
 import com.siliconcircuits.tarangini.core.playback.controller.toPlayerMode
+import com.siliconcircuits.tarangini.core.playback.controller.toPlaylistMetadata
+import com.siliconcircuits.tarangini.core.playback.controller.toQueueSource
 import com.siliconcircuits.tarangini.core.playback.controller.toRepeatMode
 import com.siliconcircuits.tarangini.core.playback.mapper.playableItem
 
-/** Puts a saved queue into the player at its place. It does not prepare and does not play. */
-internal fun Player.fill(items: List<MediaItem>, place: ResumePlace) {
+/**
+ * Puts a saved queue into the player at its place, with the list it came from. It does not
+ * prepare and does not play.
+ */
+internal fun Player.fill(items: List<MediaItem>, place: ResumePlace, source: QueueSource? = null) {
+    playlistMetadata = source.toPlaylistMetadata()
     // One call: the list comes from the database of this app, in the same process, and nothing waits to sound.
     setMediaItems(items, place.index, place.positionMs)
     shuffleModeEnabled = place.shuffle
@@ -26,7 +33,8 @@ internal fun Player.fill(items: List<MediaItem>, place: ResumePlace) {
 }
 
 /** The queue of the player and where it is now, in the form that is saved. */
-internal fun Player.playback() = SavedPlayback(List(mediaItemCount) { getMediaItemAt(it).mediaId }, place())
+internal fun Player.playback() =
+    SavedPlayback(List(mediaItemCount) { getMediaItemAt(it).mediaId }, place(), playlistMetadata.toQueueSource())
 
 /** Where the player is now, in the form that is saved. */
 internal fun Player.place() = ResumePlace(

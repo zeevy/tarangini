@@ -9,6 +9,7 @@ package com.siliconcircuits.tarangini.core.playback.session
 import android.os.Bundle
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.LibraryResult
@@ -24,6 +25,7 @@ import androidx.media3.session.SessionResult
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.MoreExecutors
 import com.google.common.util.concurrent.SettableFuture
 import com.siliconcircuits.tarangini.core.playback.browse.MediaId
 import kotlinx.coroutines.CoroutineScope
@@ -69,16 +71,28 @@ internal class PlaybackSessionCallback(
         when (callers.accessFor(controller.packageName, controller.uid, controller.isTrusted)) {
             // The car needs the library commands to browse and the player commands to play what it picked.
             // What it may play is still checked item by item in onAddMediaItems.
-            CallerAccess.FULL, CallerAccess.CAR -> MediaSession.ConnectionResult.accept(
+            CallerAccess.FULL -> MediaSession.ConnectionResult.accept(
                 MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS.withButtons(),
                 MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS,
+            )
+
+            // Only this app names the list a queue came from, so the car cannot write that name.
+            CallerAccess.CAR -> MediaSession.ConnectionResult.accept(
+                MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS.withButtons(),
+                MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS.buildUpon()
+                    .remove(Player.COMMAND_SET_PLAYLIST_METADATA)
+                    .build(),
             )
 
             // The media panel of the phone is such a caller. Its heart button marks only the song that plays.
             CallerAccess.TRANSPORT_ONLY -> MediaSession.ConnectionResult.accept(
                 MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS.withButtons().withLastItemFor(controller),
                 MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS.buildUpon()
-                    .removeAll(Player.COMMAND_SET_MEDIA_ITEM, Player.COMMAND_CHANGE_MEDIA_ITEMS)
+                    .removeAll(
+                        Player.COMMAND_SET_MEDIA_ITEM,
+                        Player.COMMAND_CHANGE_MEDIA_ITEMS,
+                        Player.COMMAND_SET_PLAYLIST_METADATA,
+                    )
                     .build(),
             )
 
@@ -187,9 +201,23 @@ internal class PlaybackSessionCallback(
         mediaItems: List<MediaItem>,
         startIndex: Int,
         startPositionMs: Long,
-    ): ListenableFuture<MediaItemsWithStartPosition> = mediaItems.singleOrNull()
-        ?.let { item -> car.play.queueFor(item) { missing -> spokenDone(mediaSession, controller, missing) } }
-        ?: super.onSetMediaItems(mediaSession, controller, mediaItems, startIndex, startPositionMs)
+    ): ListenableFuture<MediaItemsWithStartPosition> {
+        val picked = mediaItems.singleOrNull()
+            ?.let { item -> car.play.queueFor(item) { missing -> spokenDone(mediaSession, controller, missing) } }
+        val outside =
+            callers.accessFor(controller.packageName, controller.uid, controller.isTrusted) != CallerAccess.FULL
+        val answer = picked ?: super.onSetMediaItems(mediaSession, controller, mediaItems, startIndex, startPositionMs)
+        // Only the phone screens of this app name the list a queue came from. A queue that the car, a
+        // spoken request or another app starts is not that list, so the old name goes once the new
+        // queue is there. A request that finds nothing leaves the queue and its name as they were.
+        if (picked != null || outside) {
+            answer.addListener(
+                { if (answer.succeeded()) mediaSession.player.playlistMetadata = MediaMetadata.EMPTY },
+                MoreExecutors.directExecutor(),
+            )
+        }
+        return answer
+    }
 
     /** A press of the heart, shuffle or repeat button. Only a caller that was let in gets this far. */
     override fun onCustomCommand(
@@ -289,3 +317,7 @@ private const val SYSTEM_UI = "com.android.systemui"
 
 /** The most tabs a car shows. A car can ask for fewer. */
 private const val MAX_TABS = 4
+
+/** True when the future is done and gave a value, not an error. */
+private fun <T> ListenableFuture<T>.succeeded(): Boolean =
+    isDone && !isCancelled && runCatching { Futures.getDone(this) }.isSuccess

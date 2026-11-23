@@ -40,7 +40,7 @@ class SchemaTest {
     fun `version 1 is built from its committed schema and matches the entities`() = runTest {
         helper.createDatabase(version = 1).close()
 
-        helper.runMigrationsAndValidate(version = 3, migrations = migrations).close()
+        helper.runMigrationsAndValidate(version = 4, migrations = migrations).close()
     }
 
     @Test
@@ -93,6 +93,22 @@ class SchemaTest {
             assertEquals(listOf(1L), now.longs("SELECT id FROM songs"))
             assertEquals(listOf(0L), now.longs("SELECT COUNT(*) FROM genres"))
             assertEquals(listOf(0L), now.longs("SELECT COUNT(*) FROM song_genres"))
+        }
+    }
+
+    @Test
+    fun `version 4 keeps the saved queue and gives it no source`() = runTest {
+        helper.createDatabase(version = 3).use { old ->
+            old.execSQL(
+                "INSERT INTO resume_state(id, queue_position, position_ms, station_id, shuffle, repeat_mode) " +
+                    "VALUES (0, 2, 1500, NULL, 1, 'ALL')",
+            )
+        }
+
+        helper.runMigrationsAndValidate(version = 4, migrations = migrations).use { now ->
+            assertEquals(listOf(2L), now.longs("SELECT queue_position FROM resume_state"))
+            assertEquals(listOf(1L), now.longs("SELECT COUNT(*) FROM resume_state WHERE source_kind IS NULL"))
+            assertEquals(listOf(1L), now.longs("SELECT COUNT(*) FROM resume_state WHERE source_name IS NULL"))
         }
     }
 

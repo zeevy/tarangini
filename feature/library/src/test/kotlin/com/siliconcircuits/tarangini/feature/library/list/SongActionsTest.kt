@@ -32,7 +32,7 @@ class SongActionsTest {
 
     @Test
     fun `a second tap takes the place of a first one that still reads the list`() = runTest {
-        val rows = actions.rowActions(backgroundScope, ::slowRead)
+        val rows = actions.rowActions(backgroundScope, read = ::slowRead)
 
         rows.onPlay(songs[0])
         rows.onPlay(songs[2])
@@ -43,7 +43,7 @@ class SongActionsTest {
 
     @Test
     fun `a song that left the list plays alone`() = runTest {
-        val rows = actions.rowActions(backgroundScope, ::slowRead)
+        val rows = actions.rowActions(backgroundScope, read = ::slowRead)
 
         rows.onPlay(testSong(9))
         advanceTimeBy(1_000)
@@ -63,8 +63,8 @@ class SongActionsTest {
 
     @Test
     fun `a row can mark its song as a favourite, and every row sees the mark`() = runTest {
-        val rows = actions.rowActions(backgroundScope, ::slowRead)
-        val otherList = actions.rowActions(backgroundScope, ::slowRead)
+        val rows = actions.rowActions(backgroundScope, read = ::slowRead)
+        val otherList = actions.rowActions(backgroundScope, read = ::slowRead)
 
         rows.onSetFavourite(songs[1], true)
         advanceTimeBy(1_000)

@@ -9,12 +9,15 @@ package com.siliconcircuits.tarangini.core.playback.controller
 import androidx.annotation.OptIn
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import com.siliconcircuits.tarangini.core.domain.model.QueueSource
+import com.siliconcircuits.tarangini.core.domain.model.QueueSourceKind
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -38,6 +41,32 @@ class QueueLoaderTest {
     private fun songs(count: Int) = List(count) { "song $it" }
 
     private fun queue() = List(player.mediaItemCount) { player.getMediaItemAt(it).mediaId }
+
+    @Test
+    fun `a list started from an album names it, and a song added by hand takes the name away`() = runTest {
+        val loader = loader()
+        val album = QueueSource(QueueSourceKind.ALBUM, "Morning Ragas")
+
+        loader.replace(songs(3), startIndex = 0, source = album)
+        runCurrent()
+        assertEquals(album, player.toPlaybackState().source)
+
+        loader.add(listOf("one more")) { it.mediaItemCount }
+        runCurrent()
+        assertNull(player.toPlaybackState().source)
+    }
+
+    @Test
+    fun `a list started with no source takes away the name of the list before it`() = runTest {
+        val loader = loader()
+        loader.replace(songs(2), startIndex = 0, source = QueueSource(QueueSourceKind.PLAYLIST, "Practice"))
+        runCurrent()
+
+        loader.replace(songs(2), startIndex = 1)
+        runCurrent()
+
+        assertNull(player.toPlaybackState().source)
+    }
 
     @Test
     fun `a very long list plays its first items before the rest is loaded`() = runTest {

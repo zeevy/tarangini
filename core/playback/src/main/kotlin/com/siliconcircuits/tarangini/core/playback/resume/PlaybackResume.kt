@@ -11,8 +11,10 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
+import com.siliconcircuits.tarangini.core.domain.model.QueueSource
 import com.siliconcircuits.tarangini.core.domain.playback.ResumeStore
 import com.siliconcircuits.tarangini.core.domain.playback.SavedPlayback
+import com.siliconcircuits.tarangini.core.playback.controller.toPlaylistMetadata
 import com.siliconcircuits.tarangini.core.playback.mapper.playableItem
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.seconds
@@ -56,6 +58,9 @@ internal class PlaybackResume(
     /** The ids of the queue that is stored, to leave out a save of the same queue. */
     private var storedIds: List<String>? = null
 
+    /** The source of the queue that is stored. A new source for the same songs is saved as a new queue. */
+    private var storedSource: QueueSource? = null
+
     /** What [end] read from the player, for the last save after the player is released. */
     private var atEnd: SavedPlayback? = null
     private var ticker: Job? = null
@@ -74,7 +79,8 @@ internal class PlaybackResume(
             if (ended) return@launch
             if (player.mediaItemCount == 0) {
                 storedIds = playback?.mediaIds
-                if (playback != null && items != null) player.fill(items, playback.place)
+                storedSource = playback?.source
+                if (playback != null && items != null) player.fill(items, playback.place, playback.source)
             } else {
                 // Somebody filled the player during the read. That queue is the one to store.
                 queueChange++
@@ -95,7 +101,10 @@ internal class PlaybackResume(
     // The answer class is API that Media3 may still change.
     @OptIn(UnstableApi::class)
     suspend fun resumption(): MediaItemsWithStartPosition? = store.loadOrNull()?.let { saved ->
-        MediaItemsWithStartPosition(saved.items(), saved.place.index, saved.place.positionMs)
+        val items = saved.items()
+        // Media3 puts the items into the player but knows nothing of the list they came from.
+        player.playlistMetadata = saved.source.toPlaylistMetadata()
+        MediaItemsWithStartPosition(items, saved.place.index, saved.place.positionMs)
     }
 
     private suspend fun SavedPlayback.items(): List<MediaItem> = texts(mediaIds.map(::playableItem))
@@ -112,8 +121,9 @@ internal class PlaybackResume(
     }
 
     override fun onEvents(player: Player, events: Player.Events) {
-        if (events.contains(Player.EVENT_TIMELINE_CHANGED)) queueChange++
-        if (events.movesThePlace()) wake.trySend(Unit)
+        val newQueue = events.containsAny(Player.EVENT_TIMELINE_CHANGED, Player.EVENT_PLAYLIST_METADATA_CHANGED)
+        if (newQueue) queueChange++
+        if (newQueue || events.movesThePlace()) wake.trySend(Unit)
     }
 
     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
@@ -147,11 +157,12 @@ internal class PlaybackResume(
     }
 
     private suspend fun save(playback: SavedPlayback): Boolean = store.writing {
-        if (playback.mediaIds == storedIds) {
+        if (playback.mediaIds == storedIds && playback.source == storedSource) {
             savePlace(playback.place)
         } else {
             saveQueue(playback)
             storedIds = playback.mediaIds
+            storedSource = playback.source
         }
     }
 

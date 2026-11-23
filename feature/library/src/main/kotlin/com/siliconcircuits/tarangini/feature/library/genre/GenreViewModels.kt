@@ -10,6 +10,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.siliconcircuits.tarangini.core.domain.model.Genre
+import com.siliconcircuits.tarangini.core.domain.model.QueueSource
+import com.siliconcircuits.tarangini.core.domain.model.QueueSourceKind
 import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.domain.repository.GenreRepository
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
@@ -45,7 +47,9 @@ internal class GenreViewModel @Inject constructor(
     val songs = PagedList(viewModelScope, Song::id) { genres.songsOfGenre(genreId, it) }
 
     /** A tap plays the song with all songs of the genre as the queue. */
-    val songActions = actions.rowActions(viewModelScope) { genres.songsOfGenre(genreId, it) }
+    val songActions = actions.rowActions(viewModelScope, QueueSource.named(QueueSourceKind.GENRE, name)) {
+        genres.songsOfGenre(genreId, it)
+    }
 
     init {
         readOnLibraryChange(library) { songs.refresh() }

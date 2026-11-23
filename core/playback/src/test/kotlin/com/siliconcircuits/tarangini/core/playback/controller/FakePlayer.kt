@@ -113,6 +113,11 @@ internal class FakePlayer : SimpleBasePlayer(Looper.getMainLooper()) {
         return Futures.immediateVoidFuture()
     }
 
+    override fun handleSetPlaylistMetadata(playlistMetadata: MediaMetadata): ListenableFuture<*> {
+        now = now.buildUpon().setPlaylistMetadata(playlistMetadata).build()
+        return Futures.immediateVoidFuture()
+    }
+
     override fun handleSetRepeatMode(repeatMode: Int): ListenableFuture<*> {
         commands += "repeat $repeatMode"
         now = now.buildUpon().setRepeatMode(repeatMode).build()

@@ -11,6 +11,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.siliconcircuits.tarangini.core.domain.model.Page
 import com.siliconcircuits.tarangini.core.domain.model.PlaylistSong
+import com.siliconcircuits.tarangini.core.domain.model.QueueSource
+import com.siliconcircuits.tarangini.core.domain.model.QueueSourceKind
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackController
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
 import com.siliconcircuits.tarangini.core.domain.repository.PlaylistFiles
@@ -106,7 +108,15 @@ internal class PlaylistViewModel @Inject constructor(
             val all = attempt { wholeList() }.getOrDefault(emptyList())
             val order = if (shuffled) all.shuffled() else all
             val index = order.indexOfFirst { it.itemId == from?.itemId }.coerceAtLeast(0)
-            if (order.isNotEmpty()) playback.play(order.map { it.song.mediaUri }, index)
+            if (order.isNotEmpty()) {
+                playback.play(
+                    order.map {
+                        it.song.mediaUri
+                    },
+                    index,
+                    QueueSource.named(QueueSourceKind.PLAYLIST, state.value.name),
+                )
+            }
         }
     }
 
