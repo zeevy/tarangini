@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -63,6 +64,7 @@ import com.siliconcircuits.tarangini.core.ui.theme.PanelColor
 import com.siliconcircuits.tarangini.core.ui.theme.PanelEdge
 import com.siliconcircuits.tarangini.core.ui.theme.clearTopBarColors
 import com.siliconcircuits.tarangini.feature.player.R
+import com.siliconcircuits.tarangini.feature.player.equalizer.NowPlayingEqualizer
 import com.siliconcircuits.tarangini.feature.player.lyrics.LyricsViewModel
 
 /** The now playing screen: one card with the song, the level meter, the seek bar and the keys of the player. */
@@ -100,6 +102,7 @@ internal fun NowPlayingScreen(
         viewModel.options.copy(onOpenEqualizer = onOpenEqualizer),
         lyrics,
         levels = levels,
+        below = { NowPlayingEqualizer(Modifier.widthIn(max = WidestCard).fillMaxWidth()) },
     )
 }
 
@@ -115,6 +118,7 @@ internal fun NowPlayingContent(
     options: PlaybackOptionActions = PlaybackOptionActions(),
     lyrics: String? = null,
     levels: () -> LevelReading = { LevelReading.SILENCE },
+    below: @Composable () -> Unit = {},
 ) {
     Scaffold(
         modifier = modifier.background(MaterialTheme.colorScheme.background),
@@ -151,9 +155,13 @@ internal fun NowPlayingContent(
                 modifier = Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState())
                     .padding(horizontal = ScreenEdge),
                 horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(CardEdge),
             ) {
                 // On a wide screen the card keeps the width of a phone, so the keys stay in reach.
                 NowPlayingCard(state, actions, levels, Modifier.widthIn(max = WidestCard).fillMaxWidth())
+                // The equalizer and, later, the next songs.
+                below()
+                Spacer(Modifier.height(CardEdge))
             }
         }
     }

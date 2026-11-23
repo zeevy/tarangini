@@ -1,6 +1,6 @@
 # ADR 0047: Our own equalizer and bass boost
 
-- Status: accepted, 21 Nov 2026.
+- Status: accepted (the band part of the screen is changed by ADR 0056), 21 Nov 2026.
 - Rules: A9, P1.
 - Decision D76. It closes the trial build of check C5 for the equalizer (decision D12).
 

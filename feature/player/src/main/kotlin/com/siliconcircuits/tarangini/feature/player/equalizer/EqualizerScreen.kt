@@ -48,7 +48,7 @@ import com.siliconcircuits.tarangini.core.ui.theme.clearTopBarColors
 import com.siliconcircuits.tarangini.feature.player.R
 import kotlin.math.roundToInt
 
-/** The equalizer screen: on and off, the presets, a slider per band and the bass boost. */
+/** The equalizer screen: the panel of faders and presets, the bass boost, volume levelling and a preset per genre. */
 @Composable
 internal fun EqualizerScreen(
     onBackClick: () -> Unit,
@@ -56,15 +56,7 @@ internal fun EqualizerScreen(
     viewModel: EqualizerViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val actions = EqualizerActions(
-        onSetOn = viewModel::setOn,
-        onPickPreset = viewModel::pickPreset,
-        onSetBand = viewModel::setBand,
-        onSetBassBoost = viewModel::setBassBoost,
-        onSetGenresOn = viewModel::setGenresOn,
-        onSetGenrePreset = viewModel::setGenrePreset,
-        onSetLevelling = viewModel::setLevelling,
-    )
+    val actions = viewModel.actions()
     EqualizerContent(state, actions, onBackClick, modifier)
 }
 
@@ -93,19 +85,7 @@ internal fun EqualizerContent(
                 modifier = Modifier.padding(padding).verticalScroll(rememberScrollState()).padding(Spacing.medium),
                 verticalArrangement = Arrangement.spacedBy(Spacing.medium),
             ) {
-                OnSwitch(state.settings.isOn, actions.onSetOn)
-                Presets(state.settings, actions.onPickPreset)
-                Text(stringResource(R.string.equalizer_bands), style = MaterialTheme.typography.titleMedium)
-                state.bandsHz.forEachIndexed { index, hz ->
-                    val gain = state.gains[index]
-                    LabelledSlider(
-                        label = bandName(hz),
-                        value = gainText(gain),
-                        position = gain,
-                        range = -MAX_BAND_GAIN_DB..MAX_BAND_GAIN_DB,
-                        isEnabled = state.settings.isOn,
-                    ) { actions.onSetBand(index, (it * 2).roundToInt() / 2f) }
-                }
+                EqualizerPanel(state, actions)
                 val bass = state.settings.bassBoost
                 LabelledSlider(
                     label = stringResource(R.string.equalizer_bass),
@@ -119,12 +99,6 @@ internal fun EqualizerContent(
             }
         }
     }
-}
-
-/** The whole row turns the equalizer on and off, not only the switch. */
-@Composable
-private fun OnSwitch(isOn: Boolean, onSetOn: (Boolean) -> Unit) {
-    SwitchRow(stringResource(R.string.equalizer_on), isOn, isEnabled = true, onSetOn)
 }
 
 /** A switch with its text in front; the whole row is the touch target. */
@@ -141,25 +115,6 @@ internal fun SwitchRow(text: String, isOn: Boolean, isEnabled: Boolean, onChange
     ) {
         Text(text, modifier = Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
         Switch(checked = isOn, onCheckedChange = null, enabled = isEnabled)
-    }
-}
-
-/** A chip per preset. After a band was moved by hand no chip is picked. */
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun Presets(settings: EqualizerSettings, onPick: (EqualizerPreset) -> Unit) {
-    Column {
-        Text(stringResource(R.string.equalizer_presets), style = MaterialTheme.typography.titleMedium)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.small)) {
-            EqualizerPreset.entries.forEach { preset ->
-                FilterChip(
-                    selected = settings.preset == preset,
-                    onClick = { onPick(preset) },
-                    enabled = settings.isOn,
-                    label = { Text(presetName(preset)) },
-                )
-            }
-        }
     }
 }
 
@@ -206,7 +161,7 @@ internal fun presetName(preset: EqualizerPreset): String = stringResource(
 
 /** 60 Hz, 910 Hz, 3.6 kHz, 14 kHz. */
 @Composable
-private fun bandName(hz: Float): String = if (hz < KILO) {
+internal fun bandName(hz: Float): String = if (hz < KILO) {
     stringResource(R.string.equalizer_band_hz, hz.roundToInt())
 } else {
     val kilo = hz / KILO
@@ -216,9 +171,9 @@ private fun bandName(hz: Float): String = if (hz < KILO) {
 
 /** +3 dB, 0 dB, -2.5 dB. */
 @Composable
-private fun gainText(gain: Float): String {
+internal fun gainText(gain: Float): String {
     val number = if (gain % 1f == 0f) gain.roundToInt().toString() else "%.1f".format(gain)
     return stringResource(R.string.equalizer_gain, if (gain > 0) "+$number" else number)
 }
 
-private const val KILO = 1_000f
+internal const val KILO = 1_000f

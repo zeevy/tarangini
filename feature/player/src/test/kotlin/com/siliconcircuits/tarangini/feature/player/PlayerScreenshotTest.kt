@@ -8,6 +8,9 @@ package com.siliconcircuits.tarangini.feature.player
 
 import androidx.compose.runtime.Composable
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.siliconcircuits.tarangini.core.domain.audio.EqualizerPreset
+import com.siliconcircuits.tarangini.core.domain.audio.EqualizerSettings
+import com.siliconcircuits.tarangini.core.domain.audio.FIVE_BANDS_HZ
 import com.siliconcircuits.tarangini.core.domain.audio.LevelReading
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackItem
@@ -15,6 +18,9 @@ import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
 import com.siliconcircuits.tarangini.core.domain.model.SongFormat
 import com.siliconcircuits.tarangini.core.testing.savedPicture
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
+import com.siliconcircuits.tarangini.feature.player.equalizer.EqualizerActions
+import com.siliconcircuits.tarangini.feature.player.equalizer.EqualizerPanel
+import com.siliconcircuits.tarangini.feature.player.equalizer.EqualizerUiState
 import com.siliconcircuits.tarangini.feature.player.nowplaying.NowPlayingActions
 import com.siliconcircuits.tarangini.feature.player.nowplaying.NowPlayingContent
 import com.siliconcircuits.tarangini.feature.player.nowplaying.NowPlayingUiState
@@ -53,6 +59,8 @@ class PlayerScreenshotTest {
         queueSize = 8,
     )
     private val loud = LevelReading(-3f, -9f)
+    private val equalizer =
+        EqualizerUiState(EqualizerSettings(isOn = true, preset = EqualizerPreset.BASS), FIVE_BANDS_HZ)
     private val station = song.copy(
         title = "Radio Mirchi",
         artist = "A song on air",
@@ -74,6 +82,20 @@ class PlayerScreenshotTest {
 
     @Test
     fun `a song`() = shot("now_playing_song") { NowPlayingContent(song, actions, {}, {}, levels = { loud }) }
+
+    @Test
+    @Config(qualifiers = "w360dp-h800dp-xhdpi")
+    fun `a song with the equalizer under the card`() = shot("now_playing_equalizer") {
+        NowPlayingContent(song, actions, {
+        }, {}, levels = { loud }, below = { EqualizerPanel(equalizer, EqualizerActions()) })
+    }
+
+    @Test
+    @Config(qualifiers = "w360dp-h800dp-night-xhdpi")
+    fun `a song with the equalizer under the card in the dark look`() = shot("now_playing_equalizer_dark") {
+        NowPlayingContent(song, actions, {
+        }, {}, levels = { loud }, below = { EqualizerPanel(equalizer, EqualizerActions()) })
+    }
 
     @Test
     fun `a song in a pause`() = shot("now_playing_paused") {

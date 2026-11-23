@@ -71,6 +71,17 @@ internal class EqualizerViewModel @Inject constructor(
         EqualizerUiState(own ?: stored, bandsHz, named)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_AFTER_MS), null)
 
+    /** What each part of the equalizer does, for the screen and for the panel on now playing. */
+    fun actions() = EqualizerActions(
+        onSetOn = ::setOn,
+        onPickPreset = ::pickPreset,
+        onSetBand = ::setBand,
+        onSetBassBoost = ::setBassBoost,
+        onSetGenresOn = ::setGenresOn,
+        onSetGenrePreset = ::setGenrePreset,
+        onSetLevelling = ::setLevelling,
+    )
+
     /** Turns the equalizer on or off. */
     fun setOn(on: Boolean) = change { it.copy(isOn = on) }
 
