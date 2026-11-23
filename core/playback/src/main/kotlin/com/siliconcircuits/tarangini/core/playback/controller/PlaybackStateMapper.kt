@@ -68,6 +68,8 @@ private fun MediaMetadata.toPlaybackItem(id: String, tags: MediaMetadata?, isStr
         // address in the item is the small picture this app serves to the car.
         artworkUri = artworkUriOf(id) ?: (tags?.artworkUri ?: artworkUri)?.toString(),
         isStream = isStream,
+        // A stream has no end, so whatever it reports is no length.
+        durationMs = durationMs?.takeIf { it > 0 && !isStream },
     )
 
 /** The repeat mode of the player as the app names it. */

@@ -98,6 +98,15 @@ class PlaybackStateMapperTest {
     }
 
     @Test
+    fun `each item keeps the length the library gave it`() {
+        val known = MediaItem.Builder().setMediaId("first")
+            .setMediaMetadata(MediaMetadata.Builder().setDurationMs(185_000).build()).build()
+        player.report { setPlaylist(listOf(FakePlayer.queued(known), FakePlayer.queued("second"))) }
+
+        assertEquals(listOf(185_000L, null), player.toPlaybackState().queue.map { it.durationMs })
+    }
+
+    @Test
     fun `playing, paused and buffering are told apart`() {
         player.report { setPlaylist(twoSongs()).setPlaybackState(Player.STATE_READY) }
         assertFalse(player.toPlaybackState().isPlaying)

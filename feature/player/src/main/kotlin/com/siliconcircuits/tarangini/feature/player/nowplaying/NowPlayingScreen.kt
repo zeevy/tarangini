@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,10 +18,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -66,6 +67,8 @@ import com.siliconcircuits.tarangini.core.ui.theme.clearTopBarColors
 import com.siliconcircuits.tarangini.feature.player.R
 import com.siliconcircuits.tarangini.feature.player.equalizer.NowPlayingEqualizer
 import com.siliconcircuits.tarangini.feature.player.lyrics.LyricsViewModel
+import com.siliconcircuits.tarangini.feature.player.queue.QueueViewModel
+import com.siliconcircuits.tarangini.feature.player.queue.upNext
 
 /** The now playing screen: one card with the song, the level meter, the seek bar and the keys of the player. */
 @Composable
@@ -77,7 +80,9 @@ internal fun NowPlayingScreen(
     viewModel: NowPlayingViewModel = hiltViewModel(),
     lyricsViewModel: LyricsViewModel = hiltViewModel(),
     levelsViewModel: LevelsViewModel = hiltViewModel(),
+    queueViewModel: QueueViewModel = hiltViewModel(),
 ) {
+    val queue by queueViewModel.state.collectAsStateWithLifecycle()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val lyrics by lyricsViewModel.state.collectAsStateWithLifecycle()
     // Collected here, but its value is read only inside the meter.
@@ -102,7 +107,14 @@ internal fun NowPlayingScreen(
         viewModel.options.copy(onOpenEqualizer = onOpenEqualizer),
         lyrics,
         levels = levels,
-        below = { NowPlayingEqualizer(Modifier.widthIn(max = WidestCard).fillMaxWidth()) },
+        below = {
+            item(key = EQUALIZER_KEY) {
+                NowPlayingEqualizer(
+                    Modifier.widthIn(max = WidestCard).fillMaxWidth().padding(bottom = CardEdge),
+                )
+            }
+            upNext(queue, WidestCard, queueViewModel::playAt, onOpenQueue)
+        },
     )
 }
 
@@ -118,7 +130,7 @@ internal fun NowPlayingContent(
     options: PlaybackOptionActions = PlaybackOptionActions(),
     lyrics: String? = null,
     levels: () -> LevelReading = { LevelReading.SILENCE },
-    below: @Composable () -> Unit = {},
+    below: LazyListScope.() -> Unit = {},
 ) {
     Scaffold(
         modifier = modifier.background(MaterialTheme.colorScheme.background),
@@ -150,18 +162,24 @@ internal fun NowPlayingContent(
                 icon = painterResource(CoreUiR.drawable.ic_music_note),
             )
         } else {
-            Column(
-                // A short screen with a large font scrolls instead of cutting the keys off.
-                modifier = Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState())
-                    .padding(horizontal = ScreenEdge),
+            // One list for the whole screen: a short screen with a large font scrolls instead of
+            // cutting the keys off, and the songs of a long queue are drawn only when they come into view.
+            LazyColumn(
+                modifier = Modifier.padding(padding).fillMaxSize(),
+                contentPadding = PaddingValues(start = ScreenEdge, end = ScreenEdge, bottom = CardEdge),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(CardEdge),
             ) {
                 // On a wide screen the card keeps the width of a phone, so the keys stay in reach.
-                NowPlayingCard(state, actions, levels, Modifier.widthIn(max = WidestCard).fillMaxWidth())
-                // The equalizer and, later, the next songs.
+                item(key = CARD_KEY) {
+                    NowPlayingCard(
+                        state,
+                        actions,
+                        levels,
+                        Modifier.widthIn(max = WidestCard).fillMaxWidth().padding(bottom = CardEdge),
+                    )
+                }
+                // The equalizer and the next songs.
                 below()
-                Spacer(Modifier.height(CardEdge))
             }
         }
     }
@@ -233,12 +251,18 @@ private fun FormatLine(format: SongFormat?, place: Int, queueSize: Int) {
                 color = MaterialTheme.colorScheme.onSecondaryContainer,
             )
         }
-        Text(
-            text = rest,
-            modifier = Modifier.weight(1f),
-            style = small,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        // Before the player has read the file there is no format: an empty text would be an item with
+        // nothing for a screen reader to say, so only the space is kept.
+        if (rest.isEmpty()) {
+            Spacer(Modifier.weight(1f))
+        } else {
+            Text(
+                text = rest,
+                modifier = Modifier.weight(1f),
+                style = small,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         if (hasPlace) {
             val spoken = stringResource(R.string.now_playing_place_spoken, place, queueSize)
             Text(
@@ -354,6 +378,8 @@ private val CardEdge = 12.dp
 private val Spacing6 = 6.dp
 private val Spacing8 = 8.dp
 private val WidestCard = 560.dp
+private const val CARD_KEY = "card"
+private const val EQUALIZER_KEY = "equalizer"
 
 // The shared format leaves a zero out, which is right for a length that is not known. A place is never unknown.
 internal const val ZERO = "0:00"

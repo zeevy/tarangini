@@ -212,6 +212,7 @@ Use wired headphones or a Bluetooth speaker, and a song with steady bass and voi
 | 148 | With the phone in dark mode and Colours on Light, start the app from the launcher; then the phone in light mode with Colours on Dark | The window before the first frame and the status bar icons already have the colours of the picked look; no flash of the other look |
 | 149 | Open the now playing screen and play a song that is loud on one side, then a mono song, then turn the equalizer bass to +12 dB; pause, then play to the end of the queue | The left and right meters move with the music, follow the louder side, show the same level for the mono song and rise with the bass. A pause or the end of the queue makes both fall to the bottom within about 3 seconds. No click, gap or change in the sound when the screen opens or closes |
 | 150 | On now playing, move the 60 Hz fader to +12 while a song with bass plays, then pick Flat; turn the equalizer off and on; close the app, open it again | The bass rises at once with no click, Flat takes it back, the panel dims while off and the faders do not move, and after the restart the faders show the last setting |
+| 151 | Play an album, open now playing and scroll down; tap the third song in Up next, then tap Edit | The list starts at the song that plays, the tapped song plays at once and turns green, and Edit opens the queue screen |
 
 ## Results
 

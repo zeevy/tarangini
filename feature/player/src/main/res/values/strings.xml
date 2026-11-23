@@ -79,4 +79,16 @@
     <string name="equalizer_genres">Preset per genre</string>
     <string name="equalizer_genres_none">No genres in the library yet.</string>
     <string name="equalizer_genre_main">Same as the main setting</string>
+    <string name="up_next_title">Up next</string>
+    <plurals name="up_next_left">
+        <item quantity="one">%1$d song left</item>
+        <item quantity="other">%1$d songs left</item>
+    </plurals>
+    <string name="up_next_edit">Edit</string>
+    <string name="up_next_end">Nothing after this song</string>
+    <string name="up_next_no_title">Unknown song</string>
+    <!-- Read by a screen reader before a row, such as "Number 3". -->
+    <string name="up_next_place">Number %1$d</string>
+    <string name="up_next_playing">playing now</string>
+    <string name="up_next_play">Play</string>
 </resources>
