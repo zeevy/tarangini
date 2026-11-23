@@ -42,6 +42,10 @@ class SettingsScreenshotTest {
     fun `with things left out and a scan that ended`() = shot("settings_set", set)
 
     @Test
+    @Config(qualifiers = "+night")
+    fun `with things left out and a scan that ended in the dark look`() = shot("settings_set_dark", set)
+
+    @Test
     fun `with the largest font`() {
         RuntimeEnvironment.setFontScale(2f)
         shot("settings_set_largest_font", set)

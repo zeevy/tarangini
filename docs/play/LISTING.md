@@ -20,7 +20,7 @@ Full description (4000 at most):
 > - Android Auto: browse your library, pick a playlist, or say "play ... on Tarangini"
 > - Picks up where you stopped, also after a restart
 > - Hide folders such as voice notes and call recordings
-> - One dark look that is easy on the eyes at night
+> - A light and a dark look that follow the phone
 >
 > No ads. No account. Your music and your lists stay on your phone.
 >

@@ -16,7 +16,9 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -118,6 +120,9 @@ private fun NameField(name: String, onChange: (String) -> Unit, label: String, o
         singleLine = true,
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         keyboardActions = KeyboardActions(onDone = { onDone() }),
+        // The green outline shows the focus. The small label above it stays in the text colour, as thin
+        // green letters of that size fall below the contrast small text needs on the light dialog.
+        colors = OutlinedTextFieldDefaults.colors(focusedLabelColor = MaterialTheme.colorScheme.onSurface),
         modifier = Modifier.fillMaxWidth(),
     )
 }

@@ -1,6 +1,6 @@
 # ADR 0027: One dark look
 
-- Status: accepted, 20 Nov 2026.
+- Status: replaced by ADR 0053 on 23 Nov 2026.
 - Rules: U9.
 
 ## Context

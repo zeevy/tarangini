@@ -12,6 +12,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import com.siliconcircuits.tarangini.core.data.local.dao.FolderDao
 import com.siliconcircuits.tarangini.core.data.settings.SettingsKeys
+import com.siliconcircuits.tarangini.core.domain.model.Look
 import com.siliconcircuits.tarangini.core.domain.model.MAX_MIN_TRACK_SECONDS
 import com.siliconcircuits.tarangini.core.domain.model.ScanSettings
 import com.siliconcircuits.tarangini.core.domain.model.SongSort
@@ -30,6 +31,14 @@ internal class DefaultSettingsRepository @Inject constructor(
 ) : SettingsRepository {
     // A settings file that cannot be read gives the first values. It must not end the screen that asks.
     private val saved = settings.data.catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+
+    override fun look(): Flow<Look> = saved
+        .map { saved -> Look.entries.firstOrNull { it.name == saved[SettingsKeys.THEME_MODE] } ?: Look.FOLLOW_PHONE }
+        .distinctUntilChanged()
+
+    override suspend fun setLook(look: Look) {
+        settings.edit { it[SettingsKeys.THEME_MODE] = look.name }
+    }
 
     override fun songSort(): Flow<SongSort> = saved
         .map { saved -> SongSort.entries.firstOrNull { it.name == saved[SettingsKeys.SONG_SORT] } ?: SongSort.TITLE }

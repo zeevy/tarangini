@@ -6,6 +6,7 @@
 
 package com.siliconcircuits.tarangini.navigation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.siliconcircuits.tarangini.core.ui.theme.glassBackground
 import com.siliconcircuits.tarangini.feature.player.navigation.isPlayerScreen
 import com.siliconcircuits.tarangini.feature.player.navigation.navigateToNowPlaying
 
@@ -59,7 +59,7 @@ internal fun TaranginiShell(
     val destination = backStackEntry?.destination
     val currentTab = destination?.topLevelDestination()
 
-    BoxWithConstraints(modifier = modifier.glassBackground()) {
+    BoxWithConstraints(modifier = modifier.background(MaterialTheme.colorScheme.background)) {
         val layout = ShellLayout.of(maxWidth, maxHeight)
         val withPane = layout == ShellLayout.EXPANDED && currentTab != null
         // The now playing screen shows the same item with all its controls, so the bar would be a second copy.

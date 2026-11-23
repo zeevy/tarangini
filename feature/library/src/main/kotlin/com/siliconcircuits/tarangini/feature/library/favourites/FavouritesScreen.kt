@@ -6,6 +6,7 @@
 
 package com.siliconcircuits.tarangini.feature.library.favourites
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -27,8 +28,7 @@ import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
 import com.siliconcircuits.tarangini.core.ui.component.MessageState
 import com.siliconcircuits.tarangini.core.ui.component.SongRow
 import com.siliconcircuits.tarangini.core.ui.component.SongRowActions
-import com.siliconcircuits.tarangini.core.ui.theme.glassBackground
-import com.siliconcircuits.tarangini.core.ui.theme.glassTopBarColors
+import com.siliconcircuits.tarangini.core.ui.theme.clearTopBarColors
 import com.siliconcircuits.tarangini.feature.library.R
 import com.siliconcircuits.tarangini.feature.library.component.ListBody
 import com.siliconcircuits.tarangini.feature.library.component.PagedColumn
@@ -58,11 +58,11 @@ internal fun FavouritesContent(
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
-        modifier = modifier.glassBackground(),
+        modifier = modifier.background(MaterialTheme.colorScheme.background),
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onBackground,
         topBar = {
-            TopAppBar(colors = glassTopBarColors(), title = { Text(stringResource(R.string.favourites_title)) })
+            TopAppBar(colors = clearTopBarColors(), title = { Text(stringResource(R.string.favourites_title)) })
         },
     ) { innerPadding ->
         Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {

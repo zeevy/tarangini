@@ -6,6 +6,7 @@
 
 package com.siliconcircuits.tarangini.feature.settings
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import com.siliconcircuits.tarangini.core.domain.model.Look
 
 /** Every folder that holds audio, with a tick on the hidden ones. A tap changes one folder at once. */
 @Composable
@@ -66,6 +68,35 @@ internal fun FoldersDialog(
             }
         },
         confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.settings_done)) } },
+    )
+}
+
+/** The three looks to pick from. A pick closes the dialog. */
+@Composable
+internal fun LookDialog(look: Look, onPick: (Look) -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.settings_colours)) },
+        text = {
+            Column {
+                Look.entries.forEach { choice ->
+                    ListItem(
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                        headlineContent = { Text(lookLabel(choice)) },
+                        leadingContent = { RadioButton(selected = choice == look, onClick = null) },
+                        modifier = Modifier.selectable(
+                            selected = choice == look,
+                            role = Role.RadioButton,
+                            onClick = {
+                                onPick(choice)
+                                onDismiss()
+                            },
+                        ),
+                    )
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.settings_cancel)) } },
     )
 }
 

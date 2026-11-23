@@ -62,6 +62,14 @@ class HomeContentTest {
     }
 
     @Test
+    @Config(qualifiers = "+night")
+    fun `Home with every section passes the accessibility checks in the dark look`() {
+        show(full)
+
+        composeRule.checkAccessibility()
+    }
+
+    @Test
     fun `the first use screen passes the accessibility checks`() {
         show(HomeUiState(isLoading = false))
 

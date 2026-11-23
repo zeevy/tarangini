@@ -31,6 +31,10 @@ class TaranginiShellScreenshotTest {
     fun `the shell`() = capture("shell")
 
     @Test
+    @Config(qualifiers = "+night")
+    fun `the shell in the dark look`() = capture("shell_dark")
+
+    @Test
     @Config(qualifiers = SMALL_PHONE)
     fun `narrow screen with the largest font`() {
         RuntimeEnvironment.setFontScale(LARGEST_FONT_SCALE)

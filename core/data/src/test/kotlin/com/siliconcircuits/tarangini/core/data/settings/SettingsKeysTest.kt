@@ -28,7 +28,7 @@ class SettingsKeysTest {
         assertNull(store.data.first()[SettingsKeys.THEME_MODE])
 
         store.edit {
-            it[SettingsKeys.THEME_MODE] = "dark"
+            it[SettingsKeys.THEME_MODE] = "DARK"
             it[SettingsKeys.DYNAMIC_COLOR] = false
             it[SettingsKeys.MIN_TRACK_SECONDS] = 30
             it[SettingsKeys.INCLUDED_FOLDERS] = setOf("Music")
@@ -36,7 +36,7 @@ class SettingsKeysTest {
         }
 
         val saved = store.data.first()
-        assertEquals("dark", saved[SettingsKeys.THEME_MODE])
+        assertEquals("DARK", saved[SettingsKeys.THEME_MODE])
         assertEquals(false, saved[SettingsKeys.DYNAMIC_COLOR])
         assertEquals(30, saved[SettingsKeys.MIN_TRACK_SECONDS])
         assertEquals(setOf("Music"), saved[SettingsKeys.INCLUDED_FOLDERS])

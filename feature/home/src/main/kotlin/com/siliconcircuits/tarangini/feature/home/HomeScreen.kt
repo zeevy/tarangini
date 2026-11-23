@@ -6,6 +6,7 @@
 
 package com.siliconcircuits.tarangini.feature.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -26,8 +27,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.siliconcircuits.tarangini.core.domain.model.Playlist
 import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
-import com.siliconcircuits.tarangini.core.ui.theme.glassBackground
-import com.siliconcircuits.tarangini.core.ui.theme.glassTopBarColors
+import com.siliconcircuits.tarangini.core.ui.theme.clearTopBarColors
 
 /**
  * The frame of Home: the name of the app and the way to Settings. What is under the bar is given
@@ -38,12 +38,12 @@ import com.siliconcircuits.tarangini.core.ui.theme.glassTopBarColors
 @Composable
 internal fun HomeScreen(onSettingsClick: () -> Unit, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Scaffold(
-        modifier = modifier.glassBackground(),
+        modifier = modifier.background(MaterialTheme.colorScheme.background),
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onBackground,
         topBar = {
             TopAppBar(
-                colors = glassTopBarColors(),
+                colors = clearTopBarColors(),
                 title = { Text(stringResource(R.string.home_title)) },
                 actions = {
                     IconButton(onClick = onSettingsClick) {

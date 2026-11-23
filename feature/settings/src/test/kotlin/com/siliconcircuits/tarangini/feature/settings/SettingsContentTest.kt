@@ -43,6 +43,7 @@ class SettingsContentTest {
 
     private val done = mutableListOf<String>()
     private val actions = SettingsActions(
+        onSetLook = { done += "look $it" },
         onSetMinTrackSeconds = { done += "length $it" },
         onSetFolderHidden = { path, hidden -> done += "hide $path $hidden" },
         onRescan = { done += "rescan" },
@@ -56,7 +57,7 @@ class SettingsContentTest {
     )
 
     private fun show() = composeRule.setContent {
-        // Inside the frame of the screen, which gives the dark background and the text colour.
+        // Inside the frame of the screen, which gives the background and the text colour.
         TaranginiTheme { SettingsScreen(onBackClick = {}) { SettingsContent(state, "1.0", actions) } }
     }
 
@@ -72,6 +73,18 @@ class SettingsContentTest {
         composeRule.onNodeWithText("Privacy policy").performScrollTo().performClick()
 
         assertEquals(listOf("rescan", "source", "privacy"), done)
+    }
+
+    @Test
+    fun `the look follows the phone at first, and a pick of Dark is passed on and closes the dialog`() {
+        show()
+
+        composeRule.onNodeWithText("Follow the phone").assertExists()
+        composeRule.onNodeWithText("Colours").performClick()
+        composeRule.onNodeWithText("Dark").performClick()
+
+        assertEquals(listOf("look DARK"), done)
+        composeRule.onNodeWithText("Light").assertDoesNotExist()
     }
 
     @Test
@@ -132,6 +145,15 @@ class SettingsContentTest {
     @Test
     @GraphicsMode(GraphicsMode.Mode.NATIVE)
     fun `the screen passes the accessibility checks`() {
+        show()
+
+        composeRule.checkAccessibility()
+    }
+
+    @Test
+    @Config(qualifiers = "+night")
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    fun `the screen passes the accessibility checks in the dark look`() {
         show()
 
         composeRule.checkAccessibility()

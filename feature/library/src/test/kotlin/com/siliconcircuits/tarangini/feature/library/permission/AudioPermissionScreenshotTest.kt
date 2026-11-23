@@ -26,6 +26,10 @@ class AudioPermissionScreenshotTest {
     fun `not asked`() = capture("permission_not_asked", AudioPermissionState.NOT_ASKED)
 
     @Test
+    @Config(qualifiers = "+night")
+    fun `not asked in the dark look`() = capture("permission_not_asked_dark", AudioPermissionState.NOT_ASKED)
+
+    @Test
     fun `denied`() = capture("permission_denied", AudioPermissionState.DENIED)
 
     @Test

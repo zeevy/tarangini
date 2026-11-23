@@ -6,8 +6,11 @@
 
 package com.siliconcircuits.tarangini.feature.settings
 
+import com.siliconcircuits.tarangini.core.domain.model.Look
+
 /** What the person can do on the Settings screen. */
 internal class SettingsActions(
+    val onSetLook: (Look) -> Unit = {},
     val onSetMinTrackSeconds: (Int) -> Unit = {},
     val onSetFolderHidden: (path: String, hidden: Boolean) -> Unit = { _, _ -> },
     val onRescan: () -> Unit = {},

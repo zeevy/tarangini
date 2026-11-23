@@ -7,6 +7,7 @@
 package com.siliconcircuits.tarangini.feature.settings.licences
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,8 +38,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.siliconcircuits.tarangini.core.domain.model.OpenSourceLibrary
 import com.siliconcircuits.tarangini.core.ui.component.BackButton
 import com.siliconcircuits.tarangini.core.ui.theme.Spacing
-import com.siliconcircuits.tarangini.core.ui.theme.glassBackground
-import com.siliconcircuits.tarangini.core.ui.theme.glassTopBarColors
+import com.siliconcircuits.tarangini.core.ui.theme.clearTopBarColors
 import com.siliconcircuits.tarangini.feature.settings.R
 
 /** The open source licences: the notice of the app, then every library with its licence. */
@@ -67,12 +67,12 @@ internal fun LicencesContent(
     val listState = rememberLazyListState()
     BackHandler(enabled = opened != null, onBack = onClose)
     Scaffold(
-        modifier = modifier.glassBackground(),
+        modifier = modifier.background(MaterialTheme.colorScheme.background),
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onBackground,
         topBar = {
             TopAppBar(
-                colors = glassTopBarColors(),
+                colors = clearTopBarColors(),
                 title = {
                     Text(
                         opened?.title ?: stringResource(R.string.licences_title),

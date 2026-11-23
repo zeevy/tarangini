@@ -165,8 +165,8 @@ One DataStore (Preferences) file named `settings`, one instance for the whole ap
 
 | Key | Type | Meaning |
 |---|---|---|
-| `theme_mode` | text | Not used since the app has one dark look (decision D51). The key stays, as a key name never changes |
-| `dynamic_color` | true or false | Not used since the app has one dark look (decision D51). The key stays, as a key name never changes |
+| `theme_mode` | text | The picked look: `FOLLOW_PHONE`, `LIGHT` or `DARK` (decision D83). Any other value counts as `FOLLOW_PHONE` |
+| `dynamic_color` | true or false | Not used: the app has its own two looks, not the wallpaper colours (decision D83). The key stays, as a key name never changes |
 | `min_track_seconds` | whole number | Shorter files are left out of the library |
 | `included_folders` | set of text | When not empty, only these folders are scanned. A folder is a whole path such as `external_primary/Music` and covers the folders inside it |
 | `excluded_folders` | set of text | Folders a scan skips |

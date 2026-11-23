@@ -7,6 +7,7 @@
 package com.siliconcircuits.tarangini.feature.settings
 
 import com.siliconcircuits.tarangini.core.domain.library.ScanState
+import com.siliconcircuits.tarangini.core.domain.model.Look
 import com.siliconcircuits.tarangini.core.domain.model.ScanSettings
 import com.siliconcircuits.tarangini.core.testing.MainDispatcherRule
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryScanner
@@ -42,7 +43,10 @@ class SettingsViewModelTest {
 
         val state = watched().state.value
 
-        assertEquals(SettingsUiState(ScanSettings(30, setOf("external_primary/Calls")), settings.folders), state)
+        assertEquals(
+            SettingsUiState(scan = ScanSettings(30, setOf("external_primary/Calls")), folders = settings.folders),
+            state,
+        )
     }
 
     @Test
@@ -68,6 +72,19 @@ class SettingsViewModelTest {
 
         assertEquals(1, scanner.scanCount)
         assertEquals(settings.folders, viewModel.state.value.folders)
+    }
+
+    @Test
+    fun `the look is shown and a new pick is saved`() = runTest(mainDispatcher.dispatcher) {
+        val viewModel = watched()
+        val first = viewModel.state.value.look
+
+        viewModel.setLook(Look.LIGHT)
+        runCurrent()
+
+        assertEquals(Look.FOLLOW_PHONE, first)
+        assertEquals(Look.LIGHT, settings.look.value)
+        assertEquals(Look.LIGHT, viewModel.state.value.look)
     }
 
     @Test

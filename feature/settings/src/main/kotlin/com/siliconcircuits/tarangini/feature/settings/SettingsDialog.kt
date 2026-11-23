@@ -7,4 +7,4 @@
 package com.siliconcircuits.tarangini.feature.settings
 
 /** The dialog that is open on the Settings screen, if any. */
-internal enum class SettingsDialog { NONE, FOLDERS, MIN_TRACK, CLEAR_HISTORY }
+internal enum class SettingsDialog { NONE, LOOK, FOLDERS, MIN_TRACK, CLEAR_HISTORY }

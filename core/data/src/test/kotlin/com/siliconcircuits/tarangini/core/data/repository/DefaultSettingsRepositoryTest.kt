@@ -9,8 +9,11 @@ package com.siliconcircuits.tarangini.core.data.repository
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
 import com.siliconcircuits.tarangini.core.data.local.addSong
 import com.siliconcircuits.tarangini.core.data.local.testDatabase
+import com.siliconcircuits.tarangini.core.data.settings.SettingsKeys
+import com.siliconcircuits.tarangini.core.domain.model.Look
 import com.siliconcircuits.tarangini.core.domain.model.ScanSettings
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
@@ -52,6 +55,25 @@ class DefaultSettingsRepositoryTest {
             ScanSettings(30, setOf("external_primary/WhatsApp")),
             DefaultSettingsRepository(store, database.folderDao()).scanSettings().first(),
         )
+    }
+
+    @Test
+    fun `the look follows the phone at first, and a pick is read back by a new repository`() = runTest {
+        val store = store()
+        val first = DefaultSettingsRepository(store, database.folderDao()).look().first()
+
+        DefaultSettingsRepository(store, database.folderDao()).setLook(Look.DARK)
+
+        assertEquals(Look.FOLLOW_PHONE, first)
+        assertEquals(Look.DARK, DefaultSettingsRepository(store, database.folderDao()).look().first())
+    }
+
+    @Test
+    fun `an old theme value that is not a look counts as no value`() = runTest {
+        val store = store()
+        store.edit { it[SettingsKeys.THEME_MODE] = "SYSTEM" }
+
+        assertEquals(Look.FOLLOW_PHONE, DefaultSettingsRepository(store, database.folderDao()).look().first())
     }
 
     @Test

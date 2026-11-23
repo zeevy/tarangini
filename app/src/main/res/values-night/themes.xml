@@ -5,5 +5,9 @@
   version 3 only. See the LICENSE file. SPDX-License-Identifier: GPL-3.0-only
 -->
 <resources>
-    <style name="Theme.Tarangini" parent="android:Theme.Material.NoActionBar" />
+    <!-- The dark look of the app, for the window before the first frame when the phone is in dark mode. -->
+    <style name="Theme.Tarangini" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/window_background</item>
+    </style>
+    <color name="window_background">#0F1311</color>
 </resources>

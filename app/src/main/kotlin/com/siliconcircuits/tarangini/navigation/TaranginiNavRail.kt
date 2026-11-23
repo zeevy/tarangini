@@ -24,12 +24,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import com.siliconcircuits.tarangini.core.ui.theme.GlassEdge
-import com.siliconcircuits.tarangini.core.ui.theme.GlassPanel
+import com.siliconcircuits.tarangini.core.ui.theme.PanelColor
+import com.siliconcircuits.tarangini.core.ui.theme.PanelEdge
 import com.siliconcircuits.tarangini.core.ui.theme.Spacing
 
 /**
- * The tabs on a wide window: a glass rail at the left edge in place of the bottom bar, so the
+ * The tabs on a wide window: a card rail at the left edge in place of the bottom bar, so the
  * screens keep their full height.
  */
 @Composable
@@ -41,9 +41,9 @@ internal fun TaranginiNavRail(
     Surface(
         modifier = modifier.fillMaxHeight().systemBarsPadding().padding(Spacing.small),
         shape = RoundedCornerShape(Spacing.large),
-        color = GlassPanel,
+        color = PanelColor,
         contentColor = MaterialTheme.colorScheme.onSurface,
-        border = GlassEdge,
+        border = PanelEdge,
     ) {
         NavigationRail(containerColor = Color.Transparent, windowInsets = WindowInsets()) {
             // The tabs sit in the middle of the rail, where a thumb reaches them on a tablet held in two hands.

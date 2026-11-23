@@ -65,7 +65,7 @@ fun MessageState(
         if (actionLabel != null) {
             Button(
                 onClick = onAction,
-                // The main button of a screen is white with dark text.
+                // The main button of a screen is filled with the accent colour.
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.secondary,
                     contentColor = MaterialTheme.colorScheme.onSecondary,

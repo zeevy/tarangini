@@ -208,6 +208,8 @@ Use wired headphones or a Bluetooth speaker, and a song with steady bass and voi
 | 144 | With the albums of row 143, switch to "Same loudness for every album" and play an album from start to end | The steps in loudness between the songs of the album stay as they are; the album as a whole is about as loud as the other one |
 | 145 | With levelling on, play a song with no ReplayGain tags and a radio station | Both play at their own level, as with levelling off |
 | 146 | On a foldable or a tablet, play a song, open the Library tab, scroll down the songs list, then fold or unfold the device (or turn the tablet) | The rail shows on the wide window and the bottom bar on the narrow one; the tablet shows the now playing pane at the right. The Library tab stays open at the same place in the list, and the song plays on with no break |
+| 147 | With Colours on Follow the phone, turn the dark mode of the phone on and off while the app is open; then pick Light and Dark in Settings | The app changes to the dark and the light look at once each time, the status bar icons stay readable, and Light and Dark stay after a restart of the app |
+| 148 | With the phone in dark mode and Colours on Light, start the app from the launcher; then the phone in light mode with Colours on Dark | The window before the first frame and the status bar icons already have the colours of the picked look; no flash of the other look |
 
 ## Results
 

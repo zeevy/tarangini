@@ -6,6 +6,7 @@
 
 package com.siliconcircuits.tarangini.feature.player.queue
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -34,8 +35,7 @@ import com.siliconcircuits.tarangini.core.domain.model.PlaybackItem
 import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
 import com.siliconcircuits.tarangini.core.ui.component.BackButton
 import com.siliconcircuits.tarangini.core.ui.component.MessageState
-import com.siliconcircuits.tarangini.core.ui.theme.glassBackground
-import com.siliconcircuits.tarangini.core.ui.theme.glassTopBarColors
+import com.siliconcircuits.tarangini.core.ui.theme.clearTopBarColors
 import com.siliconcircuits.tarangini.feature.player.R
 
 /** The queue: the items that play, in their order. A row is dragged to another place or swiped away. */
@@ -58,12 +58,12 @@ internal fun QueueContent(
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
-        modifier = modifier.glassBackground(),
+        modifier = modifier.background(MaterialTheme.colorScheme.background),
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onBackground,
         topBar = {
             TopAppBar(
-                colors = glassTopBarColors(),
+                colors = clearTopBarColors(),
                 title = { Text(stringResource(R.string.queue_title)) },
                 navigationIcon = { BackButton(onClick = onBackClick) },
             )

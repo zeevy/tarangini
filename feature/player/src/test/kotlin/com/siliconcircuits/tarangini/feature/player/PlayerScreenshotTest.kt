@@ -60,6 +60,10 @@ class PlayerScreenshotTest {
     fun `a song`() = shot("now_playing_song") { NowPlayingContent(song, actions, {}, {}) }
 
     @Test
+    @Config(qualifiers = "+night")
+    fun `a song in the dark look`() = shot("now_playing_song_dark") { NowPlayingContent(song, actions, {}, {}) }
+
+    @Test
     @Config(qualifiers = "w640dp-h320dp-xhdpi")
     fun `a song on a wide screen`() = shot("now_playing_song_wide") { NowPlayingContent(song, actions, {}, {}) }
 
@@ -77,6 +81,12 @@ class PlayerScreenshotTest {
 
     @Test
     fun `the queue`() = shot("queue") { QueueContent(queue, QueueActions({}, { _, _ -> }, {}), {}) }
+
+    @Test
+    @Config(qualifiers = "+night")
+    fun `the queue in the dark look`() = shot("queue_dark") {
+        QueueContent(queue, QueueActions({}, { _, _ -> }, {}), {})
+    }
 
     @Test
     fun `a song with the largest font`() {

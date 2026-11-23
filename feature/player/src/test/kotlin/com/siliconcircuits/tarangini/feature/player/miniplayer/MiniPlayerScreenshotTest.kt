@@ -9,6 +9,8 @@ package com.siliconcircuits.tarangini.feature.player.miniplayer
 import android.app.Application
 import android.content.ComponentName
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.background
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onRoot
@@ -16,7 +18,6 @@ import com.github.takahirom.roborazzi.captureRoboImage
 import com.siliconcircuits.tarangini.core.testing.RegisterComponentActivityRule
 import com.siliconcircuits.tarangini.core.testing.savedPicture
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
-import com.siliconcircuits.tarangini.core.ui.theme.glassBackground
 import java.io.File
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -59,6 +60,10 @@ class MiniPlayerScreenshotTest {
     fun `playing`() = capture("mini_player_playing", song)
 
     @Test
+    @Config(qualifiers = "+night")
+    fun `playing in the dark look`() = capture("mini_player_playing_dark", song)
+
+    @Test
     fun `paused`() = capture("mini_player_paused", paused)
 
     @Test
@@ -76,7 +81,9 @@ class MiniPlayerScreenshotTest {
         // one fixed moment and the test does not wait for the line to stop.
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
-            TaranginiTheme { MiniPlayerBar(state, {}, {}, {}, Modifier.glassBackground()) }
+            TaranginiTheme {
+                MiniPlayerBar(state, {}, {}, {}, Modifier.background(MaterialTheme.colorScheme.background))
+            }
         }
         composeRule.mainClock.advanceTimeByFrame()
         composeRule.onRoot().captureRoboImage(picture.path)

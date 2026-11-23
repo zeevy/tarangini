@@ -37,8 +37,8 @@ import com.siliconcircuits.tarangini.core.ui.component.PlaylistRow
 import com.siliconcircuits.tarangini.core.ui.component.SongRow
 import com.siliconcircuits.tarangini.core.ui.component.SongRowActions
 import com.siliconcircuits.tarangini.core.ui.component.rowTextLines
-import com.siliconcircuits.tarangini.core.ui.theme.GlassEdge
-import com.siliconcircuits.tarangini.core.ui.theme.GlassPanel
+import com.siliconcircuits.tarangini.core.ui.theme.PanelColor
+import com.siliconcircuits.tarangini.core.ui.theme.PanelEdge
 import com.siliconcircuits.tarangini.core.ui.theme.Spacing
 
 /** The sections of Home, or the first use text while there is nothing to show yet. */
@@ -103,10 +103,10 @@ private fun SectionTitle(text: String) {
 @Composable
 private fun ContinueCard(item: PlaybackItem, onResume: () -> Unit) {
     Surface(
-        color = GlassPanel,
+        color = PanelColor,
         contentColor = MaterialTheme.colorScheme.onBackground,
         shape = MaterialTheme.shapes.large,
-        border = GlassEdge,
+        border = PanelEdge,
         modifier = Modifier.fillMaxWidth().padding(Spacing.medium),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(Spacing.medium)) {
@@ -133,7 +133,7 @@ private fun ContinueCard(item: PlaybackItem, onResume: () -> Unit) {
                     )
                 }
             }
-            // The main button of a glass screen is white with a dark icon.
+            // The main button is filled with the accent colour.
             FilledIconButton(
                 onClick = onResume,
                 colors = IconButtonDefaults.filledIconButtonColors(

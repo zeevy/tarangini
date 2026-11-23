@@ -5,7 +5,7 @@
 
 ## Context
 
-Every screen needs screenshot tests (T4). Since ADR 0027 the app has one dark look, so there is one picture per state. CI has no emulator yet, so the tests must run on the JVM with `./gradlew test`.
+Every screen needs screenshot tests (T4). Since ADR 0053 the app has a light and a dark look: each state has a light picture, and the main screens also have a `*_dark` one. CI has no emulator yet, so the tests must run on the JVM with `./gradlew test`.
 
 ## Options
 

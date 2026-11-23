@@ -6,6 +6,7 @@
 
 package com.siliconcircuits.tarangini.feature.search
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -52,8 +53,7 @@ import com.siliconcircuits.tarangini.core.ui.component.MessageState
 import com.siliconcircuits.tarangini.core.ui.component.SectionTitle
 import com.siliconcircuits.tarangini.core.ui.component.SongRow
 import com.siliconcircuits.tarangini.core.ui.component.SongRowActions
-import com.siliconcircuits.tarangini.core.ui.theme.glassBackground
-import com.siliconcircuits.tarangini.core.ui.theme.glassTopBarColors
+import com.siliconcircuits.tarangini.core.ui.theme.clearTopBarColors
 import kotlinx.coroutines.flow.filter
 
 /** The search screen: one field, and under it the songs, albums and artists that were found. */
@@ -91,12 +91,12 @@ internal fun SearchContent(
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
-        modifier = modifier.glassBackground(),
+        modifier = modifier.background(MaterialTheme.colorScheme.background),
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onBackground,
         topBar = {
             TopAppBar(
-                colors = glassTopBarColors(),
+                colors = clearTopBarColors(),
                 title = { SearchField(text, onTextChange) },
                 navigationIcon = {
                     BackButton(onClick = onBack)

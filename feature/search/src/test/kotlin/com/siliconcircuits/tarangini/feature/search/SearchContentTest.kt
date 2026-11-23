@@ -47,6 +47,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
 @RunWith(RobolectricTestRunner::class)
@@ -198,6 +199,15 @@ class SearchContentTest {
     @Test
     @GraphicsMode(GraphicsMode.Mode.NATIVE)
     fun `the screen passes the accessibility checks`() {
+        show(SearchUiState("mor", results))
+
+        composeRule.checkAccessibility()
+    }
+
+    @Test
+    @Config(qualifiers = "+night")
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    fun `the screen passes the accessibility checks in the dark look`() {
         show(SearchUiState("mor", results))
 
         composeRule.checkAccessibility()
