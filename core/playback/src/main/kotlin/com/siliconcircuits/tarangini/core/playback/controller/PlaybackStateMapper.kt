@@ -54,6 +54,7 @@ internal fun Player.toPlaybackState(knownQueue: List<PlaybackItem>? = null): Pla
         speed = playbackParameters.speed,
         isEnded = playbackState == Player.STATE_ENDED,
         error = playerError?.toPlaybackError(),
+        format = currentTracks.playingFormat().takeIf { current != null },
     )
 }
 

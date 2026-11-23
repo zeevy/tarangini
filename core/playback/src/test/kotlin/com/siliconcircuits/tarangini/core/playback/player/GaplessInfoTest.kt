@@ -8,16 +8,8 @@ package com.siliconcircuits.tarangini.core.playback.player
 
 import androidx.annotation.OptIn
 import androidx.media3.common.C
-import androidx.media3.common.DataReader
 import androidx.media3.common.Format
-import androidx.media3.common.util.ParsableByteArray
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.extractor.DefaultExtractorInput
-import androidx.media3.extractor.Extractor
-import androidx.media3.extractor.ExtractorOutput
-import androidx.media3.extractor.PositionHolder
-import androidx.media3.extractor.SeekMap
-import androidx.media3.extractor.TrackOutput
 import androidx.media3.extractor.mp3.Mp3Extractor
 import androidx.media3.extractor.mp4.Mp4Extractor
 import androidx.media3.extractor.text.DefaultSubtitleParserFactory
@@ -41,7 +33,7 @@ class GaplessInfoTest {
         // If this fails after a Media3 change, Media3 no longer moves the silence by the decoder
         // delay, and forDecoder in Mp3DecoderDelay.kt must go.
         TRACKS.forEach { track ->
-            val format = readFormat("with-delay-header-$track.mp3", Mp3Extractor())
+            val format = readTestFormat("gapless/with-delay-header-$track.mp3", Mp3Extractor())
 
             assertEquals(LAME_DELAY + MP3_DECODER_DELAY, format.encoderDelay)
             assertEquals(LAME_PADDING - MP3_DECODER_DELAY, format.encoderPadding)
@@ -51,7 +43,10 @@ class GaplessInfoTest {
     @Test
     fun `an MP3 file with a LAME header keeps only its real samples on the decoder of Android`() {
         TRACKS.forEach { track ->
-            val format = readFormat("with-delay-header-$track.mp3", Mp3Extractor()).forDecoder("c2.android.mp3.decoder")
+            val format = readTestFormat(
+                "gapless/with-delay-header-$track.mp3",
+                Mp3Extractor(),
+            ).forDecoder("c2.android.mp3.decoder")
 
             assertEquals(LAME_DELAY, format.encoderDelay)
             assertEquals(LAME_PADDING, format.encoderPadding)
@@ -60,7 +55,10 @@ class GaplessInfoTest {
 
     @Test
     fun `an MP3 file with no delay header tells nothing, so its silence stays`() {
-        val format = readFormat("no-delay-header-1.mp3", Mp3Extractor()).forDecoder("c2.android.mp3.decoder")
+        val format = readTestFormat(
+            "gapless/no-delay-header-1.mp3",
+            Mp3Extractor(),
+        ).forDecoder("c2.android.mp3.decoder")
 
         assertEquals(0, format.encoderDelay)
         assertEquals(0, format.encoderPadding)
@@ -69,7 +67,8 @@ class GaplessInfoTest {
     @Test
     fun `an M4A file with an edit list keeps only its real samples`() {
         TRACKS.forEach { track ->
-            val format = readFormat("with-edit-list-skip-$track.m4a", Mp4Extractor(DefaultSubtitleParserFactory()))
+            val format =
+                readTestFormat("gapless/with-edit-list-skip-$track.m4a", Mp4Extractor(DefaultSubtitleParserFactory()))
 
             assertEquals(AAC_DELAY, format.encoderDelay)
             assertEquals(REAL_SAMPLES, AAC_DECODED_SAMPLES - format.encoderDelay - format.encoderPadding)
@@ -79,70 +78,10 @@ class GaplessInfoTest {
 
     @Test
     fun `an M4A file whose edit list skips nothing tells nothing, so its silence stays`() {
-        val format = readFormat("no-edit-list-skip-1.m4a", Mp4Extractor(DefaultSubtitleParserFactory()))
+        val format = readTestFormat("gapless/no-edit-list-skip-1.m4a", Mp4Extractor(DefaultSubtitleParserFactory()))
 
         assertEquals(0, format.encoderDelay)
         assertEquals(0, format.encoderPadding)
-    }
-
-    /** Runs [extractor] over the test file until it has told the format of the track. */
-    private fun readFormat(file: String, extractor: Extractor): Format {
-        val bytes = requireNotNull(javaClass.classLoader?.getResourceAsStream("gapless/$file")).use { it.readBytes() }
-        var position = 0
-        val reader = DataReader { target, offset, length ->
-            val count = minOf(length, bytes.size - position)
-            if (count <= 0) {
-                C.RESULT_END_OF_INPUT
-            } else {
-                bytes.copyInto(target, offset, position, position + count)
-                position += count
-                count
-            }
-        }
-        val output = CapturingOutput()
-        extractor.init(output)
-        val seekTo = PositionHolder()
-        var input = DefaultExtractorInput(reader, 0, bytes.size.toLong())
-        var result = Extractor.RESULT_CONTINUE
-        while (result != Extractor.RESULT_END_OF_INPUT && output.format == null) {
-            result = extractor.read(input, seekTo)
-            if (result == Extractor.RESULT_SEEK) {
-                position = seekTo.position.toInt()
-                input = DefaultExtractorInput(reader, seekTo.position, bytes.size.toLong())
-            }
-        }
-        return requireNotNull(output.format)
-    }
-
-    private class CapturingOutput :
-        ExtractorOutput,
-        TrackOutput {
-        var format: Format? = null
-
-        override fun track(id: Int, type: Int): TrackOutput = this
-
-        override fun endTracks() = Unit
-
-        override fun seekMap(seekMap: SeekMap) = Unit
-
-        override fun format(format: Format) {
-            this.format = format
-        }
-
-        override fun sampleData(input: DataReader, length: Int, allowEndOfInput: Boolean, sampleDataPart: Int): Int {
-            val skipped = input.read(ByteArray(length), 0, length)
-            return if (skipped == C.RESULT_END_OF_INPUT) C.RESULT_END_OF_INPUT else skipped
-        }
-
-        override fun sampleData(data: ParsableByteArray, length: Int, sampleDataPart: Int) = data.skipBytes(length)
-
-        override fun sampleMetadata(
-            timeUs: Long,
-            flags: Int,
-            size: Int,
-            offset: Int,
-            cryptoData: TrackOutput.CryptoData?,
-        ) = Unit
     }
 
     private companion object {
