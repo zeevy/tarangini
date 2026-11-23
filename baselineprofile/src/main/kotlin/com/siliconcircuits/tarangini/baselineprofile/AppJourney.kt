@@ -9,6 +9,7 @@ package com.siliconcircuits.tarangini.baselineprofile
 import androidx.benchmark.macro.MacrobenchmarkScope
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.Direction
+import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
 
 /** Application id of the app under test. */
@@ -30,11 +31,21 @@ internal fun MacrobenchmarkScope.allowAudio() {
 /**
  * Opens the Library tab and scrolls the songs list down and back up. This is the path a person
  * takes most after the start, so its code goes into the profile and its frames are measured.
- * The device needs some music; with no songs it only opens the tab.
+ * It fails when the songs never show, so a run with no permission or no music does not pass with
+ * a profile that has no list in it.
  */
 internal fun MacrobenchmarkScope.scrollTheSongs() {
     device.wait(Until.findObject(By.text("Library")), WAIT_MS)?.click()
-    val list = device.wait(Until.findObject(By.scrollable(true)), WAIT_MS) ?: return
+    // The tab row above the list scrolls too. The list is the tallest one, and it waits for the
+    // scan to put enough songs in it.
+    val end = System.currentTimeMillis() + SCAN_WAIT_MS
+    while ((songsList()?.childCount ?: 0) < LEAST_ROWS && System.currentTimeMillis() < end) {
+        Thread.sleep(POLL_MS)
+    }
+    check((songsList()?.childCount ?: 0) >= LEAST_ROWS) {
+        "The songs list did not show $LEAST_ROWS songs within $SCAN_WAIT_MS ms"
+    }
+    val list = checkNotNull(songsList())
     // Keep clear of the gesture bar, or a fling opens the recent apps.
     list.setGestureMargin(device.displayWidth / GESTURE_MARGIN_PARTS)
     repeat(FLINGS) { list.fling(Direction.DOWN) }
@@ -42,5 +53,11 @@ internal fun MacrobenchmarkScope.scrollTheSongs() {
     device.waitForIdle()
 }
 
+private fun MacrobenchmarkScope.songsList(): UiObject2? =
+    device.findObjects(By.scrollable(true)).maxByOrNull { it.visibleBounds.height() }
+
+private const val SCAN_WAIT_MS = 30_000L
+private const val LEAST_ROWS = 5
+private const val POLL_MS = 250L
 private const val FLINGS = 3
 private const val GESTURE_MARGIN_PARTS = 5

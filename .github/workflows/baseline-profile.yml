@@ -7,6 +7,8 @@ on:
   workflow_dispatch:
   push:
     branches: ["perf/**"]
+    # Committing the recorded profile must not record it again.
+    paths-ignore: ["app/src/coreRelease/generated/baselineProfiles/**"]
 
 permissions:
   contents: read
@@ -82,4 +84,5 @@ jobs:
         with:
           name: baseline-profile
           path: app/src/coreRelease/generated/baselineProfiles/
+          if-no-files-found: error
           retention-days: 7

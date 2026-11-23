@@ -56,6 +56,8 @@ class StartupBenchmark {
         compilationMode = mode,
         startupMode = StartupMode.COLD,
         iterations = ITERATIONS,
+        // Every run starts on the songs list, never on the reason screen, so the numbers compare.
+        setupBlock = { allowAudio() },
     ) {
         pressHome()
         startActivityAndWait()
