@@ -21,11 +21,13 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -176,10 +178,11 @@ private fun LabelledSlider(
             Text(label, modifier = Modifier.weight(1f))
             Text(value)
         }
+        val slider = remember(range) { SliderState(trackRange = range) }
+        slider.value = position
         Slider(
-            value = position,
+            state = slider,
             onValueChange = onChange,
-            valueRange = range,
             enabled = isEnabled,
             modifier = Modifier.semantics {
                 contentDescription = label

@@ -10,6 +10,9 @@ import org.gradle.api.JavaVersion
 object TaranginiBuild {
     const val BASE_PACKAGE = "com.siliconcircuits.tarangini"
     const val COMPILE_SDK = 37
+
+    // Compose 1.13 compiles only against API level 37.1 or later.
+    const val COMPILE_SDK_MINOR = 1
     const val TARGET_SDK = 37
     const val MIN_SDK = 31
     const val JDK = 21

@@ -15,6 +15,7 @@ plugins {
 android {
     namespace = TaranginiBuild.namespaceFor(path)
     compileSdk = TaranginiBuild.COMPILE_SDK
+    compileSdkMinor = TaranginiBuild.COMPILE_SDK_MINOR
 
     defaultConfig {
         applicationId = TaranginiBuild.BASE_PACKAGE
