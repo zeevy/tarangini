@@ -65,6 +65,33 @@ class EqualizerViewModelTest {
     }
 
     @Test
+    fun `a change saved by another screen shows here after a change of its own`() = runTest(mainDispatcher.dispatcher) {
+        backgroundScope.launch { viewModel.state.collect() }
+        runCurrent()
+
+        viewModel.setBand(0, 4f)
+        runCurrent()
+        saved.saved.value = EqualizerSettings(isOn = true, preset = EqualizerPreset.VOCAL)
+        runCurrent()
+        viewModel.setBassBoost(20)
+
+        assertEquals(EqualizerSettings(isOn = true, preset = EqualizerPreset.VOCAL, bassBoost = 20), saved.saved.value)
+        assertEquals(EqualizerPreset.VOCAL, viewModel.state.value!!.settings.preset)
+    }
+
+    @Test
+    fun `two bands moved before the screen catches up both stay`() = runTest(mainDispatcher.dispatcher) {
+        backgroundScope.launch { viewModel.state.collect() }
+        runCurrent()
+
+        viewModel.setBand(0, 4f)
+        viewModel.setBand(4, -2f)
+        runCurrent()
+
+        assertEquals(listOf(4f, 0f, 0f, 0f, -2f), viewModel.state.value!!.gains)
+    }
+
+    @Test
     fun `moving a band leaves the preset and keeps the other bands`() = runTest(mainDispatcher.dispatcher) {
         saved.saved.value = EqualizerSettings(isOn = true, preset = EqualizerPreset.BASS)
         backgroundScope.launch { viewModel.state.collect() }

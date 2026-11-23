@@ -10,7 +10,9 @@ import android.app.Application
 import android.content.ComponentName
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
@@ -79,6 +81,11 @@ class EqualizerContentTest {
         genres = listOf(Genre(1, "Folk", 4, key = "folk"), Genre(2, "Rock", 9, key = "rock")),
     )
 
+    private val tenBands = EqualizerUiState(
+        EqualizerSettings(isOn = true, preset = null, ownGains = listOf(4f, 3f, 2f, 0f, -1f, -2f, 0f, 2f, 3f, 5f)),
+        listOf(31f, 62f, 125f, 250f, 500f, 1_000f, 2_000f, 4_000f, 8_000f, 16_000f),
+    )
+
     private fun show(state: EqualizerUiState?) = composeRule.setContent {
         TaranginiTheme { EqualizerContent(state, actions, { done += "back" }) }
     }
@@ -87,13 +94,13 @@ class EqualizerContentTest {
     fun `the screen shows the preset, each band with its gain and the bass boost`() {
         show(carnatic)
 
-        composeRule.onNodeWithText("Equalizer on").assertIsOn()
+        composeRule.onNodeWithContentDescription("Equalizer on").assertIsOn()
         composeRule.onNodeWithText("Carnatic").assertIsSelected()
-        composeRule.onNodeWithText("60 Hz").assertExists()
-        composeRule.onNodeWithText("910 Hz").assertExists()
-        composeRule.onNodeWithText("3.6 kHz").assertExists()
-        composeRule.onNodeWithText("14 kHz").assertExists()
-        composeRule.onNodeWithText("+3 dB").assertExists()
+        composeRule.onNodeWithText("Carnatic · 5 bands").assertExists()
+        listOf("60", "910", "3.6k", "14k", "+3").forEach { composeRule.onNodeWithText(it).assertExists() }
+        // A screen reader hears the full band name and the gain with its unit.
+        composeRule.onNodeWithContentDescription("910 Hz").assertExists()
+        composeRule.onNodeWithContentDescription("3.6 kHz").assertExists()
         composeRule.onNodeWithText("40 %").assertExists()
     }
 
@@ -101,15 +108,16 @@ class EqualizerContentTest {
     fun `the switch row, a preset and the back arrow do what they say`() {
         show(carnatic)
 
-        composeRule.onNodeWithText("Equalizer on").performClick()
+        composeRule.onNodeWithContentDescription("Equalizer on").performClick()
         composeRule.onNodeWithText("Bass").performClick()
+        composeRule.onNodeWithText("Reset").performClick()
         composeRule.onNodeWithContentDescription("Back").performClick()
 
-        assertEquals(listOf("on false", "preset BASS", "back"), done)
+        assertEquals(listOf("on false", "preset BASS", "preset FLAT", "back"), done)
     }
 
     @Test
-    fun `a band moves in half dB steps, and the bass in whole percent`() {
+    fun `a band moves in whole dB steps, and the bass in whole percent`() {
         show(carnatic)
 
         composeRule.onNodeWithContentDescription("230 Hz").performScrollTo()
@@ -117,16 +125,19 @@ class EqualizerContentTest {
         composeRule.onNodeWithContentDescription("Bass boost").performScrollTo()
             .performSemanticsAction(SemanticsActions.SetProgress) { it(57.6f) }
 
-        assertEquals(listOf("band 1 4.5", "bass 58"), done)
+        assertEquals(listOf("band 1 4.0", "bass 58"), done)
     }
 
     @Test
     fun `with the equalizer off the presets and sliders cannot be used`() {
         show(EqualizerUiState(EqualizerSettings(), FIVE_BANDS_HZ))
 
-        composeRule.onNodeWithText("Equalizer on").assertIsOff()
+        composeRule.onNodeWithContentDescription("Equalizer on").assertIsOff()
         composeRule.onNodeWithText("Bass").assertIsNotEnabled()
+        composeRule.onNodeWithText("Reset").assertIsNotEnabled()
         composeRule.onNodeWithContentDescription("60 Hz").assertIsNotEnabled()
+        // The switch still works, or the equalizer could not be turned on again.
+        composeRule.onNodeWithContentDescription("Equalizer on").assertIsEnabled()
     }
 
     @Test
@@ -224,6 +235,33 @@ class EqualizerContentTest {
     fun `the volume levelling`() = shot("equalizer_levelling") {
         show(carnatic.copy(settings = carnatic.settings.copy(levelling = VolumeLevelling.ALBUM)))
         composeRule.onNodeWithText("Same loudness for every album").performScrollTo()
+    }
+
+    @Test
+    fun `ten bands scroll sideways and start with the lowest in view`() {
+        show(tenBands)
+
+        composeRule.onNodeWithText("Custom · 10 bands").assertExists()
+        composeRule.onNodeWithContentDescription("31 Hz").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("500 Hz").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("16 kHz").assertIsNotDisplayed()
+    }
+
+    @Test
+    fun `ten bands`() = shot("equalizer_ten_bands") { show(tenBands) }
+
+    @Test
+    @Config(qualifiers = "+night")
+    fun `ten bands in the dark look`() = shot("equalizer_ten_bands_dark") { show(tenBands) }
+
+    @Test
+    @Config(qualifiers = "w640dp-h320dp-xhdpi")
+    fun `ten bands on a wide screen`() = shot("equalizer_ten_bands_wide") { show(tenBands) }
+
+    @Test
+    @Config(qualifiers = "+night")
+    fun `the equalizer off in the dark look`() = shot("equalizer_off_dark") {
+        show(EqualizerUiState(EqualizerSettings(), FIVE_BANDS_HZ))
     }
 
     @Test
