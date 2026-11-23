@@ -12,9 +12,9 @@ import kotlinx.coroutines.flow.Flow
 fun interface AudioLevels {
     /**
      * The level of the left and the right channel, read from the sound the player plays after
-     * the equalizer and volume levelling, before the volume of the player. A new reading comes about 25 times a second while the
-     * level moves; when nothing plays the level falls to [LevelReading.SILENCE]. The sound is
-     * measured only while this flow is collected.
+     * the equalizer and volume levelling, before the volume of the player. A new reading comes
+     * about 25 times a second while the level moves; when nothing plays the level falls to
+     * [LevelReading.SILENCE]. The sound is measured only while this flow is collected.
      */
     fun levels(): Flow<LevelReading>
 }
