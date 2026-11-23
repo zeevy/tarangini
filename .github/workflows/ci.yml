@@ -63,7 +63,7 @@ jobs:
         run: ./gradlew lint
 
       - name: Licences of shipped libraries
-        run: ./gradlew :app:licenseeCoreRelease
+        run: ./gradlew :app:licenseeAndroidCoreRelease
 
       - name: Build the core debug app
         run: ./gradlew assembleCoreDebug --stacktrace

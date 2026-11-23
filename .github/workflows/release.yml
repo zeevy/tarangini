@@ -43,7 +43,7 @@ jobs:
           test "v$VERSION" = "$GITHUB_REF_NAME" || { echo "::error::Tag $GITHUB_REF_NAME, but the app is version $VERSION"; exit 1; }
 
       - name: Tests, licences and the release build
-        run: ./gradlew test :app:licenseeCoreRelease assembleCoreRelease --stacktrace
+        run: ./gradlew test :app:licenseeAndroidCoreRelease assembleCoreRelease --stacktrace
 
       - name: Size and checksum of the app
         run: |

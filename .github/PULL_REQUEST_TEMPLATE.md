@@ -14,7 +14,7 @@ Closes #
 
 ## Checklist
 
-- [ ] `./gradlew test ktlintCheck detekt lint :app:licenseeCoreRelease assembleCoreDebug` passes
+- [ ] `./gradlew test ktlintCheck detekt lint :app:licenseeAndroidCoreRelease assembleCoreDebug` passes
 - [ ] New and changed behaviour has tests
 - [ ] The change follows the rules in [CONTRIBUTING.md](../blob/main/CONTRIBUTING.md#rules-with-ids) and the code is in the right module
 - [ ] New source files start with the GPL-3.0 header
