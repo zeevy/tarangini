@@ -87,14 +87,14 @@ class PlayerScreenshotTest {
     @Config(qualifiers = "w360dp-h800dp-xhdpi")
     fun `a song with the equalizer under the card`() = shot("now_playing_equalizer") {
         NowPlayingContent(song, actions, {
-        }, {}, levels = { loud }, below = { EqualizerPanel(equalizer, EqualizerActions()) })
+        }, {}, levels = { loud }, below = { item { EqualizerPanel(equalizer, EqualizerActions()) } })
     }
 
     @Test
     @Config(qualifiers = "w360dp-h800dp-night-xhdpi")
     fun `a song with the equalizer under the card in the dark look`() = shot("now_playing_equalizer_dark") {
         NowPlayingContent(song, actions, {
-        }, {}, levels = { loud }, below = { EqualizerPanel(equalizer, EqualizerActions()) })
+        }, {}, levels = { loud }, below = { item { EqualizerPanel(equalizer, EqualizerActions()) } })
     }
 
     @Test

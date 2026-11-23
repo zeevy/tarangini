@@ -15,6 +15,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.Timeline
 import androidx.media3.common.TrackGroup
 import androidx.media3.common.Tracks
 import androidx.media3.common.util.UnstableApi
@@ -95,6 +96,30 @@ class PlaybackStateMapperTest {
         player.report { setPlaylist(listOf(FakePlayer.queued("zero"), FakePlayer.queued(song))) }
 
         assertEquals(PlaybackItem("first", "Loaded title", "Loaded artist"), player.toPlaybackState().queue[1])
+    }
+
+    @Test
+    fun `each item keeps the length the library gave it`() {
+        val known = MediaItem.Builder().setMediaId("first")
+            .setMediaMetadata(MediaMetadata.Builder().setDurationMs(185_000).build()).build()
+        player.report { setPlaylist(listOf(FakePlayer.queued(known), FakePlayer.queued("second"))) }
+
+        assertEquals(listOf(185_000L, null), player.toPlaybackState().queue.map { it.durationMs })
+    }
+
+    @Test
+    fun `with shuffle on the play order follows the timeline from the current item, without repeat`() {
+        val shuffled = ReversedTimeline(windows = 4)
+
+        assertEquals(listOf(2, 1, 0), shuffled.playOrderFrom(2))
+        assertEquals(listOf(3, 2, 1, 0), shuffled.playOrderFrom(3))
+    }
+
+    @Test
+    fun `with shuffle off there is no play order`() {
+        player.report { setPlaylist(twoSongs()) }
+
+        assertEquals(null, player.toPlaybackState().playOrder)
     }
 
     @Test
@@ -206,4 +231,22 @@ class PlaybackStateMapperTest {
 
         assertNull(player.toPlaybackState().error)
     }
+}
+
+/** A timeline of [windows] items whose shuffle order plays them from the last to the first. */
+private class ReversedTimeline(private val windows: Int) : Timeline() {
+    override fun getWindowCount() = windows
+
+    override fun getNextWindowIndex(windowIndex: Int, repeatMode: Int, shuffleModeEnabled: Boolean) =
+        if (shuffleModeEnabled) windowIndex - 1 else (windowIndex + 1).takeIf { it < windows } ?: C.INDEX_UNSET
+
+    override fun getWindow(windowIndex: Int, window: Window, defaultPositionProjectionUs: Long) = window
+
+    override fun getPeriodCount() = windows
+
+    override fun getPeriod(periodIndex: Int, period: Period, setIds: Boolean) = period
+
+    override fun getIndexOfPeriod(uid: Any) = C.INDEX_UNSET
+
+    override fun getUidOfPeriod(periodIndex: Int): Any = periodIndex
 }

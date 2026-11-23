@@ -9,8 +9,12 @@ package com.siliconcircuits.tarangini
 import android.Manifest
 import android.content.ComponentName
 import android.os.Build
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteractionCollection
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasScrollToNodeAction
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
@@ -112,7 +116,27 @@ class MainFlowTest {
         waitFor("$playlist on Home") { scrollTo(playlist) }
         composeRule.onAllNodesWithText(playlist).onFirst().performClick()
         waitFor("$song in $playlist") { scrollTo(song) }
+
+        // Up next: from the mini player to now playing, where a tap on a row plays that song.
+        onMain { session.seekToDefaultPosition(0) }
+        val second = onMain { session.getMediaItemAt(1).mediaMetadata.title?.toString() }
+        composeRule.onNode(clickLabelled("Open the player")).performClick()
+        val row = hasContentDescription("Number 2, $second", substring = true)
+        waitFor("the up next row of $second") {
+            try {
+                composeRule.onAllNodes(hasScrollToNodeAction()).onFirst().performScrollToNode(row)
+                true
+            } catch (_: AssertionError) {
+                false
+            }
+        }
+        composeRule.onNode(row).performClick()
+        waitFor("the session to move to $second") { onMain { session.currentMediaItemIndex } == 1 }
     }
+
+    /** A node whose click has the label [label], as the mini player has. */
+    private fun clickLabelled(label: String) =
+        SemanticsMatcher("click labelled $label") { it.config.getOrNull(SemanticsActions.OnClick)?.label == label }
 
     /** The permission that reads audio files on this Android version. */
     private fun audioPermission(): String = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

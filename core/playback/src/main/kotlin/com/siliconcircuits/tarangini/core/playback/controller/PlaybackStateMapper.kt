@@ -10,6 +10,7 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.Timeline
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackItem
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
@@ -55,7 +56,20 @@ internal fun Player.toPlaybackState(knownQueue: List<PlaybackItem>? = null): Pla
         isEnded = playbackState == Player.STATE_ENDED,
         error = playerError?.toPlaybackError(),
         format = if (current != null) currentTracks.playingFormat() else null,
+        playOrder = if (shuffleModeEnabled && current != null) currentTimeline.playOrderFrom(current) else null,
     )
+}
+
+/**
+ * The places from [current] to the last item, in the order a shuffled queue plays them. Repeat is
+ * left out: after the last item the list ends. The shuffle order makes each step one lookup.
+ */
+internal fun Timeline.playOrderFrom(current: Int): List<Int> = buildList {
+    var index = current
+    while (index != C.INDEX_UNSET && size < windowCount) {
+        add(index)
+        index = getNextWindowIndex(index, Player.REPEAT_MODE_OFF, true)
+    }
 }
 
 private fun MediaMetadata.toPlaybackItem(id: String, tags: MediaMetadata?, isStream: Boolean): PlaybackItem =
@@ -68,6 +82,8 @@ private fun MediaMetadata.toPlaybackItem(id: String, tags: MediaMetadata?, isStr
         // address in the item is the small picture this app serves to the car.
         artworkUri = artworkUriOf(id) ?: (tags?.artworkUri ?: artworkUri)?.toString(),
         isStream = isStream,
+        // A stream has no end, so whatever it reports is no length.
+        durationMs = durationMs?.takeIf { it > 0 && !isStream },
     )
 
 /** The repeat mode of the player as the app names it. */
