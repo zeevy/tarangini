@@ -19,6 +19,7 @@ import com.siliconcircuits.tarangini.core.domain.playback.PlaybackController
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import com.siliconcircuits.tarangini.feature.home.HomeSections
 import com.siliconcircuits.tarangini.feature.player.miniplayer.MiniPlayer
+import com.siliconcircuits.tarangini.feature.player.navigation.NowPlayingPane
 import com.siliconcircuits.tarangini.feature.settings.SettingsSections
 import com.siliconcircuits.tarangini.navigation.TaranginiShell
 import dagger.hilt.android.AndroidEntryPoint
@@ -39,6 +40,7 @@ class MainActivity : ComponentActivity() {
             TaranginiTheme {
                 TaranginiShell(
                     miniPlayer = { onOpen, modifier -> MiniPlayer(onOpen = onOpen, modifier = modifier) },
+                    nowPlayingPane = { controller, modifier -> NowPlayingPane(controller, modifier) },
                     home = { targets -> HomeSections(targets.onOpenLibrary, targets.onOpenPlaylist) },
                     settings = { onOpenLicences -> SettingsSections(onOpenLicences) },
                 )

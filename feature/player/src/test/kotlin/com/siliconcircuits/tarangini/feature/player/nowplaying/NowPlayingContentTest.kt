@@ -211,6 +211,16 @@ class NowPlayingContentTest {
     }
 
     @Test
+    fun `as a pane beside the tabs the screen has no back arrow`() {
+        composeRule.setContent {
+            TaranginiTheme { NowPlayingContent(song, actions, null, { done += "queue" }, options = options) }
+        }
+
+        composeRule.onNodeWithText("Bhairavi").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Back").assertDoesNotExist()
+    }
+
+    @Test
     @GraphicsMode(GraphicsMode.Mode.NATIVE)
     fun `the screen passes the accessibility checks`() {
         show(song)
