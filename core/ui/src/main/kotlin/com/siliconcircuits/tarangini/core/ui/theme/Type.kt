@@ -62,11 +62,11 @@ internal val AppTypography = with(Typography()) {
     )
 }
 
-/** Round corners everywhere: a cover has 14 dp, a panel 20 dp. */
+/** Small corners, the way a hardware player has them: 4 dp for a chip, 6 dp for the display, 8 dp for a card. */
 internal val AppShapes = Shapes(
-    extraSmall = RoundedCornerShape(8.dp),
-    small = RoundedCornerShape(14.dp),
-    medium = RoundedCornerShape(16.dp),
-    large = RoundedCornerShape(20.dp),
-    extraLarge = RoundedCornerShape(28.dp),
+    extraSmall = RoundedCornerShape(4.dp),
+    small = RoundedCornerShape(6.dp),
+    medium = RoundedCornerShape(8.dp),
+    large = RoundedCornerShape(8.dp),
+    extraLarge = RoundedCornerShape(12.dp),
 )

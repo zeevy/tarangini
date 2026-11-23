@@ -54,4 +54,7 @@
         <item quantity="one">%1$d channel</item>
         <item quantity="other">%1$d channels</item>
     </plurals>
+    <!-- The on and off mark of a settings switch, in capitals as on a hardware player. -->
+    <string name="switch_on">ON</string>
+    <string name="switch_off">OFF</string>
 </resources>

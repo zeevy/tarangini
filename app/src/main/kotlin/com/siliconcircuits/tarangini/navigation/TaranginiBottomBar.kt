@@ -6,81 +6,32 @@
 
 package com.siliconcircuits.tarangini.navigation
 
-import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.TextAutoSize
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalTextStyle
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.siliconcircuits.tarangini.core.ui.theme.PanelColor
-import com.siliconcircuits.tarangini.core.ui.theme.PanelEdge
-import com.siliconcircuits.tarangini.core.ui.theme.Spacing
+import com.siliconcircuits.tarangini.core.ui.theme.lookColors
 
-/** The bottom bar: one item per tab, with [selected] marked. */
+/** The bottom bar: a flat bar on the frame colour, one item per tab, with [selected] marked. */
 @Composable
 internal fun TaranginiBottomBar(
     selected: TopLevelDestination?,
     onSelect: (TopLevelDestination) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // The bar floats: a card shaped pill with space around it, above the gesture bar of the phone.
-    Surface(
-        modifier = modifier.navigationBarsPadding().padding(horizontal = Spacing.medium, vertical = Spacing.small),
-        shape = CircleShape,
-        color = PanelColor,
-        contentColor = MaterialTheme.colorScheme.onSurface,
-        border = PanelEdge,
-    ) {
-        NavigationBar(containerColor = Color.Transparent, windowInsets = WindowInsets()) {
+    Column(modifier.background(MaterialTheme.colorScheme.surfaceContainer)) {
+        HorizontalDivider(color = lookColors.frameEdge)
+        Row(Modifier.navigationBarsPadding().padding(vertical = 2.dp).selectableGroup()) {
             TopLevelDestination.entries.forEach { destination ->
-                NavigationBarItem(
-                    selected = destination == selected,
-                    onClick = { onSelect(destination) },
-                    // The label names the item, so the icon needs no description of its own.
-                    icon = { Icon(painter = painterResource(destination.icon), contentDescription = null) },
-                    label = { TabLabel(stringResource(destination.label)) },
-                )
+                TabItem(destination, destination == selected, onSelect, Modifier.weight(1f))
             }
         }
     }
 }
-
-/**
- * A tab label on one line. It follows the font size the user picked, and
- * shrinks only as far as needed to fit its tab, so a long label on a narrow
- * screen is never cut or broken in the middle of a word.
- */
-@Composable
-private fun TabLabel(text: String, modifier: Modifier = Modifier) {
-    val smallest = with(LocalDensity.current) { SmallestTabLabel.toSp() }
-    val largest = LocalTextStyle.current.fontSize
-    Text(
-        text = text,
-        modifier = modifier,
-        maxLines = 1,
-        softWrap = false,
-        autoSize = TextAutoSize.StepBased(
-            minFontSize = minOf(smallest.value, largest.value).sp,
-            maxFontSize = largest,
-            stepSize = TabLabelStep,
-        ),
-    )
-}
-
-// The size of the label at the standard font setting, as a fixed size that the font setting does not change.
-private val SmallestTabLabel = 12.dp
-private val TabLabelStep = 1.sp

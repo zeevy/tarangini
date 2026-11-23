@@ -84,6 +84,10 @@ style:
 
 # Compose rules from io.nlopez.compose.rules.
 Compose:
+  # U7: colours come from the theme. The theme provides the colours of the look the way Material does.
+  CompositionLocalAllowlist:
+    active: true
+    allowedCompositionLocals: ['LocalLookColors']
   # U12: a composable takes a Modifier and passes it to its root.
   ModifierMissing:
     active: true

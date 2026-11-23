@@ -6,30 +6,25 @@
 
 package com.siliconcircuits.tarangini.navigation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationRail
-import androidx.compose.material3.NavigationRailItem
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import com.siliconcircuits.tarangini.core.ui.theme.PanelColor
-import com.siliconcircuits.tarangini.core.ui.theme.PanelEdge
-import com.siliconcircuits.tarangini.core.ui.theme.Spacing
+import androidx.compose.ui.unit.dp
+import com.siliconcircuits.tarangini.core.ui.theme.lookColors
 
 /**
- * The tabs on a wide window: a card rail at the left edge in place of the bottom bar, so the
+ * The tabs on a wide window: a flat rail at the left edge in place of the bottom bar, so the
  * screens keep their full height.
  */
 @Composable
@@ -38,26 +33,18 @@ internal fun TaranginiNavRail(
     onSelect: (TopLevelDestination) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
-        modifier = modifier.fillMaxHeight().systemBarsPadding().padding(Spacing.small),
-        shape = RoundedCornerShape(Spacing.large),
-        color = PanelColor,
-        contentColor = MaterialTheme.colorScheme.onSurface,
-        border = PanelEdge,
-    ) {
-        NavigationRail(containerColor = Color.Transparent, windowInsets = WindowInsets()) {
-            // The tabs sit in the middle of the rail, where a thumb reaches them on a tablet held in two hands.
-            Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
-                TopLevelDestination.entries.forEach { destination ->
-                    NavigationRailItem(
-                        selected = destination == selected,
-                        onClick = { onSelect(destination) },
-                        // The label names the item, so the icon needs no description of its own.
-                        icon = { Icon(painter = painterResource(destination.icon), contentDescription = null) },
-                        label = { Text(stringResource(destination.label), maxLines = 1) },
-                    )
-                }
+    Row(modifier.fillMaxHeight().background(MaterialTheme.colorScheme.surfaceContainer)) {
+        // The tabs sit in the middle of the rail, where a thumb reaches them on a tablet held in two hands.
+        Column(
+            modifier = Modifier.width(RailWidth).fillMaxHeight().systemBarsPadding().selectableGroup(),
+            verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterVertically),
+        ) {
+            TopLevelDestination.entries.forEach { destination ->
+                TabItem(destination, destination == selected, onSelect, Modifier.fillMaxWidth())
             }
         }
+        VerticalDivider(color = lookColors.frameEdge)
     }
 }
+
+private val RailWidth = 80.dp

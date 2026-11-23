@@ -37,4 +37,4 @@ val PanelColor: Color
 val PanelEdge: BorderStroke
     @Composable
     @ReadOnlyComposable
-    get() = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+    get() = BorderStroke(1.dp, LocalLookColors.current.frameEdge)

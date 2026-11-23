@@ -8,6 +8,7 @@ package com.siliconcircuits.tarangini.core.ui.theme
 
 import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.luminance
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -21,6 +22,56 @@ class ColorsTest {
     @Test
     fun `text on every colour of the dark look meets WCAG AA contrast`() {
         assertReadable(DarkColors)
+    }
+
+    @Test
+    fun `text on the display, the lists and the snackbar of the light look meets WCAG AA contrast`() {
+        assertReadable(LightLook, LightColors)
+    }
+
+    @Test
+    fun `text on the display, the lists and the snackbar of the dark look meets WCAG AA contrast`() {
+        assertReadable(DarkLook, DarkColors)
+    }
+
+    @Test
+    fun `lamps and icons that are lit stand out from what is behind them`() {
+        listOf(LightLook to LightColors, DarkLook to DarkColors).forEach { (look, scheme) ->
+            mapOf(
+                "a lit lamp on the display" to (look.lcdAccent to look.lcd),
+                "the heart on the display" to (look.heart to look.lcd),
+                "the heart on a list" to (look.heart to look.list),
+                "the accent pill of the current tab" to (scheme.primary to scheme.surfaceContainer),
+            ).forEach { (name, colours) ->
+                val ratio = contrast(colours.first, colours.second)
+                assertTrue("$name has contrast $ratio, below $NON_TEXT", ratio >= NON_TEXT)
+            }
+        }
+    }
+
+    private fun assertReadable(look: LookColors, scheme: ColorScheme) {
+        val pairs = with(look) {
+            mapOf(
+                "text on the display" to (lcdText to lcd),
+                "muted text on the display" to (lcdMuted to lcd),
+                "accent text on the display" to (lcdAccent to lcd),
+                "accent text on a lit tag" to (lcdAccent to lcdTag.compositeOver(lcd)),
+                "an error line on the display" to (warn to lcd),
+                "text on a list" to (listText to list),
+                "muted text on a list" to (listMuted to list),
+                "the song that plays on a list" to (accentOnList to rowOn),
+                "muted text on the row that plays" to (listMuted to rowOn),
+                "a delete action on a card" to (danger to scheme.surfaceContainer),
+                "snackbar text" to (onSnack to snack),
+                "snackbar button" to (snackAction to snack),
+                "muted text on a card" to (scheme.onSurfaceVariant to scheme.surfaceContainer),
+                "muted text on the ground" to (scheme.onSurfaceVariant to scheme.background),
+            )
+        }
+        pairs.forEach { (name, colours) ->
+            val ratio = contrast(colours.first, colours.second)
+            assertTrue("$name has contrast $ratio, below $WCAG_AA", ratio >= WCAG_AA)
+        }
     }
 
     private fun assertReadable(scheme: ColorScheme) {
@@ -62,6 +113,9 @@ class ColorsTest {
 
     private companion object {
         const val WCAG_AA = 4.5f
+
+        // WCAG 1.4.11: icons and other parts that are not text.
+        const val NON_TEXT = 3f
         const val LUMINANCE_OFFSET = 0.05f
     }
 }
