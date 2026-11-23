@@ -220,7 +220,7 @@ The app is open core (decision D5). The ten premium features, Play Billing, Cast
 | Database | Room for library index, favourites, playlists, play history, saved stations |
 | Network | Retrofit with OkHttp and kotlinx.serialization for Radio Browser |
 | Crash reports | Firebase Crashlytics, crash reports only, no usage analytics |
-| App languages | English first. Every text in string resources, ready for Hindi, Telugu and others in v1.1 |
+| App languages | English only. Every text stays in string resources, so a translation can be added later without code changes |
 | Images | Coil for artwork in Compose; bitmaps for Auto through the session artwork |
 | DI | Hilt |
 | Settings | Jetpack DataStore (Preferences) |
@@ -382,7 +382,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D8 | Copy the local library into Room and keep it in sync with MediaStore | 19 Nov 2026 | Fast search and Auto lists. Cloud songs fit the same tables |
 | D9 | Retrofit with OkHttp | 19 Nov 2026 | One HTTP client shared with Media3 streams |
 | D10 | Crash reports only, with Firebase Crashlytics | 19 Nov 2026 | No usage analytics. Data safety form declares crash logs |
-| D11 | English first, strings ready for translation | 19 Nov 2026 | Other languages from v1.1 |
+| D11 | English first, strings ready for translation | 19 Nov 2026 | Other languages from v1.1. Replaced by D81: English only |
 | D12 | Equalizer as our own ExoPlayer audio processor | 19 Nov 2026 | Same sound on every phone. Needs a trial build first |
 | D13 | No station logos unless the station gives permission | 19 Nov 2026 | Letter tiles for stations in lists, now playing and Android Auto |
 | D14 | Subscription with monthly and yearly plans | 19 Nov 2026 | Prices set closer to launch |
@@ -452,6 +452,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D78 | `StorageSource` hook: one folder at a time and a file from an offset, the sources as a Hilt set with the phone always in it. The scan and the player keep their own path for the phone until the first cloud source | 21 Nov 2026 | The premium module needs the interface first; the tested local paths stay as they are. See `docs/adr/0049-storage-source.md` and `docs/PREMIUM-HOOKS.md` |
 | D79 | Volume levelling from ReplayGain tags, read by the player from each file, applied in the equalizer processor with a 20 ms fade. Modes off, per song, per album; a lift never passes the peak; works also with the equalizer off | 21 Nov 2026 | No new database version and no extra scan; one processor keeps gapless playback. See `docs/adr/0050-volume-levelling.md` |
 | D80 | Large screens: from 600 dp wide the tabs move to a rail at the left, and from 840 dp wide and 480 dp high the now playing screen stands as a pane at the right of the tab screens in place of the mini player. Read from the window width, with no new library | 22 Nov 2026 | A wide window uses its width and keeps the glass look; folding keeps the screen and the playback. See `docs/adr/0051-large-screens.md` |
+| D81 | The app ships in English only. The Hindi and Telugu translations (#63) are dropped for now | 23 Nov 2026 | One language to write, check and keep right. The texts stay in string resources, so a language can still be added later |
 
 ## 9. Checks before building
 
