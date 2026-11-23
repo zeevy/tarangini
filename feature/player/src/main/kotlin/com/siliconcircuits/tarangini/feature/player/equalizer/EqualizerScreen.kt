@@ -9,8 +9,6 @@ package com.siliconcircuits.tarangini.feature.player.equalizer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -18,7 +16,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
@@ -41,7 +38,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.siliconcircuits.tarangini.core.domain.audio.EqualizerPreset
 import com.siliconcircuits.tarangini.core.domain.audio.EqualizerSettings
-import com.siliconcircuits.tarangini.core.domain.audio.MAX_BAND_GAIN_DB
 import com.siliconcircuits.tarangini.core.ui.component.BackButton
 import com.siliconcircuits.tarangini.core.ui.theme.Spacing
 import com.siliconcircuits.tarangini.core.ui.theme.clearTopBarColors

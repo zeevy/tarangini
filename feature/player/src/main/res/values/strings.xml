@@ -52,14 +52,12 @@
     <string name="now_playing_equalizer">Equalizer</string>
     <string name="equalizer_title">Equalizer</string>
     <string name="equalizer_on">Equalizer on</string>
-    <string name="equalizer_presets">Presets</string>
     <string name="equalizer_preset_flat">Flat</string>
     <string name="equalizer_preset_bass">Bass</string>
     <string name="equalizer_preset_vocal">Vocal</string>
     <string name="equalizer_preset_classical">Classical</string>
     <string name="equalizer_preset_carnatic">Carnatic</string>
     <string name="equalizer_preset_bollywood">Bollywood</string>
-    <string name="equalizer_bands">Bands</string>
     <string name="equalizer_custom">Custom</string>
     <string name="equalizer_reset">Reset</string>
     <!-- The preset and the band count after the title, such as "Bass · 5 bands". -->

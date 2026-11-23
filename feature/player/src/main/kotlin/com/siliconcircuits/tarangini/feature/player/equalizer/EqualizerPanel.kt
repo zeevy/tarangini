@@ -61,11 +61,12 @@ import com.siliconcircuits.tarangini.core.ui.theme.DigitsFont
 import com.siliconcircuits.tarangini.core.ui.theme.PanelColor
 import com.siliconcircuits.tarangini.core.ui.theme.PanelEdge
 import com.siliconcircuits.tarangini.feature.player.R
+import java.util.Locale
 import kotlin.math.roundToInt
 
 /**
  * The equalizer as a panel: a title row with the preset, Reset and the switch, one vertical fader
- * per band, and the presets in a row. The now playing screen and the equalizer screen both show
+ * per band, and the presets, which wrap onto more lines. The now playing screen and the equalizer screen both show
  * it, with the state of one [EqualizerViewModel]. With the equalizer off it is dimmed and only the
  * switch works.
  */
@@ -224,7 +225,7 @@ internal fun shortBandName(hz: Float): String = if (hz < KILO) {
     hz.roundToInt().toString()
 } else {
     val kilo = hz / KILO
-    (if (kilo % 1f == 0f) kilo.roundToInt().toString() else "%.1f".format(kilo)) + "k"
+    (if (kilo % 1f == 0f) kilo.roundToInt().toString() else "%.1f".format(Locale.ROOT, kilo)) + "k"
 }
 
 /** "+3", "0", "-2". */

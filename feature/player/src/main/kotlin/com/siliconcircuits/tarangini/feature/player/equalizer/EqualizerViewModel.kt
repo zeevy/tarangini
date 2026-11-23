@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -58,12 +59,17 @@ internal class EqualizerViewModel @Inject constructor(
 ) : ViewModel() {
     private val bandsHz = bands.centresHz()
 
-    // The last change made here. A slider sends many changes a second; the screen shows each one
-    // at once and does not wait for the saved value to come back.
+    // The last change made here that the store has not given back yet. A fader sends many changes a
+    // second; the screen shows each one at once and does not wait for the saved value. Once the
+    // store gives it back it is dropped, so a change made on another screen shows here too.
     private val changed = MutableStateFlow<EqualizerSettings?>(null)
 
     /** The settings, or null until they are read. */
-    val state: StateFlow<EqualizerUiState?> = combine(saved.settings(), changed, namedGenres(genres)) {
+    val state: StateFlow<EqualizerUiState?> = combine(
+        saved.settings().onEach { stored -> changed.compareAndSet(stored, null) },
+        changed,
+        namedGenres(genres),
+    ) {
             stored,
             own,
             named,
@@ -105,7 +111,9 @@ internal class EqualizerViewModel @Inject constructor(
         change { it.copy(bassBoost = percent.coerceIn(0, EqualizerSettings.MAX_BASS_PERCENT)) }
 
     private fun change(edit: (EqualizerSettings) -> EqualizerSettings) {
-        val now = state.value?.settings ?: return
+        // From the newest change, not the shown state, which comes a moment later: two faders moved
+        // at once must both stay.
+        val now = changed.value ?: state.value?.settings ?: return
         val next = edit(now)
         if (next == now) return
         changed.value = next
