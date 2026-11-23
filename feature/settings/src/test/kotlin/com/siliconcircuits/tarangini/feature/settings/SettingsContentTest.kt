@@ -10,7 +10,10 @@ import android.app.Application
 import android.content.ComponentName
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -48,6 +51,7 @@ class SettingsContentTest {
         onSetFolderHidden = { path, hidden -> done += "hide $path $hidden" },
         onRescan = { done += "rescan" },
         onClearHistory = { done += "clear" },
+        onSetLevelling = { done += "levelling $it" },
         onOpenSource = { done += "source" },
         onOpenPrivacy = { done += "privacy" },
     )
@@ -62,14 +66,23 @@ class SettingsContentTest {
     }
 
     @Test
+    fun `the volume levelling row is a switch that says its state`() {
+        show()
+
+        composeRule.onNode(hasText("Volume levelling") and isToggleable()).assertIsOff().performClick()
+
+        assertEquals(listOf("levelling true"), done)
+    }
+
+    @Test
     fun `the rows say what is set, and Rescan and Source code act at once`() {
         show()
 
         composeRule.onNodeWithText("1 folder is hidden").assertExists()
         composeRule.onNodeWithText("30 seconds").assertExists()
         composeRule.onNodeWithText("1.0").assertExists()
-        composeRule.onNodeWithText("Rescan now").performClick()
-        composeRule.onNodeWithText("Source code").performClick()
+        composeRule.onNodeWithText("Rescan now").performScrollTo().performClick()
+        composeRule.onNodeWithText("Source code").performScrollTo().performClick()
         composeRule.onNodeWithText("Privacy policy").performScrollTo().performClick()
 
         assertEquals(listOf("rescan", "source", "privacy"), done)

@@ -1,6 +1,6 @@
 # ADR 0056: Equalizer faders on now playing
 
-- Status: accepted, 23 Nov 2026. Changes the band part of ADR 0047.
+- Status: accepted, 23 Nov 2026. Changes the band part of ADR 0047. Replaced by ADR 0060 on 24 Nov 2026.
 - Rules: U1, U7, U8.
 - Decision D87.
 

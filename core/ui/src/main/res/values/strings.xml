@@ -9,7 +9,6 @@
     <string name="action_play">Play</string>
     <string name="action_pause">Pause</string>
     <string name="action_next">Next</string>
-    <string name="action_previous">Previous</string>
     <string name="unknown_title">Unknown title</string>
     <string name="action_open">Open</string>
     <string name="action_search">Search</string>
@@ -40,8 +39,6 @@
         <item quantity="other">%1$d songs</item>
     </plurals>
     <!-- The letters under the two bars of the level meter. -->
-    <string name="meter_left">L</string>
-    <string name="meter_right">R</string>
     <!-- The format line of the song that plays, such as "MP3 · 320 kbps · 44.1 kHz · Stereo". -->
     <!-- Spaces on both sides are kept by the quotes. -->
     <string name="format_separator">" · "</string>

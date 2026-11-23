@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -25,12 +26,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import com.siliconcircuits.tarangini.core.domain.library.ScanFailure
 import com.siliconcircuits.tarangini.core.domain.library.ScanOutcome
 import com.siliconcircuits.tarangini.core.domain.library.ScanState
 import com.siliconcircuits.tarangini.core.domain.model.Look
+import com.siliconcircuits.tarangini.core.ui.component.LedSwitch
 import com.siliconcircuits.tarangini.core.ui.theme.Spacing
 
 /** The rows of Settings in groups: Library, History, Backup (the [backup] slot) and About. */
@@ -67,6 +70,14 @@ internal fun SettingsContent(
             title = stringResource(R.string.settings_colours),
             text = lookLabel(state.look),
             onClick = { dialog = SettingsDialog.LOOK },
+        )
+
+        SettingsGroupTitle(stringResource(R.string.settings_sound))
+        SettingsSwitchRow(
+            title = stringResource(R.string.settings_levelling),
+            text = stringResource(R.string.settings_levelling_text),
+            on = state.levelling,
+            onChange = actions.onSetLevelling,
         )
 
         SettingsGroupTitle(stringResource(R.string.settings_library))
@@ -137,6 +148,18 @@ internal fun SettingsRow(title: String, text: String, onClick: (() -> Unit)?) {
         headlineContent = { Text(title) },
         supportingContent = { Text(text) },
         modifier = if (onClick == null) Modifier else Modifier.clickable(onClick = onClick),
+    )
+}
+
+/** A setting that is on or off. The whole row takes the tap and TalkBack hears it as a switch. */
+@Composable
+internal fun SettingsSwitchRow(title: String, text: String, on: Boolean, onChange: (Boolean) -> Unit) {
+    ListItem(
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        headlineContent = { Text(title) },
+        supportingContent = { Text(text) },
+        trailingContent = { LedSwitch(on) },
+        modifier = Modifier.toggleable(value = on, role = Role.Switch, onValueChange = onChange),
     )
 }
 

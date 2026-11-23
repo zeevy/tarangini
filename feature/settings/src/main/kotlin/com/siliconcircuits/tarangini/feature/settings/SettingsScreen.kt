@@ -82,6 +82,7 @@ private fun LoadedSettings(
             onSetFolderHidden = viewModel::setFolderHidden,
             onRescan = viewModel::rescan,
             onClearHistory = viewModel::clearHistory,
+            onSetLevelling = viewModel::setLevelling,
             // A phone with no browser cannot open the page. The address is on the row, so nothing else is said.
             onOpenSource = { runCatching { links.openUri(SOURCE_CODE) } },
             onOpenLicences = onOpenLicences,

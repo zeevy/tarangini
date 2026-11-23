@@ -24,6 +24,7 @@ import com.siliconcircuits.tarangini.core.domain.repository.SearchRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SongLookup
 import com.siliconcircuits.tarangini.core.domain.repository.StationStreams
 import com.siliconcircuits.tarangini.core.playback.audio.LevelMeter
+import com.siliconcircuits.tarangini.core.playback.audio.SoundVisualMeter
 import com.siliconcircuits.tarangini.core.playback.service.PlaybackService
 import com.siliconcircuits.tarangini.core.playback.sleep.DefaultSleepTimer
 import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
@@ -41,6 +42,7 @@ import com.siliconcircuits.tarangini.core.testing.station.FakeStationStreams
 import dagger.hilt.internal.GeneratedComponent
 import dagger.hilt.internal.GeneratedComponentManager
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import okhttp3.OkHttpClient
 
@@ -96,7 +98,7 @@ internal class TestPlaybackApp :
 
         override fun equalizerBands(): EqualizerBands = EqualizerBands { FIVE_BANDS_HZ }
 
-        override fun levelMeter(): LevelMeter = LevelMeter(scope)
+        override fun levelMeter(): LevelMeter = LevelMeter(scope, SoundVisualMeter(scope, Dispatchers.Default))
 
         override fun playbackScope(): CoroutineScope = scope
 

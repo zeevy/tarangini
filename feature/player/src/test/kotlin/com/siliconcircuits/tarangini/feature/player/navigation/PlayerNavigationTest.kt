@@ -16,6 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.siliconcircuits.tarangini.core.testing.RegisterComponentActivityRule
+import com.siliconcircuits.tarangini.feature.player.nowplaying.PlayerTargets
 import kotlinx.serialization.Serializable
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -28,7 +29,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
 
-/** Which screens count as screens of the player. Plain texts stand in for the screens themselves. */
+/** Which screen counts as the player. Plain texts stand in for the screens themselves. */
 @RunWith(RobolectricTestRunner::class)
 class PlayerNavigationTest {
     private val composeRule = createAndroidComposeRule<ComponentActivity>()
@@ -50,32 +51,25 @@ class PlayerNavigationTest {
     }
 
     @Test
-    fun `now playing and the queue are screens of the player, another screen is not`() {
+    fun `the player tab is the screen of the player, another screen is not`() {
+        var shown: PlayerTargets? = null
+        val targets = PlayerTargets()
         composeRule.setContent {
             navController = rememberNavController()
             NavHost(navController, startDestination = OtherScreen) {
                 composable<OtherScreen> { Text("other") }
-                composable<NowPlayingRoute> { Text("now playing") }
-                composable<QueueRoute> { Text("queue") }
+                playerScreen(targets) { shown = it }
             }
         }
         composeRule.waitForIdle()
         assertEquals(false, onPlayerScreen())
 
-        go {
-            navigateToNowPlaying()
-            // A second tap that comes at once opens nothing more.
-            navigateToNowPlaying()
-        }
+        go { navigate(NowPlayingRoute) }
         assertEquals(true, onPlayerScreen())
+        // The tab gets the places the app hands in.
+        assertEquals(targets, shown)
 
-        go { navigate(QueueRoute) }
-        assertEquals(true, onPlayerScreen())
-
-        go {
-            popBackStack()
-            popBackStack()
-        }
+        go { popBackStack() }
         assertEquals(false, onPlayerScreen())
     }
 }

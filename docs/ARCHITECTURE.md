@@ -42,10 +42,9 @@ The dependency rule: every arrow points to the domain. The domain depends on not
 | Module | Type | Holds | May depend on |
 |---|---|---|---|
 | `app` | Android app | `Application`, the one `Activity`, the navigation graph, Hilt wiring, the `core` and `play` flavours | Every module |
-| `feature:home` | Android library | Home screen | `core:domain`, `core:ui` |
 | `feature:library` | Android library | Songs, albums, artists, folders, playlists, favourites screens | `core:domain`, `core:ui` |
 | `feature:radio` | Android library | Radio directory, India section, add station screens | `core:domain`, `core:ui` |
-| `feature:player` | Android library | Mini player, now playing, queue, equalizer screens | `core:domain`, `core:ui` |
+| `feature:player` | Android library | The player tab (display, visual, Up next) and the mini player | `core:domain`, `core:ui` |
 | `feature:search` | Android library | Search screen | `core:domain`, `core:ui` |
 | `feature:settings` | Android library | Settings, folder picker, open source licences | `core:domain`, `core:ui` |
 | `feature:widget` | Android library | The home screen widget (Glance) | `core:domain`, `core:ui` |
@@ -81,7 +80,6 @@ tarangini/
 │       ├── core/kotlin/<base>/di/         core flavour: "not available" bindings
 │       └── play/                          play flavour: only pulls in :premium
 ├── feature/
-│   ├── home/
 │   ├── library/
 │   │   └── src/
 │   │       ├── main/kotlin/<base>/feature/library/

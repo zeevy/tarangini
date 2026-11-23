@@ -15,6 +15,7 @@ internal class SettingsActions(
     val onSetFolderHidden: (path: String, hidden: Boolean) -> Unit = { _, _ -> },
     val onRescan: () -> Unit = {},
     val onClearHistory: () -> Unit = {},
+    val onSetLevelling: (Boolean) -> Unit = {},
     val onOpenSource: () -> Unit = {},
     val onOpenLicences: () -> Unit = {},
     val onOpenPrivacy: () -> Unit = {},

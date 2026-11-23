@@ -111,13 +111,9 @@ class MainFlowTest {
         composeRule.onNode(hasSetTextAction()).performTextInput(playlist)
         composeRule.onNodeWithText("Create").performClick()
         waitFor("$playlist in the Playlists list of the session") { playlist in childTitles(session, "playlists") }
-        // Home lists the playlists too, and its tab is always on the screen.
-        tab("Home")
-        waitFor("$playlist on Home") { scrollTo(playlist) }
-        composeRule.onAllNodesWithText(playlist).onFirst().performClick()
-        waitFor("$song in $playlist") { scrollTo(song) }
+        waitFor("$song in $playlist in the session") { song in playlistTitles(session, playlist) }
 
-        // Up next: from the mini player to now playing, where a tap on a row plays that song.
+        // Up next: the mini player opens the player tab, where a tap on a row plays that song.
         onMain { session.seekToDefaultPosition(0) }
         val second = onMain { session.getMediaItemAt(1).mediaMetadata.title?.toString() }
         composeRule.onNode(clickLabelled("Open the player")).performClick()
@@ -169,6 +165,14 @@ class MainFlowTest {
         val result = onMain { session.getChildren(parentId, 0, LIST_SIZE, null) }
             .get(CONNECT_SECONDS, TimeUnit.SECONDS)
         return result.value.orEmpty().mapNotNull { it.mediaMetadata.title?.toString() }
+    }
+
+    /** The song titles of the playlist named [name], read through the car list of the session. */
+    private fun playlistTitles(session: MediaBrowser, name: String): List<String> {
+        val result = onMain { session.getChildren("playlists", 0, LIST_SIZE, null) }
+            .get(CONNECT_SECONDS, TimeUnit.SECONDS)
+        val id = result.value.orEmpty().firstOrNull { it.mediaMetadata.title?.toString() == name }?.mediaId
+        return id?.let { childTitles(session, it) }.orEmpty()
     }
 
     /**

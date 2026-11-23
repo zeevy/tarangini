@@ -16,6 +16,7 @@ import com.siliconcircuits.tarangini.core.domain.model.Look
 import com.siliconcircuits.tarangini.core.domain.model.MAX_MIN_TRACK_SECONDS
 import com.siliconcircuits.tarangini.core.domain.model.ScanSettings
 import com.siliconcircuits.tarangini.core.domain.model.SongSort
+import com.siliconcircuits.tarangini.core.domain.model.VisualMode
 import com.siliconcircuits.tarangini.core.domain.repository.SettingsRepository
 import java.io.IOException
 import javax.inject.Inject
@@ -38,6 +39,16 @@ internal class DefaultSettingsRepository @Inject constructor(
 
     override suspend fun setLook(look: Look) {
         settings.edit { it[SettingsKeys.THEME_MODE] = look.name }
+    }
+
+    override fun visualMode(): Flow<VisualMode> = saved
+        .map { saved ->
+            VisualMode.entries.firstOrNull { it.name == saved[SettingsKeys.VISUAL_MODE] } ?: VisualMode.BARS
+        }
+        .distinctUntilChanged()
+
+    override suspend fun setVisualMode(mode: VisualMode) {
+        settings.edit { it[SettingsKeys.VISUAL_MODE] = mode.name }
     }
 
     override fun songSort(): Flow<SongSort> = saved

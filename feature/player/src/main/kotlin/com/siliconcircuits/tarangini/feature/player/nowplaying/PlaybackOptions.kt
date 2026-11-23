@@ -8,6 +8,7 @@ package com.siliconcircuits.tarangini.feature.player.nowplaying
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
@@ -44,13 +45,14 @@ import com.siliconcircuits.tarangini.feature.player.lyrics.LyricsDialog
 private class Choice(val label: String, val isPicked: Boolean = false, val onPick: () -> Unit)
 
 /**
- * The menu of the top bar: the lyrics, add the song to a playlist, the speed and the sleep timer. The lines of
- * the speed and the timer say what is set. A live stream has no speed to set, and an item that is
- * no song of the library cannot go into a playlist.
+ * The More menu of the player: the lyrics, add the song to a playlist, the speed, the sleep timer
+ * and Settings. The lines of the speed and the timer say what is set. A live stream has no speed
+ * to set, and an item that is no song of the library cannot go into a playlist. With nothing
+ * loaded only Settings is there.
  */
 @Composable
 internal fun PlaybackOptionsMenu(
-    state: NowPlayingUiState,
+    state: NowPlayingUiState?,
     actions: PlaybackOptionActions,
     playlists: PlaylistPick?,
     lyrics: String? = null,
@@ -68,64 +70,82 @@ internal fun PlaybackOptionsMenu(
             )
         }
         DropdownMenu(expanded = isOpen, onDismissRequest = { isOpen = false }) {
-            // Only a song with lyrics in its tags has this line.
-            if (lyrics != null) {
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.now_playing_lyrics)) },
-                    onClick = {
-                        isOpen = false
-                        asking = LYRICS
-                    },
-                )
-            }
-            if (state.songId != null && playlists != null) {
-                DropdownMenuItem(
-                    text = { Text(stringResource(CoreUiR.string.song_add_to_playlist)) },
-                    onClick = {
-                        isOpen = false
-                        asking = PLAYLIST
-                    },
-                )
-            }
-            if (!state.isLive) {
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.now_playing_speed, speedText(state.speed))) },
-                    onClick = {
-                        isOpen = false
-                        asking = SPEED
-                    },
-                )
+            if (state != null) {
+                PlaybackLines(state, playlists, lyrics) { line ->
+                    isOpen = false
+                    asking = line
+                }
             }
             DropdownMenuItem(
-                text = { Text(stringResource(R.string.now_playing_equalizer)) },
+                text = { Text(stringResource(R.string.player_settings)) },
                 onClick = {
                     isOpen = false
-                    actions.onOpenEqualizer()
-                },
-            )
-            DropdownMenuItem(
-                text = { Text(sleepText(state.sleep)) },
-                onClick = {
-                    isOpen = false
-                    asking = SLEEP
+                    actions.onOpenSettings()
                 },
             )
         }
+        // The dialogs open in a window of their own; they sit in the box so the menu emits one thing.
+        if (state != null) PlaybackDialog(asking, state, actions, playlists, lyrics) { asking = null }
     }
+}
+
+/** The lines of the menu that belong to the item that plays. A pick closes the menu and opens [onAsk]. */
+@Composable
+private fun ColumnScope.PlaybackLines(
+    state: NowPlayingUiState,
+    playlists: PlaylistPick?,
+    lyrics: String?,
+    onAsk: (String) -> Unit,
+) {
+    // Only a song with lyrics in its tags has this line.
+    if (lyrics != null) {
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.now_playing_lyrics)) },
+            onClick = { onAsk(LYRICS) },
+        )
+    }
+    if (state.songId != null && playlists != null) {
+        DropdownMenuItem(
+            text = { Text(stringResource(CoreUiR.string.song_add_to_playlist)) },
+            onClick = { onAsk(PLAYLIST) },
+        )
+    }
+    if (!state.isLive) {
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.now_playing_speed, speedText(state.speed))) },
+            onClick = { onAsk(SPEED) },
+        )
+    }
+    DropdownMenuItem(
+        text = { Text(sleepText(state.sleep)) },
+        onClick = { onAsk(SLEEP) },
+    )
+}
+
+/** The dialog the menu opened, if any. */
+@Composable
+private fun PlaybackDialog(
+    asking: String?,
+    state: NowPlayingUiState,
+    actions: PlaybackOptionActions,
+    playlists: PlaylistPick?,
+    lyrics: String?,
+    onDone: () -> Unit,
+) {
     when (asking) {
-        LYRICS -> if (lyrics != null) LyricsDialog(lyrics, state.title) { asking = null }
+        LYRICS -> if (lyrics != null) LyricsDialog(lyrics, state.title, onDone)
 
         PLAYLIST -> if (state.songId != null && playlists != null) {
-            AddToPlaylistDialog(playlists, state.songId) { asking = null }
+            AddToPlaylistDialog(playlists, state.songId, onDone)
         }
 
-        SPEED -> ChoiceDialog(stringResource(R.string.now_playing_speed_title), speedChoices(state.speed, actions)) {
-            asking = null
-        }
+        SPEED -> ChoiceDialog(
+            stringResource(R.string.now_playing_speed_title),
+            speedChoices(state.speed, actions),
+            onDone,
+        )
 
-        SLEEP -> ChoiceDialog(stringResource(R.string.now_playing_sleep), sleepChoices(state.sleep, actions)) {
-            asking = null
-        }
+        SLEEP -> ChoiceDialog(stringResource(R.string.now_playing_sleep), sleepChoices(state.sleep, actions), onDone)
     }
 }
 

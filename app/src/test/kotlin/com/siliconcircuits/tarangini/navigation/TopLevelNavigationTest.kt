@@ -23,8 +23,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.siliconcircuits.tarangini.core.testing.RegisterComponentActivityRule
-import com.siliconcircuits.tarangini.feature.home.navigation.HomeRoute
 import com.siliconcircuits.tarangini.feature.library.navigation.LibraryRoute
+import com.siliconcircuits.tarangini.feature.player.navigation.NowPlayingRoute
 import com.siliconcircuits.tarangini.testing.NoPlaybackServiceRule
 import org.junit.Rule
 import org.junit.Test
@@ -45,38 +45,38 @@ class TopLevelNavigationTest {
     @Test
     fun `a tab keeps its state while the user is on another tab`() {
         composeRule.setContent { TwoTabs() }
-        composeRule.onNodeWithText("home taps 0").performClick()
-        composeRule.onNodeWithText("home taps 1").performClick()
+        composeRule.onNodeWithText("player taps 0").performClick()
+        composeRule.onNodeWithText("player taps 1").performClick()
 
         composeRule.onNodeWithText("go to library").performClick()
         composeRule.onNodeWithText("library").assertIsDisplayed()
-        composeRule.onNodeWithText("go to home").performClick()
+        composeRule.onNodeWithText("go to player").performClick()
 
-        composeRule.onNodeWithText("home taps 2").assertIsDisplayed()
+        composeRule.onNodeWithText("player taps 2").assertIsDisplayed()
     }
 
     @Test
     fun `choosing the tab that is open does not reset it`() {
         composeRule.setContent { TwoTabs() }
-        composeRule.onNodeWithText("home taps 0").performClick()
+        composeRule.onNodeWithText("player taps 0").performClick()
 
-        composeRule.onNodeWithText("go to home").performClick()
+        composeRule.onNodeWithText("go to player").performClick()
 
-        composeRule.onNodeWithText("home taps 1").assertIsDisplayed()
+        composeRule.onNodeWithText("player taps 1").assertIsDisplayed()
     }
 
     @Composable
     private fun TwoTabs() {
         val navController = rememberNavController()
         Column {
-            Button(onClick = { navController.navigateToTopLevel(TopLevelDestination.HOME) }) { Text("go to home") }
+            Button(onClick = { navController.navigateToTopLevel(TopLevelDestination.PLAYER) }) { Text("go to player") }
             Button(onClick = { navController.navigateToTopLevel(TopLevelDestination.LIBRARY) }) {
                 Text("go to library")
             }
-            NavHost(navController = navController, startDestination = HomeRoute) {
-                composable<HomeRoute> {
+            NavHost(navController = navController, startDestination = NowPlayingRoute) {
+                composable<NowPlayingRoute> {
                     var taps by rememberSaveable { mutableIntStateOf(0) }
-                    Button(onClick = { taps++ }) { Text("home taps $taps") }
+                    Button(onClick = { taps++ }) { Text("player taps $taps") }
                 }
                 composable<LibraryRoute> { Text("library") }
             }

@@ -25,6 +25,9 @@ internal object SettingsKeys {
     /** Not used: the app has its own two looks, not the wallpaper colours. The key name never changes. */
     val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
 
+    /** The name of the picked `VisualMode` of the player. An unknown value counts as no value. */
+    val VISUAL_MODE = stringPreferencesKey("visual_mode")
+
     /** Files shorter than this many seconds are left out of the library. */
     val MIN_TRACK_SECONDS = intPreferencesKey("min_track_seconds")
 

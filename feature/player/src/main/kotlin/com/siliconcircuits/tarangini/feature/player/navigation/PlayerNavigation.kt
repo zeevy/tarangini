@@ -8,60 +8,29 @@ package com.siliconcircuits.tarangini.feature.player.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.Lifecycle
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.siliconcircuits.tarangini.feature.player.equalizer.EqualizerScreen
 import com.siliconcircuits.tarangini.feature.player.nowplaying.NowPlayingScreen
-import com.siliconcircuits.tarangini.feature.player.queue.QueueScreen
-
-/** Opens the now playing screen. A second tap while it opens does nothing. */
-fun NavController.navigateToNowPlaying() {
-    navigate(NowPlayingRoute) { launchSingleTop = true }
-}
+import com.siliconcircuits.tarangini.feature.player.nowplaying.PlayerTargets
 
 /**
- * True on the now playing screen and on the queue. Both show the current item with its controls,
- * so the mini player would be a second copy there.
+ * True on the player tab. It shows the current item with its controls, so the mini player would be
+ * a second copy there.
  */
-fun NavDestination.isPlayerScreen(): Boolean = hasRoute<NowPlayingRoute>() || hasRoute<QueueRoute>()
-
-/** The now playing screen, and the queue and the equalizer that open from it. */
-fun NavGraphBuilder.playerScreens(navController: NavController) {
-    composable<NowPlayingRoute> { entry ->
-        // A second tap that comes while the screen already changes is dropped.
-        NowPlayingScreen(
-            onBackClick = { if (entry.isShown()) navController.popBackStack() },
-            onOpenQueue = { if (entry.isShown()) navController.navigate(QueueRoute) { launchSingleTop = true } },
-            onOpenEqualizer = {
-                if (entry.isShown()) navController.navigate(EqualizerRoute) { launchSingleTop = true }
-            },
-        )
-    }
-    composable<EqualizerRoute> { entry ->
-        EqualizerScreen(onBackClick = { if (entry.isShown()) navController.popBackStack() })
-    }
-    composable<QueueRoute> { entry ->
-        QueueScreen(onBackClick = { if (entry.isShown()) navController.popBackStack() })
-    }
-}
+fun NavDestination.isPlayerScreen(): Boolean = hasRoute<NowPlayingRoute>()
 
 /**
- * The now playing screen as a pane beside the tab screens on a wide window, with no back arrow.
- * The queue and the equalizer still open as their own screens.
+ * The player tab. The app hands in [player], which shows [PlayerTab]; a test of the app shell
+ * hands in a stand-in, as the real screen needs Hilt. [targets] lead to the screens of other features.
  */
+fun NavGraphBuilder.playerScreen(targets: PlayerTargets, player: @Composable (PlayerTargets) -> Unit) {
+    composable<NowPlayingRoute> { player(targets) }
+}
+
+/** The player: the tab itself, and the pane beside the other tabs on a wide window. */
 @Composable
-fun NowPlayingPane(navController: NavController, modifier: Modifier = Modifier) {
-    NowPlayingScreen(
-        onBackClick = null,
-        onOpenQueue = { navController.navigate(QueueRoute) { launchSingleTop = true } },
-        modifier = modifier,
-        onOpenEqualizer = { navController.navigate(EqualizerRoute) { launchSingleTop = true } },
-    )
+fun PlayerTab(targets: PlayerTargets, modifier: Modifier = Modifier) {
+    NowPlayingScreen(targets, modifier)
 }
-
-private fun NavBackStackEntry.isShown() = lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)

@@ -171,6 +171,19 @@ class SessionPlaybackQueueTest {
     }
 
     @Test
+    fun `keeping only the current item takes the others out and it goes on playing`() = runTest {
+        fourSongsSecondPlaying()
+        val current = player.getMediaItemAt(player.currentMediaItemIndex).mediaId
+
+        queue().keepOnlyCurrent()
+        runCurrent()
+
+        assertEquals(1, player.mediaItemCount)
+        assertEquals(current, player.getMediaItemAt(0).mediaId)
+        assertEquals(0, player.currentMediaItemIndex)
+    }
+
+    @Test
     fun `clear also gives up a list that is still loading`() = runTest {
         val loader = QueueLoader(link, backgroundScope)
         val queue = SessionPlaybackQueue(link, loader, backgroundScope)

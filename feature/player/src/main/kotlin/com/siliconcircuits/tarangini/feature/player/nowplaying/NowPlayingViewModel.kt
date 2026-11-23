@@ -13,6 +13,7 @@ import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
 import com.siliconcircuits.tarangini.core.domain.model.QueueSource
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
 import com.siliconcircuits.tarangini.core.domain.model.SleepState
+import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.domain.model.SongFormat
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackController
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackQueue
@@ -48,6 +49,7 @@ import kotlinx.coroutines.withTimeoutOrNull
  *   the player is there
  * @property durationMs the length of the item, or null for a live stream, which has no seek bar
  * @property songId the library row of the song that plays, or null for an item that is no song of the library
+ * @property albumId the album of that song, or null when [songId] is null
  * @property format how the item is stored, or null until the player has opened it
  * @property place the place of the item in the queue, counted from 1
  * @property queueSize how many items the queue holds
@@ -68,6 +70,7 @@ internal data class NowPlayingUiState(
     val error: PlaybackError? = null,
     val isFavourite: Boolean? = null,
     val songId: Long? = null,
+    val albumId: Long? = null,
     val speed: Float = 1f,
     val sleep: SleepState = SleepState.Off,
     val format: SongFormat? = null,
@@ -108,7 +111,7 @@ internal class NowPlayingViewModel @Inject constructor(
     private var seekWait: Job? = null
 
     /** Whether the song that plays is a favourite. Null for an item that is no song of the library. */
-    private val favourite = MutableStateFlow<FavouriteMark?>(null)
+    private val favourite = MutableStateFlow<SongMark?>(null)
 
     /** What to show, or null when nothing is loaded. */
     val state: StateFlow<NowPlayingUiState?> =
@@ -131,6 +134,13 @@ internal class NowPlayingViewModel @Inject constructor(
     fun next() = playback.next()
 
     fun previous() = playback.previous()
+
+    /** Moves [deltaMs] on in the current item, or back for a negative value, within its length. */
+    fun seekBy(deltaMs: Long) {
+        val now = state.value ?: return
+        val length = now.durationMs ?: return
+        seekTo((now.positionMs + deltaMs).coerceIn(0, length))
+    }
 
     /** Jumps to [positionMs] of the current item. */
     fun seekTo(positionMs: Long) {
@@ -173,15 +183,15 @@ internal class NowPlayingViewModel @Inject constructor(
     }
 
     private suspend fun watchFavourite() {
-        val song = playback.state.map { it.currentItem?.id }.distinctUntilChanged().map { id -> id to songIdOf(id) }
-        combine(song, favourites.songIds()) { (itemId, songId), ids ->
-            if (itemId != null && songId != null) FavouriteMark(itemId, songId, songId in ids) else null
+        val song = playback.state.map { it.currentItem?.id }.distinctUntilChanged().map { id -> id to songOf(id) }
+        combine(song, favourites.songIds()) { (itemId, song), ids ->
+            if (itemId != null && song != null) SongMark(itemId, song.id, song.albumId, song.id in ids) else null
         }.collect { favourite.value = it }
     }
 
     /** The library row of what plays, or null for a stream and for a file the library does not know. */
-    private suspend fun songIdOf(itemId: String?): Long? = itemId?.let { id ->
-        runCatching { songs.byMediaUri(listOf(id))[id]?.id }
+    private suspend fun songOf(itemId: String?): Song? = itemId?.let { id ->
+        runCatching { songs.byMediaUri(listOf(id))[id] }
             .onFailure { if (it is CancellationException) throw it }
             .getOrNull()
     }
@@ -196,9 +206,10 @@ internal class NowPlayingViewModel @Inject constructor(
 /** The place a seek asked for, with the item it was asked in. */
 private data class SeekTarget(val itemId: String, val positionMs: Long)
 
-private data class FavouriteMark(val itemId: String, val songId: Long, val on: Boolean)
+/** The library song that plays, with its favourite mark, for the item [itemId]. */
+private data class SongMark(val itemId: String, val songId: Long, val albumId: Long, val on: Boolean)
 
-private fun PlaybackState.toUiState(seekTarget: SeekTarget?, mark: FavouriteMark?): NowPlayingUiState? {
+private fun PlaybackState.toUiState(seekTarget: SeekTarget?, mark: SongMark?): NowPlayingUiState? {
     val item = currentItem ?: return null
     val length = durationMs?.takeIf { it > 0 }
     // A place asked for in one item says nothing about the next one.
@@ -218,6 +229,7 @@ private fun PlaybackState.toUiState(seekTarget: SeekTarget?, mark: FavouriteMark
         // A mark read for one item says nothing about the next one.
         isFavourite = mark?.takeIf { it.itemId == item.id }?.on,
         songId = mark?.takeIf { it.itemId == item.id }?.songId,
+        albumId = mark?.takeIf { it.itemId == item.id }?.albumId,
         speed = speed,
         format = format,
         place = (currentIndex ?: 0) + 1,

@@ -257,7 +257,7 @@ The full module table, the dependency rules and the folder structure are in [ARC
 | Module | Holds |
 |---|---|
 | `app` | Activity, navigation, Hilt setup, the `core` and `play` builds |
-| `feature:home`, `feature:library`, `feature:radio`, `feature:player`, `feature:search`, `feature:settings` | Screens and ViewModels. Depend only on `core:domain` and `core:ui` |
+| `feature:library`, `feature:radio`, `feature:player`, `feature:search`, `feature:settings` | Screens and ViewModels. Depend only on `core:domain` and `core:ui` |
 | `core:domain` | Models, use cases and interfaces, in plain Kotlin |
 | `core:data` | Room, MediaStore reader, Radio Browser client, DataStore |
 | `core:playback` | `MediaLibraryService`, session callback, browse tree, audio focus |
@@ -462,6 +462,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D88 | Now playing is one list: the card, the equalizer and the next songs, from the song that plays to the end of the queue, one line each with place, title, artist and length. A tap plays the song; Edit opens the queue screen | 23 Nov 2026 | One scroll for the whole screen, and a long queue drawn only as it comes into view. See `docs/adr/0057-up-next.md` |
 | D89 | The queue keeps the list it was started from (album, artist, playlist, genre, folder or the favourites) with its name, and the now playing top bar says "Playing from album" and the name. Only the phone screens of this app set it. A queue from Home, search, the car, a spoken request or another app has none, and adding songs by hand takes it away. It is saved with the queue (database version 4) | 24 Nov 2026 | The person sees where the songs come from. A list started somewhere else is not that list, so an old name must not stay. See `docs/adr/0058-queue-source.md` |
 | D90 | The look of a hardware player in both looks: screens lie on a warm grey ground (Night: near black), cards have a frame colour, a thin edge and 8 dp corners, lists sit on their own plain card with a top bar, and the player has a dark display (LCD) with glowing green text, dark in both looks. Chips and switches have a small lamp that lights while they are on. The bottom bar and the rail are flat bars on the frame colour with a pill behind the current tab | 24 Nov 2026 | One clear style for every screen, and a display that reads the same by day and by night. Adds to D83. See `docs/adr/0059-hardware-player-look.md` |
+| D91 | The player is the first tab and the screen the app opens on: a display with the play mark, the time, Shuffle and Repeat, status tags, a visual of the sound (bars, wave or off) and the song, then Previous, the seek bar with a grip and Next (hold for 10 seconds), and Up next on its own card with Save, Clear, swipe to remove with Undo and drag to move. Home, the queue screen and the equalizer screen are gone; the equalizer bands are not applied, volume levelling is a switch in Settings | 24 Nov 2026 | One screen for everything while music plays, as on a hardware player. Replaces D57, D86, D87 and D88, and the no-handle part of D47. See `docs/adr/0060-player-tab.md` |
 
 ## 9. Checks before building
 

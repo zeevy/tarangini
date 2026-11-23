@@ -7,9 +7,12 @@
 package com.siliconcircuits.tarangini.navigation
 
 import androidx.activity.ComponentActivity
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isSelectable
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
@@ -43,14 +46,19 @@ class TaranginiShellTest {
     @Before
     fun showShell() {
         composeRule.setContent {
-            TaranginiTheme { TaranginiShell() }
+            // A button stands in for the player, which needs Hilt; its More menu opens Settings.
+            TaranginiTheme {
+                TaranginiShell(player = { targets, _ ->
+                    TextButton(onClick = targets.onOpenSettings) { Text("Settings") }
+                })
+            }
         }
     }
 
     @Test
-    fun `the app opens to Home`() {
-        composeRule.onNode(tab("Home")).assertIsSelected()
-        composeRule.onNode(title("Tarangini")).assertIsDisplayed()
+    fun `the app opens to the player`() {
+        composeRule.onNode(tab("Player")).assertIsSelected()
+        composeRule.onNode(hasText("Settings") and hasClickAction()).assertIsDisplayed()
     }
 
     @Test
@@ -63,32 +71,32 @@ class TaranginiShellTest {
             composeRule.onNode(title(name)).assertIsDisplayed()
         }
 
-        composeRule.onNode(tab("Home")).performClick()
+        composeRule.onNode(tab("Player")).performClick()
 
-        composeRule.onNode(title("Tarangini")).assertIsDisplayed()
+        composeRule.onNode(hasText("Settings") and hasClickAction()).assertIsDisplayed()
     }
 
     @Test
-    fun `Settings opens from Home without the bottom bar and Back returns to Home`() {
-        composeRule.onNodeWithContentDescription("Settings").performClick()
+    fun `Settings opens from the player without the bottom bar and Back returns to the player`() {
+        composeRule.onNode(hasText("Settings") and hasClickAction()).performClick()
 
         composeRule.onNode(title("Settings")).assertIsDisplayed()
-        composeRule.onNode(tab("Home")).assertDoesNotExist()
+        composeRule.onNode(tab("Player")).assertDoesNotExist()
 
         composeRule.onNodeWithContentDescription("Back").performClick()
 
-        composeRule.onNode(tab("Home")).assertIsSelected()
-        composeRule.onNode(title("Tarangini")).assertIsDisplayed()
+        composeRule.onNode(tab("Player")).assertIsSelected()
+        composeRule.onNode(hasText("Settings") and hasClickAction()).assertIsDisplayed()
     }
 
     @Test
-    fun `system Back on Settings returns to Home and keeps the app open`() {
-        composeRule.onNodeWithContentDescription("Settings").performClick()
+    fun `system Back on Settings returns to the player and keeps the app open`() {
+        composeRule.onNode(hasText("Settings") and hasClickAction()).performClick()
         composeRule.onNode(title("Settings")).assertIsDisplayed()
 
         pressBack()
 
-        composeRule.onNode(tab("Home")).assertIsSelected()
+        composeRule.onNode(tab("Player")).assertIsSelected()
         assertFalse(composeRule.activity.isFinishing)
     }
 

@@ -11,4 +11,6 @@ internal data class QueueActions(
     val onPlay: (index: Int) -> Unit,
     val onMove: (from: Int, to: Int) -> Unit,
     val onRemove: (index: Int) -> Unit,
+    val onSave: () -> Unit = {},
+    val onClear: () -> Unit = {},
 )

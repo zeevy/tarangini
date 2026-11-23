@@ -10,6 +10,7 @@ import com.siliconcircuits.tarangini.core.domain.model.Look
 import com.siliconcircuits.tarangini.core.domain.model.MAX_MIN_TRACK_SECONDS
 import com.siliconcircuits.tarangini.core.domain.model.ScanSettings
 import com.siliconcircuits.tarangini.core.domain.model.SongSort
+import com.siliconcircuits.tarangini.core.domain.model.VisualMode
 import kotlinx.coroutines.flow.Flow
 
 /** The choices of the user that the app keeps between starts. */
@@ -19,6 +20,12 @@ interface SettingsRepository {
 
     /** Saves the colours of the app. The screens change at once. */
     suspend fun setLook(look: Look)
+
+    /** What the display of the player shows. It is [VisualMode.BARS] until the person picks another. */
+    fun visualMode(): Flow<VisualMode>
+
+    /** Saves what the display of the player shows. */
+    suspend fun setVisualMode(mode: VisualMode)
 
     /** The order of the list of all songs. It is [SongSort.TITLE] until the user chooses another. */
     fun songSort(): Flow<SongSort>

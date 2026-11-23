@@ -46,6 +46,9 @@ interface PlaybackQueue {
     /** Empties the queue. Playback stops. */
     fun clear()
 
+    /** Takes every item out but the current one, which goes on playing. A list that still loads is given up. */
+    fun keepOnlyCurrent()
+
     /** With shuffle on, the player picks the items of the queue in a random order. The queue itself keeps its order. */
     fun setShuffle(on: Boolean)
 

@@ -34,6 +34,23 @@ class EqualizerProcessorTest {
     private fun bands(vararg gains: Float, bass: Float = 0f) = EqualizerTarget(FIVE_BANDS_HZ, gains.toList(), bass)
 
     @Test
+    fun `while the equalizer is out of the app only volume levelling is applied, and no saved band`() {
+        val saved = EqualizerSettings(
+            isOn = true,
+            preset = EqualizerPreset.entries.last(),
+            genresOn = true,
+            genrePresets = mapOf("rock" to EqualizerPreset.entries.last()),
+            levelling = VolumeLevelling.ALBUM,
+        )
+
+        val applied = appliedTargets(saved, FIVE_BANDS_HZ)
+
+        assertEquals(EqualizerTarget.FLAT, applied.main)
+        assertEquals(emptyMap<String, EqualizerTarget>(), applied.byGenre)
+        assertEquals(VolumeLevelling.ALBUM, applied.levelling)
+    }
+
+    @Test
     fun `flat gives back every sample as it was`() {
         val input = tone(440.0, 0.5, seconds = 0.1)
 
