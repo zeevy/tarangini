@@ -139,11 +139,21 @@ jobs:
       - name: Main flows on the emulator
         run: ./gradlew :app:connectedCoreDebugAndroidTest --stacktrace
 
+      # The same flow on the release app as R8 shrinks it, driven from outside, so a class that R8
+      # removed by mistake fails here and not on a phone.
+      - name: Main flow on the shrunk release app
+        run: >-
+          ./gradlew :baselineprofile:connectedBenchmarkReleaseAndroidTest --stacktrace
+          -Pandroid.testInstrumentationRunnerArguments.class=com.siliconcircuits.tarangini.baselineprofile.ReleaseFlowTest
+          -Pandroid.testInstrumentationRunnerArguments.releaseFlow=true
+
       - name: Upload the reports of a failed run
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: end-to-end-reports
-          path: app/build/reports/androidTests/
+          path: |
+            app/build/reports/androidTests/
+            baselineprofile/build/reports/androidTests/
           retention-days: 7
           if-no-files-found: ignore

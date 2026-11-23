@@ -22,7 +22,7 @@ You need JDK 21 and the Android SDK with platform 37. The steps are in the [READ
 
 Run all of them before you open a pull request. CI runs the same commands and they must pass. `./gradlew ktlintFormat` fixes most style problems by itself.
 
-CI also runs the end to end test of the main flows on an emulator. To run it yourself, start an emulator and run `./gradlew :app:connectedCoreDebugAndroidTest`. Use an emulator or a test phone, not your own phone: the test adds three short songs to the music of the device (and removes them), and leaves a favourite and a playlist in the app.
+CI also runs the end to end test of the main flows on an emulator. To run it yourself, start an emulator and run `./gradlew :app:connectedCoreDebugAndroidTest`. Use an emulator or a test phone, not your own phone: the test adds three short songs to the music of the device (and removes them), and leaves a favourite and a playlist in the app. The same job then runs `ReleaseFlowTest` on the release app as R8 shrinks it: `./gradlew :baselineprofile:connectedBenchmarkReleaseAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.siliconcircuits.tarangini.baselineprofile.ReleaseFlowTest -Pandroid.testInstrumentationRunnerArguments.releaseFlow=true`. It also leaves a favourite.
 
 ## Rules for a change
 
