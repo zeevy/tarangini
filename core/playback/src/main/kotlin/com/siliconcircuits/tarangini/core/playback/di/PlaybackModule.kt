@@ -9,12 +9,14 @@
 
 package com.siliconcircuits.tarangini.core.playback.di
 
+import com.siliconcircuits.tarangini.core.domain.audio.AudioLevels
 import com.siliconcircuits.tarangini.core.domain.playback.NowPlayingCards
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackController
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackQueue
 import com.siliconcircuits.tarangini.core.domain.playback.SleepTimer
 import com.siliconcircuits.tarangini.core.domain.repository.SongLyrics
 import com.siliconcircuits.tarangini.core.domain.station.StreamTester
+import com.siliconcircuits.tarangini.core.playback.audio.LevelMeter
 import com.siliconcircuits.tarangini.core.playback.controller.MediaControllerConnector
 import com.siliconcircuits.tarangini.core.playback.controller.SessionConnector
 import com.siliconcircuits.tarangini.core.playback.controller.SessionPlaybackController
@@ -48,6 +50,9 @@ internal abstract class PlaybackModule {
 
     @Binds
     abstract fun sleepTimer(timer: DefaultSleepTimer): SleepTimer
+
+    @Binds
+    abstract fun audioLevels(meter: LevelMeter): AudioLevels
 
     /** The views of the playback outside the app. A feature adds its view to this set; with none it is empty. */
     @Multibinds

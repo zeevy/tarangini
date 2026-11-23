@@ -23,6 +23,7 @@ import com.siliconcircuits.tarangini.core.domain.repository.PlaylistRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SearchRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SongLookup
 import com.siliconcircuits.tarangini.core.domain.repository.StationStreams
+import com.siliconcircuits.tarangini.core.playback.audio.LevelMeter
 import com.siliconcircuits.tarangini.core.playback.service.PlaybackService
 import com.siliconcircuits.tarangini.core.playback.sleep.DefaultSleepTimer
 import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
@@ -94,6 +95,8 @@ internal class TestPlaybackApp :
         override fun equalizerRepository(): EqualizerRepository = FakeEqualizerRepository()
 
         override fun equalizerBands(): EqualizerBands = EqualizerBands { FIVE_BANDS_HZ }
+
+        override fun levelMeter(): LevelMeter = LevelMeter(scope)
 
         override fun playbackScope(): CoroutineScope = scope
 
