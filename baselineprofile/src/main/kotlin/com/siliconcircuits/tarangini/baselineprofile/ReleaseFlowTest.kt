@@ -81,15 +81,14 @@ class ReleaseFlowTest {
         need(By.desc("More options for $song"), "$song in Favourites")
     }
 
-    /** The test song the mini player shows: a title of the test songs below every list row of it. */
+    /** The test song the mini player shows, read from its spoken name. */
     private fun miniPlayerSong(): String? {
         val end = System.currentTimeMillis() + WAIT_MS
         while (System.currentTimeMillis() < end) {
-            val lowest = files.titles.flatMap { title -> device.findObjects(By.text(title)) }
-                .maxByOrNull { it.visibleBounds.top }
-            // The mini player sits under the list, so its title is the lowest one on the screen.
-            val title = lowest?.text
-            if (title != null && device.findObjects(By.text(title)).size >= 2) return title
+            // The mini player is one button, so its spoken name holds the title: "Title, artist. Open the player".
+            val name = device.findObject(By.descContains("Open the player"))?.contentDescription
+            val title = files.titles.firstOrNull { name?.startsWith("$it,") == true }
+            if (title != null) return title
             Thread.sleep(POLL_MS)
         }
         return null
