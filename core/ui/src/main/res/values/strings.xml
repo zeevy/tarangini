@@ -40,6 +40,8 @@
         <item quantity="other">%1$d songs</item>
     </plurals>
     <!-- The format line of the song that plays, such as "MP3 · 320 kbps · 44.1 kHz · Stereo". -->
+    <!-- Spaces on both sides are kept by the quotes. -->
+    <string name="format_separator">" · "</string>
     <string name="format_kbps">%1$d kbps</string>
     <string name="format_khz">%1$s kHz</string>
     <string name="format_mono">Mono</string>

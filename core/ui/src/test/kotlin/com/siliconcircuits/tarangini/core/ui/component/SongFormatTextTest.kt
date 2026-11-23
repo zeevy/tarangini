@@ -53,8 +53,8 @@ class SongFormatTextTest {
     }
 
     @Test
-    fun `a sample rate gets one decimal at most`() {
-        assertEquals("22.1 kHz", textOf(SongFormat(sampleRateHz = 22_050)))
+    fun `a sample rate keeps the decimals it has`() {
+        assertEquals("22.05 kHz", textOf(SongFormat(sampleRateHz = 22_050)))
     }
 
     @Test

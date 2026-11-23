@@ -56,6 +56,11 @@ class SongFormatsTest {
     }
 
     @Test
+    fun `a bit rate under one kbit is left out, not shown as 0`() {
+        assertNull(Format.Builder().setAverageBitrate(800).build().toSongFormat().bitrateKbps)
+    }
+
+    @Test
     fun `a sound format the player does not name has no type`() {
         assertNull(Format.Builder().setSampleMimeType(MimeTypes.AUDIO_AC3).build().toSongFormat().codec)
     }

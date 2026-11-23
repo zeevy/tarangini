@@ -29,12 +29,16 @@ internal fun Format.toSongFormat(): SongFormat = SongFormat(
     codec = CODEC_NAMES[sampleMimeType],
     // A file states the average rate, the peak rate or both. The average is the one people know. The part
     // below a whole kbit is cut off, as other players do.
-    bitrateKbps = listOf(averageBitrate, bitrate, peakBitrate).firstOrNull { it > 0 }?.div(BITS_PER_KBIT),
+    bitrateKbps = listOf(averageBitrate, bitrate, peakBitrate).firstOrNull { it > 0 }?.div(BITS_PER_KBIT)?.takeIf {
+        it >
+            0
+    },
     sampleRateHz = sampleRate.takeIf { it > 0 },
     channels = channelCount.takeIf { it > 0 },
 )
 
-// Only the formats the player can open. Any other one shows no name.
+// Only the formats the player can open. Any other one shows no name. These are names of file
+// formats, the same in every language, so they are not string resources.
 private val CODEC_NAMES = mapOf(
     MimeTypes.AUDIO_MPEG to "MP3",
     MimeTypes.AUDIO_AAC to "AAC",
