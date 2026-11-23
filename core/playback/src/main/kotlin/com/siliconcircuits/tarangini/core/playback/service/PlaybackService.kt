@@ -35,6 +35,7 @@ import com.siliconcircuits.tarangini.core.domain.repository.SongLookup
 import com.siliconcircuits.tarangini.core.domain.repository.StationStreams
 import com.siliconcircuits.tarangini.core.playback.R
 import com.siliconcircuits.tarangini.core.playback.audio.EqualizerProcessor
+import com.siliconcircuits.tarangini.core.playback.audio.LevelMeter
 import com.siliconcircuits.tarangini.core.playback.audio.followEqualizer
 import com.siliconcircuits.tarangini.core.playback.browse.BrowseItems
 import com.siliconcircuits.tarangini.core.playback.browse.BrowseTree
@@ -111,6 +112,8 @@ internal class PlaybackService : MediaLibraryService() {
         fun equalizerRepository(): EqualizerRepository
 
         fun equalizerBands(): EqualizerBands
+
+        fun levelMeter(): LevelMeter
     }
 
     /** What the service takes from the app. The system makes a service, so nothing can be handed to its constructor. */
@@ -146,7 +149,8 @@ internal class PlaybackService : MediaLibraryService() {
         val sound = LastSound()
         val sounds = EqualizerProcessor()
         val player =
-            createPlayer(this, sound, listOf(sounds), { item, gain ->
+            // The meter stands after the equalizer, so it shows the sound as it is heard.
+            createPlayer(this, sound, listOf(sounds, app.levelMeter().processor()), { item, gain ->
                 sounds.songStarts(item.genreKeys(), gain)
             }, app::httpClient)
         equalizer = followEqualizer(app.equalizerRepository(), app.equalizerBands(), sounds, app.playbackScope())
