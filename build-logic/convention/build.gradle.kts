@@ -30,6 +30,7 @@ dependencies {
     implementation(libs.ktlint.gradle.plugin)
     implementation(libs.detekt.gradle.plugin)
     implementation(libs.licensee.gradle.plugin)
+    implementation(libs.baselineprofile.gradle.plugin)
     testImplementation(libs.junit)
     // config/detekt.yml names these rules, so detekt needs them here too.
     detektPlugins(libs.compose.rules.detekt)

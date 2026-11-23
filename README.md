@@ -36,7 +36,7 @@ The APK is written to `app/build/outputs/apk/core/debug/`. No key, secret or `go
 | Save new pictures for the screenshot tests | `./gradlew test -PrecordScreenshots` |
 | Android lint | `./gradlew lint` |
 | Style and code rules | `./gradlew ktlintCheck detekt` |
-| Licences of the shipped libraries | `./gradlew :app:licenseeCoreRelease` |
+| Licences of the shipped libraries | `./gradlew :app:licenseeAndroidCoreRelease` |
 | Licence header check alone | `./gradlew checkLicenceHeaders` |
 | Install on a connected device | `./gradlew :app:installCoreDebug` |
 | End to end test of the main flows, on a running emulator | `./gradlew :app:connectedCoreDebugAndroidTest` |

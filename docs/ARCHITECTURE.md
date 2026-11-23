@@ -54,6 +54,7 @@ The dependency rule: every arrow points to the domain. The domain depends on not
 | `core:playback` | Android library | `MediaLibraryService`, session callback, browse tree, audio processors, `PlaybackController` implementation | `core:domain` |
 | `core:ui` | Android library | Theme, design tokens, shared composables (song row, station tile, empty and error states) | `core:domain` (models only) |
 | `core:testing` | Kotlin and Android library | Fakes of every repository interface, test rules, sample data | `core:domain` |
+| `baselineprofile` | Android test module | Records the baseline profile of the release app and measures the cold start and a list scroll on a device, driving the app from outside | `app` (the app it installs) |
 | `build-logic` | Included build | Convention plugins, so module build files stay a few lines long | - |
 | `premium` (private repo) | Android library | The ten premium features, Play Billing, Cast, Crashlytics | `core:domain`, `core:ui` |
 
@@ -223,6 +224,7 @@ Entities, DAOs and DTOs are `internal` to `core:data`. Mappers turn them into do
 | Screens | Screenshot tests of the stateless content composable, 320dp wide | `feature:*` `src/test` |
 | Playback and the browse tree | Media3 test utilities and fake repositories | `core:playback` |
 | Main flows end to end | Instrumented test on an emulator in CI | `app` `src/androidTest` |
+| Cold start and list scroll | Macrobenchmark on the test phone; the baseline profile is recorded the same way | `baselineprofile` |
 
 Fakes are preferred over mocks. A fake of each repository interface lives in `core:testing` and is shared by every module.
 

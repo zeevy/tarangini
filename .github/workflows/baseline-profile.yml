@@ -1,0 +1,88 @@
+name: Baseline profile
+
+# Records the baseline profile of the release app on an emulator and uploads it. The file is then
+# committed to app/src/coreRelease/generated/baselineProfiles/. Run it after a change to the start
+# of the app or to the songs list, from the Actions tab or by a push to a perf/ branch.
+on:
+  workflow_dispatch:
+  push:
+    branches: ["perf/**"]
+    # Committing the recorded profile must not record it again.
+    paths-ignore: ["app/src/coreRelease/generated/baselineProfiles/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  record:
+    name: Record the baseline profile
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check the Gradle wrapper
+        uses: gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Let the emulator use KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      # The emulator is started with the tools of the SDK on the runner, so no outside action is needed.
+      - name: Start an emulator
+        run: |
+          tools="$ANDROID_HOME/cmdline-tools/latest/bin"
+          adb="$ANDROID_HOME/platform-tools/adb"
+          image="system-images;android-35;google_apis;x86_64"
+          # avdmanager and the emulator look in different folders by default; give both the same one.
+          export ANDROID_AVD_HOME="$RUNNER_TEMP/avd"
+          mkdir -p "$ANDROID_AVD_HOME"
+          echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME" >> "$GITHUB_ENV"
+          # "yes" stops when sdkmanager closes the pipe; that is not a failure.
+          (yes || true) | "$tools/sdkmanager" --install "$image" emulator platform-tools > /dev/null
+          echo no | "$tools/avdmanager" create avd --name ci --package "$image" --device pixel_6
+          "$ANDROID_HOME/emulator/emulator" -avd ci -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim > "$RUNNER_TEMP/emulator.log" 2>&1 &
+          # Print the emulator's own log when it does not come up, so the cause shows in the job.
+          if ! timeout 300 "$adb" wait-for-device ||
+            ! timeout 600 bash -c "until [ \"\$($adb shell getprop sys.boot_completed | tr -d '\r')\" = 1 ]; do sleep 5; done"; then
+            ls -l /dev/kvm || true
+            tail -n 80 "$RUNNER_TEMP/emulator.log"
+            exit 1
+          fi
+          for scale in window_animation_scale transition_animation_scale animator_duration_scale; do
+            "$adb" shell settings put global "$scale" 0
+          done
+
+      # The profile follows a scroll of the songs list, so the emulator gets some songs.
+      - name: Put songs on the emulator
+        run: |
+          adb="$ANDROID_HOME/platform-tools/adb"
+          # Shared storage is ready a little after the boot is complete.
+          timeout 120 bash -c "until \"$adb\" shell touch /sdcard/Music/.ready 2> /dev/null; do sleep 3; done"
+          "$adb" shell rm /sdcard/Music/.ready
+          "$adb" shell mkdir -p /sdcard/Music/Profile
+          for n in $(seq 1 60); do
+            "$adb" push app/src/androidTest/assets/e2e/song-$(( (n % 3) + 1 )).mp3 "/sdcard/Music/Profile/Profile song $n.mp3" > /dev/null
+          done
+          "$adb" shell content call --uri content://media --method scan_volume --arg external_primary
+
+      - name: Record the profile
+        run: ./gradlew :app:generateCoreReleaseBaselineProfile --stacktrace
+
+      - name: Upload the profile
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: baseline-profile
+          path: app/src/coreRelease/generated/baselineProfiles/
+          if-no-files-found: error
+          retention-days: 7
