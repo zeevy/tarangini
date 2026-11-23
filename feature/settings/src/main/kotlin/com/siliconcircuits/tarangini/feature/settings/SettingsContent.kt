@@ -30,6 +30,7 @@ import androidx.compose.ui.semantics.semantics
 import com.siliconcircuits.tarangini.core.domain.library.ScanFailure
 import com.siliconcircuits.tarangini.core.domain.library.ScanOutcome
 import com.siliconcircuits.tarangini.core.domain.library.ScanState
+import com.siliconcircuits.tarangini.core.domain.model.Look
 import com.siliconcircuits.tarangini.core.ui.theme.Spacing
 
 /** The rows of Settings in groups: Library, History, Backup (the [backup] slot) and About. */
@@ -45,6 +46,8 @@ internal fun SettingsContent(
     var dialog by rememberSaveable { mutableStateOf(firstDialog) }
     val close = { dialog = SettingsDialog.NONE }
     when (dialog) {
+        SettingsDialog.LOOK -> LookDialog(state.look, actions.onSetLook, close)
+
         SettingsDialog.FOLDERS -> FoldersDialog(
             state.folders,
             state.scan.hiddenFolders,
@@ -59,6 +62,13 @@ internal fun SettingsContent(
         SettingsDialog.NONE -> Unit
     }
     Column(modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        SettingsGroupTitle(stringResource(R.string.settings_look))
+        SettingsRow(
+            title = stringResource(R.string.settings_colours),
+            text = lookLabel(state.look),
+            onClick = { dialog = SettingsDialog.LOOK },
+        )
+
         SettingsGroupTitle(stringResource(R.string.settings_library))
         val hidden = state.scan.hiddenFolders.size
         SettingsRow(
@@ -128,6 +138,14 @@ internal fun SettingsRow(title: String, text: String, onClick: (() -> Unit)?) {
         supportingContent = { Text(text) },
         modifier = if (onClick == null) Modifier else Modifier.clickable(onClick = onClick),
     )
+}
+
+/** The look as a person reads it: "Follow the phone", "Light" or "Dark". */
+@Composable
+internal fun lookLabel(look: Look): String = when (look) {
+    Look.FOLLOW_PHONE -> stringResource(R.string.settings_look_follow_phone)
+    Look.LIGHT -> stringResource(R.string.settings_look_light)
+    Look.DARK -> stringResource(R.string.settings_look_dark)
 }
 
 /** The length as a person reads it: "Off", "30 seconds" or "2 minutes". */

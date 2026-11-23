@@ -6,6 +6,7 @@
 
 package com.siliconcircuits.tarangini.feature.settings
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -25,8 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.siliconcircuits.tarangini.core.ui.component.BackButton
-import com.siliconcircuits.tarangini.core.ui.theme.glassBackground
-import com.siliconcircuits.tarangini.core.ui.theme.glassTopBarColors
+import com.siliconcircuits.tarangini.core.ui.theme.clearTopBarColors
 import com.siliconcircuits.tarangini.feature.settings.backup.BackupSection
 
 /**
@@ -38,12 +38,12 @@ import com.siliconcircuits.tarangini.feature.settings.backup.BackupSection
 @Composable
 internal fun SettingsScreen(onBackClick: () -> Unit, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Scaffold(
-        modifier = modifier.glassBackground(),
+        modifier = modifier.background(MaterialTheme.colorScheme.background),
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onBackground,
         topBar = {
             TopAppBar(
-                colors = glassTopBarColors(),
+                colors = clearTopBarColors(),
                 title = { Text(stringResource(R.string.settings_title)) },
                 navigationIcon = { BackButton(onClick = onBackClick) },
             )
@@ -77,6 +77,7 @@ private fun LoadedSettings(
     }
     val actions = remember(viewModel, links, onOpenLicences) {
         SettingsActions(
+            onSetLook = viewModel::setLook,
             onSetMinTrackSeconds = viewModel::setMinTrackSeconds,
             onSetFolderHidden = viewModel::setFolderHidden,
             onRescan = viewModel::rescan,

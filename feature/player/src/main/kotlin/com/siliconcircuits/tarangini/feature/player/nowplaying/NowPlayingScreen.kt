@@ -6,6 +6,7 @@
 
 package com.siliconcircuits.tarangini.feature.player.nowplaying
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -48,8 +49,7 @@ import com.siliconcircuits.tarangini.core.ui.component.BackButton
 import com.siliconcircuits.tarangini.core.ui.component.MessageState
 import com.siliconcircuits.tarangini.core.ui.component.PlaylistPick
 import com.siliconcircuits.tarangini.core.ui.theme.Spacing
-import com.siliconcircuits.tarangini.core.ui.theme.glassBackground
-import com.siliconcircuits.tarangini.core.ui.theme.glassTopBarColors
+import com.siliconcircuits.tarangini.core.ui.theme.clearTopBarColors
 import com.siliconcircuits.tarangini.feature.player.R
 import com.siliconcircuits.tarangini.feature.player.lyrics.LyricsViewModel
 
@@ -99,12 +99,12 @@ internal fun NowPlayingContent(
     lyrics: String? = null,
 ) {
     Scaffold(
-        modifier = modifier.glassBackground(),
+        modifier = modifier.background(MaterialTheme.colorScheme.background),
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onBackground,
         topBar = {
             TopAppBar(
-                colors = glassTopBarColors(),
+                colors = clearTopBarColors(),
                 title = { Text(stringResource(R.string.now_playing_title)) },
                 // As a pane beside the tabs there is nothing to go back to.
                 navigationIcon = { onBackClick?.let { BackButton(onClick = it) } },

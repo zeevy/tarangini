@@ -6,20 +6,21 @@
 
 package com.siliconcircuits.tarangini.core.ui.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 
 /**
- * The app theme. There is one look, and it is dark: the colours are
- * [GlassColors], the text is the Material 3 type scale in Manrope, and
- * corners are round.
+ * The app theme. [darkTheme] picks the dark look ([DarkColors]) or the light look ([LightColors]);
+ * by default it follows the dark mode of the phone. The text is the Material 3 type scale in
+ * Manrope, and corners are round.
  */
 @Composable
-fun TaranginiTheme(content: @Composable () -> Unit) {
+fun TaranginiTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = GlassColors,
-        typography = GlassTypography,
-        shapes = GlassShapes,
+        colorScheme = if (darkTheme) DarkColors else LightColors,
+        typography = AppTypography,
+        shapes = AppShapes,
         content = content,
     )
 }

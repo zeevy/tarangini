@@ -168,6 +168,10 @@ class LibraryScreenshotTest {
     }
 
     @Test
+    @Config(qualifiers = "+night")
+    fun `songs in the dark look`() = shot("library_songs_dark") { LibraryContent(lists, songActions, LibraryActions()) }
+
+    @Test
     @Config(qualifiers = "w640dp-h320dp-xhdpi")
     fun `songs on a wide screen`() = shot("library_songs_wide") { LibraryContent(lists, songActions, LibraryActions()) }
 

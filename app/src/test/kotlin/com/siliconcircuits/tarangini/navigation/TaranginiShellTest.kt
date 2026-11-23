@@ -26,6 +26,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
 @RunWith(RobolectricTestRunner::class)
@@ -114,6 +115,13 @@ class TaranginiShellTest {
     @Test
     @GraphicsMode(GraphicsMode.Mode.NATIVE)
     fun `the shell passes the accessibility checks`() {
+        composeRule.checkAccessibility()
+    }
+
+    @Test
+    @Config(qualifiers = "+night")
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    fun `the shell passes the accessibility checks in the dark look`() {
         composeRule.checkAccessibility()
     }
 }

@@ -26,8 +26,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.siliconcircuits.tarangini.core.ui.theme.GlassEdge
-import com.siliconcircuits.tarangini.core.ui.theme.GlassPanel
+import com.siliconcircuits.tarangini.core.ui.theme.PanelColor
+import com.siliconcircuits.tarangini.core.ui.theme.PanelEdge
 import com.siliconcircuits.tarangini.core.ui.theme.Spacing
 
 /** The bottom bar: one item per tab, with [selected] marked. */
@@ -37,13 +37,13 @@ internal fun TaranginiBottomBar(
     onSelect: (TopLevelDestination) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // The bar floats: a glass pill with space around it, above the gesture bar of the phone.
+    // The bar floats: a card shaped pill with space around it, above the gesture bar of the phone.
     Surface(
         modifier = modifier.navigationBarsPadding().padding(horizontal = Spacing.medium, vertical = Spacing.small),
         shape = CircleShape,
-        color = GlassPanel,
+        color = PanelColor,
         contentColor = MaterialTheme.colorScheme.onSurface,
-        border = GlassEdge,
+        border = PanelEdge,
     ) {
         NavigationBar(containerColor = Color.Transparent, windowInsets = WindowInsets()) {
             TopLevelDestination.entries.forEach { destination ->

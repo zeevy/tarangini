@@ -47,7 +47,7 @@ internal fun PlayerButtons(state: NowPlayingUiState, actions: NowPlayingActions,
         FilledIconButton(
             onClick = actions.onTogglePlay,
             modifier = Modifier.size(Spacing.extraLarge + Spacing.medium),
-            // The main button of a screen is white with a dark icon.
+            // The main button of a screen is filled with the accent colour.
             colors = IconButtonDefaults.filledIconButtonColors(
                 containerColor = MaterialTheme.colorScheme.secondary,
                 contentColor = MaterialTheme.colorScheme.onSecondary,

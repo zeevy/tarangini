@@ -6,6 +6,7 @@
 
 package com.siliconcircuits.tarangini.feature.player.equalizer
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -43,8 +44,7 @@ import com.siliconcircuits.tarangini.core.domain.audio.EqualizerSettings
 import com.siliconcircuits.tarangini.core.domain.audio.MAX_BAND_GAIN_DB
 import com.siliconcircuits.tarangini.core.ui.component.BackButton
 import com.siliconcircuits.tarangini.core.ui.theme.Spacing
-import com.siliconcircuits.tarangini.core.ui.theme.glassBackground
-import com.siliconcircuits.tarangini.core.ui.theme.glassTopBarColors
+import com.siliconcircuits.tarangini.core.ui.theme.clearTopBarColors
 import com.siliconcircuits.tarangini.feature.player.R
 import kotlin.math.roundToInt
 
@@ -77,12 +77,12 @@ internal fun EqualizerContent(
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
-        modifier = modifier.glassBackground(),
+        modifier = modifier.background(MaterialTheme.colorScheme.background),
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onBackground,
         topBar = {
             TopAppBar(
-                colors = glassTopBarColors(),
+                colors = clearTopBarColors(),
                 title = { Text(stringResource(R.string.equalizer_title)) },
                 navigationIcon = { BackButton(onClick = onBackClick) },
             )

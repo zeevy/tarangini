@@ -6,6 +6,7 @@
 
 package com.siliconcircuits.tarangini.core.testing.settings
 
+import com.siliconcircuits.tarangini.core.domain.model.Look
 import com.siliconcircuits.tarangini.core.domain.model.ScanSettings
 import com.siliconcircuits.tarangini.core.domain.model.SongSort
 import com.siliconcircuits.tarangini.core.domain.repository.SettingsRepository
@@ -14,6 +15,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 /** Settings for tests, kept in memory. */
 class FakeSettingsRepository : SettingsRepository {
+    /** The picked look. A test can read and set it. */
+    val look = MutableStateFlow(Look.FOLLOW_PHONE)
+
+    override fun look(): Flow<Look> = look
+
+    override suspend fun setLook(look: Look) {
+        this.look.value = look
+    }
+
     private val sort = MutableStateFlow(SongSort.TITLE)
 
     override fun songSort(): Flow<SongSort> = sort

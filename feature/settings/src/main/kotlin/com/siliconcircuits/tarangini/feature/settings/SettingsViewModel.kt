@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.siliconcircuits.tarangini.core.domain.library.LibraryScanner
 import com.siliconcircuits.tarangini.core.domain.library.ScanState
+import com.siliconcircuits.tarangini.core.domain.model.Look
 import com.siliconcircuits.tarangini.core.domain.model.ScanSettings
 import com.siliconcircuits.tarangini.core.domain.repository.PlayHistory
 import com.siliconcircuits.tarangini.core.domain.repository.SettingsRepository
@@ -31,6 +32,7 @@ import kotlinx.coroutines.launch
  * @property scanState what the scanner does, for the text under "Rescan now"
  */
 internal data class SettingsUiState(
+    val look: Look = Look.FOLLOW_PHONE,
     val scan: ScanSettings = ScanSettings(),
     val folders: List<String> = emptyList(),
     val scanState: ScanState = ScanState.Idle,
@@ -46,7 +48,7 @@ internal class SettingsViewModel @Inject constructor(
     private val folders = MutableStateFlow<List<String>>(emptyList())
 
     val state: StateFlow<SettingsUiState> =
-        combine(settings.scanSettings(), folders, scanner.state, ::SettingsUiState)
+        combine(settings.look(), settings.scanSettings(), folders, scanner.state, ::SettingsUiState)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_AFTER_MS), SettingsUiState())
 
     init {
@@ -56,6 +58,11 @@ internal class SettingsViewModel @Inject constructor(
                 if (now !is ScanState.Running) attempt { settings.audioFolders() }?.let { folders.value = it }
             }
         }
+    }
+
+    /** Saves the colours of the app. The theme reads the same setting, so every screen changes at once. */
+    fun setLook(look: Look) {
+        viewModelScope.launch { attempt { settings.setLook(look) } }
     }
 
     /** Saves the shortest track that is kept and scans, so the lists change at once. */

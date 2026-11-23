@@ -6,6 +6,7 @@
 
 package com.siliconcircuits.tarangini.feature.library
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -52,8 +53,7 @@ import com.siliconcircuits.tarangini.core.ui.component.MessageState
 import com.siliconcircuits.tarangini.core.ui.component.SongRow
 import com.siliconcircuits.tarangini.core.ui.component.SongRowActions
 import com.siliconcircuits.tarangini.core.ui.theme.Spacing
-import com.siliconcircuits.tarangini.core.ui.theme.glassBackground
-import com.siliconcircuits.tarangini.core.ui.theme.glassTopBarColors
+import com.siliconcircuits.tarangini.core.ui.theme.clearTopBarColors
 import com.siliconcircuits.tarangini.feature.library.component.ListBody
 import com.siliconcircuits.tarangini.feature.library.component.PagedColumn
 import com.siliconcircuits.tarangini.feature.library.genre.GenresTab
@@ -170,12 +170,12 @@ internal fun LibraryContent(
     val artistsScroll = rememberLazyListState()
     val foldersScroll = rememberLazyListState()
     Scaffold(
-        modifier = modifier.glassBackground(),
+        modifier = modifier.background(MaterialTheme.colorScheme.background),
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onBackground,
         topBar = {
             TopAppBar(
-                colors = glassTopBarColors(),
+                colors = clearTopBarColors(),
                 title = { Text(stringResource(R.string.library_title)) },
                 actions = {
                     IconButton(onClick = actions.onSearch) {

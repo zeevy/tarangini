@@ -27,8 +27,8 @@ private val Manrope = FontFamily(
 private fun TextStyle.manrope(weight: FontWeight? = null) =
     copy(fontFamily = Manrope, fontWeight = weight ?: fontWeight)
 
-/** The Material 3 type scale in Manrope. Big titles are light, as thin letters read well on a dark screen. */
-internal val GlassTypography = with(Typography()) {
+/** The Material 3 type scale in Manrope. Big titles are light, as large thin letters read well in both looks. */
+internal val AppTypography = with(Typography()) {
     copy(
         displayLarge = displayLarge.manrope(FontWeight.Light),
         displayMedium = displayMedium.manrope(FontWeight.Light),
@@ -49,7 +49,7 @@ internal val GlassTypography = with(Typography()) {
 }
 
 /** Round corners everywhere: a cover has 14 dp, a panel 20 dp. */
-internal val GlassShapes = Shapes(
+internal val AppShapes = Shapes(
     extraSmall = RoundedCornerShape(8.dp),
     small = RoundedCornerShape(14.dp),
     medium = RoundedCornerShape(16.dp),

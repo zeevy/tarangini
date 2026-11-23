@@ -64,6 +64,10 @@ class SearchScreenshotTest {
     fun `results`() = capture("search_results", SearchUiState("mor", results))
 
     @Test
+    @Config(qualifiers = "+night")
+    fun `results in the dark look`() = capture("search_results_dark", SearchUiState("mor", results))
+
+    @Test
     fun `no result`() = capture("search_none", nothingFound)
 
     @Test

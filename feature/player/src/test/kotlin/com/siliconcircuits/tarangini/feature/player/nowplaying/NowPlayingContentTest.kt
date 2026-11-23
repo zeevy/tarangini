@@ -227,4 +227,13 @@ class NowPlayingContentTest {
 
         composeRule.checkAccessibility()
     }
+
+    @Test
+    @Config(qualifiers = "+night")
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    fun `the screen passes the accessibility checks in the dark look`() {
+        show(song)
+
+        composeRule.checkAccessibility()
+    }
 }

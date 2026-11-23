@@ -189,7 +189,19 @@ class EqualizerContentTest {
     }
 
     @Test
+    @Config(qualifiers = "+night")
+    fun `the screen passes the accessibility checks in the dark look`() {
+        show(carnatic)
+
+        composeRule.checkAccessibility()
+    }
+
+    @Test
     fun `a preset on the screen`() = shot("equalizer") { show(carnatic) }
+
+    @Test
+    @Config(qualifiers = "+night")
+    fun `a preset on the screen in the dark look`() = shot("equalizer_dark") { show(carnatic) }
 
     @Test
     @Config(qualifiers = "w320dp-h640dp-xhdpi")

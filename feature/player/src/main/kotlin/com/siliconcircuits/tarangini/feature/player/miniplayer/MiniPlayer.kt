@@ -36,8 +36,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
 import com.siliconcircuits.tarangini.core.ui.component.AlbumArt
-import com.siliconcircuits.tarangini.core.ui.theme.GlassEdge
-import com.siliconcircuits.tarangini.core.ui.theme.GlassPanel
+import com.siliconcircuits.tarangini.core.ui.theme.PanelColor
+import com.siliconcircuits.tarangini.core.ui.theme.PanelEdge
 import com.siliconcircuits.tarangini.core.ui.theme.Spacing
 import com.siliconcircuits.tarangini.feature.player.ItemTexts
 import com.siliconcircuits.tarangini.feature.player.R
@@ -71,13 +71,13 @@ internal fun MiniPlayerBar(
     onOpen: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // A glass pill with space around it.
+    // A pill in the card colour with space around it.
     Surface(
         modifier = modifier.fillMaxWidth().padding(horizontal = Spacing.medium, vertical = Spacing.small),
         shape = CircleShape,
-        color = GlassPanel,
+        color = PanelColor,
         contentColor = MaterialTheme.colorScheme.onSurface,
-        border = GlassEdge,
+        border = PanelEdge,
     ) {
         Column {
             Row(

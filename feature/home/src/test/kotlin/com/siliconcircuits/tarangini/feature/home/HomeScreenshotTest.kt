@@ -49,6 +49,12 @@ class HomeScreenshotTest {
     fun `every section`() = shot("home_full") { HomeContent(full, songActions, songActions, HomeLinks()) }
 
     @Test
+    @Config(qualifiers = "+night")
+    fun `every section in the dark look`() = shot("home_full_dark") {
+        HomeContent(full, songActions, songActions, HomeLinks())
+    }
+
+    @Test
     fun `only playlists`() = shot("home_playlists_only") {
         HomeContent(full.copy(paused = null, recent = emptyList()), songActions, songActions, HomeLinks())
     }

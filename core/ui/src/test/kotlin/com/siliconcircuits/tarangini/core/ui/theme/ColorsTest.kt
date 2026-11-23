@@ -12,10 +12,15 @@ import androidx.compose.ui.graphics.luminance
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class GlassColorsTest {
+class ColorsTest {
     @Test
-    fun `text on every colour of the theme meets WCAG AA contrast`() {
-        assertReadable(GlassColors)
+    fun `text on every colour of the light look meets WCAG AA contrast`() {
+        assertReadable(LightColors)
+    }
+
+    @Test
+    fun `text on every colour of the dark look meets WCAG AA contrast`() {
+        assertReadable(DarkColors)
     }
 
     private fun assertReadable(scheme: ColorScheme) {
@@ -34,6 +39,10 @@ class GlassColorsTest {
                 "onSurfaceVariant on the bottom bar" to (onSurfaceVariant to surfaceContainer),
                 "onSurfaceVariant on the mini player" to (onSurfaceVariant to surfaceContainerHighest),
                 "primary as text" to (primary to surface),
+                "primary as text on a card" to (primary to surfaceContainer),
+                "primary as text on a dialog" to (primary to surfaceContainerHigh),
+                "primary as text on the selected tab" to (primary to secondaryContainer),
+                "tertiary as text on a card" to (tertiary to surfaceContainer),
                 "inverseOnSurface" to (inverseOnSurface to inverseSurface),
                 "onError" to (onError to error),
                 "onErrorContainer" to (onErrorContainer to errorContainer),
