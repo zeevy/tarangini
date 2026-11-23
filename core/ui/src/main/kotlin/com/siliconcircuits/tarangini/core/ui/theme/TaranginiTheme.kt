@@ -14,8 +14,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 /**
  * The app theme. [darkTheme] picks the dark look ([DarkColors]) or the light look ([LightColors]);
  * by default it follows the dark mode of the phone. The text is the Material 3 type scale in
- * Manrope, and corners are round. The level meter colours ([levelColors]) and the
- * colours of the display and the lists ([lookColors]) follow the look.
+ * Manrope, and corners are round. The colours of the display and the lists ([lookColors]) follow
+ * the look.
  */
 @Composable
 fun TaranginiTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {

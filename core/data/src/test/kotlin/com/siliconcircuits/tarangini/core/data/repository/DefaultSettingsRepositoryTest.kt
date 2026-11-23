@@ -15,6 +15,7 @@ import com.siliconcircuits.tarangini.core.data.local.testDatabase
 import com.siliconcircuits.tarangini.core.data.settings.SettingsKeys
 import com.siliconcircuits.tarangini.core.domain.model.Look
 import com.siliconcircuits.tarangini.core.domain.model.ScanSettings
+import com.siliconcircuits.tarangini.core.domain.model.VisualMode
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
@@ -66,6 +67,17 @@ class DefaultSettingsRepositoryTest {
 
         assertEquals(Look.FOLLOW_PHONE, first)
         assertEquals(Look.DARK, DefaultSettingsRepository(store, database.folderDao()).look().first())
+    }
+
+    @Test
+    fun `the visual shows bars at first, and a pick is read back by a new repository`() = runTest {
+        val store = store()
+        val first = DefaultSettingsRepository(store, database.folderDao()).visualMode().first()
+
+        DefaultSettingsRepository(store, database.folderDao()).setVisualMode(VisualMode.WAVE)
+
+        assertEquals(VisualMode.BARS, first)
+        assertEquals(VisualMode.WAVE, DefaultSettingsRepository(store, database.folderDao()).visualMode().first())
     }
 
     @Test

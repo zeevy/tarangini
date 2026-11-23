@@ -7,8 +7,10 @@
 package com.siliconcircuits.tarangini.navigation
 
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
@@ -46,14 +48,17 @@ class TaranginiShellWideTest {
 
     @Test
     @Config(qualifiers = TABLET)
-    fun `a tablet shows the now playing pane beside a tab and no mini player`() {
+    fun `a tablet shows the player pane beside another tab and no mini player`() {
         showShell()
 
-        composeRule.onNodeWithTag(PANE).assertIsDisplayed()
+        // The player tab is the player itself: no pane beside it.
+        composeRule.onNodeWithTag(TAB).assertIsDisplayed()
+        composeRule.onNodeWithTag(PANE).assertDoesNotExist()
         composeRule.onNodeWithTag(MINI).assertDoesNotExist()
         composeRule.onNode(tab("Library")).performClick()
         composeRule.onNode(tab("Library")).assertIsSelected()
         composeRule.onNodeWithTag(PANE).assertIsDisplayed()
+        composeRule.onNodeWithTag(MINI).assertDoesNotExist()
     }
 
     @Test
@@ -61,9 +66,9 @@ class TaranginiShellWideTest {
     fun `a screen outside the tabs fills the window with no rail or pane`() {
         showShell()
 
-        composeRule.onNodeWithContentDescription("Settings").performClick()
+        composeRule.onNodeWithTag(TAB).performClick()
 
-        composeRule.onNode(tab("Home")).assertDoesNotExist()
+        composeRule.onNode(tab("Player")).assertDoesNotExist()
         composeRule.onNodeWithTag(PANE).assertDoesNotExist()
         composeRule.onNodeWithTag(MINI).assertIsDisplayed()
     }
@@ -120,11 +125,19 @@ class TaranginiShellWideTest {
 private fun Shell() {
     TaranginiShell(
         miniPlayer = { _, modifier -> Text("mini player", modifier.testTag(MINI)) },
-        nowPlayingPane = { _, modifier -> Text("now playing pane", modifier.testTag(PANE)) },
+        // The tab gets a plain modifier, the pane one with its width. A tap on the tab opens Settings.
+        player = { targets, modifier ->
+            if (modifier == Modifier) {
+                Text("player tab", Modifier.testTag(TAB).clickable(onClick = targets.onOpenSettings))
+            } else {
+                Text("player pane", modifier.testTag(PANE))
+            }
+        },
     )
 }
 
 private const val MINI = "mini"
 private const val PANE = "pane"
+private const val TAB = "tab"
 private const val TABLET = "w1280dp-h800dp-land-mdpi"
 private const val OPEN_FOLDABLE = "w673dp-h841dp-xhdpi"

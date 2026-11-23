@@ -6,12 +6,16 @@
 
 package com.siliconcircuits.tarangini.feature.settings
 
+import com.siliconcircuits.tarangini.core.domain.audio.EqualizerPreset
+import com.siliconcircuits.tarangini.core.domain.audio.EqualizerSettings
+import com.siliconcircuits.tarangini.core.domain.audio.VolumeLevelling
 import com.siliconcircuits.tarangini.core.domain.library.ScanState
 import com.siliconcircuits.tarangini.core.domain.model.Look
 import com.siliconcircuits.tarangini.core.domain.model.ScanSettings
 import com.siliconcircuits.tarangini.core.testing.MainDispatcherRule
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryScanner
 import com.siliconcircuits.tarangini.core.testing.library.FakePlayHistory
+import com.siliconcircuits.tarangini.core.testing.settings.FakeEqualizerRepository
 import com.siliconcircuits.tarangini.core.testing.settings.FakeSettingsRepository
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -19,6 +23,7 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -30,9 +35,10 @@ class SettingsViewModelTest {
     private val settings = FakeSettingsRepository().apply { folders = listOf("external_primary/Music") }
     private val scanner = FakeLibraryScanner()
     private val history = FakePlayHistory()
+    private val equalizer = FakeEqualizerRepository()
 
     private fun TestScope.watched(): SettingsViewModel =
-        SettingsViewModel(settings, scanner, history).also { viewModel ->
+        SettingsViewModel(settings, scanner, history, equalizer).also { viewModel ->
             backgroundScope.launch { viewModel.state.collect() }
             runCurrent()
         }
@@ -96,5 +102,34 @@ class SettingsViewModelTest {
         runCurrent()
 
         assertEquals(emptyList<Long>(), history.played.value)
+    }
+
+    @Test
+    fun `volume levelling turns on by the song gain and off again, and keeps the other sound settings`() =
+        runTest(mainDispatcher.dispatcher) {
+            equalizer.saved.value = EqualizerSettings(isOn = true, preset = EqualizerPreset.BASS)
+            val viewModel = watched()
+            assertFalse(viewModel.state.value.levelling)
+
+            viewModel.setLevelling(true)
+            runCurrent()
+            assertTrue(viewModel.state.value.levelling)
+            assertEquals(VolumeLevelling.TRACK, equalizer.saved.value.levelling)
+            assertEquals(EqualizerPreset.BASS, equalizer.saved.value.preset)
+
+            viewModel.setLevelling(false)
+            runCurrent()
+            assertEquals(VolumeLevelling.OFF, equalizer.saved.value.levelling)
+        }
+
+    @Test
+    fun `levelling by album stays by album when it is turned on again`() = runTest(mainDispatcher.dispatcher) {
+        equalizer.saved.value = EqualizerSettings(levelling = VolumeLevelling.ALBUM)
+        val viewModel = watched()
+
+        viewModel.setLevelling(true)
+        runCurrent()
+
+        assertEquals(VolumeLevelling.ALBUM, equalizer.saved.value.levelling)
     }
 }

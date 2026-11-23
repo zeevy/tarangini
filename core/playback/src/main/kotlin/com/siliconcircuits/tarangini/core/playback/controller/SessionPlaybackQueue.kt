@@ -27,11 +27,15 @@ internal class SessionPlaybackQueue @Inject constructor(
     private val loader: QueueLoader,
     @param:PlaybackCoroutineScope private val scope: CoroutineScope,
 ) : PlaybackQueue {
-    override fun playNext(mediaUris: List<String>) = load(mediaUris) { player ->
-        if (player.mediaItemCount == 0) 0 else player.currentMediaItemIndex + 1
+    override fun playNext(mediaUris: List<String>) {
+        scope.launch {
+            loader.add(mediaUris) { player -> if (player.mediaItemCount == 0) 0 else player.currentMediaItemIndex + 1 }
+        }
     }
 
-    override fun addToEnd(mediaUris: List<String>) = load(mediaUris, Player::getMediaItemCount)
+    override fun addToEnd(mediaUris: List<String>) {
+        scope.launch { loader.add(mediaUris, Player::getMediaItemCount) }
+    }
 
     override fun move(from: Int, to: Int) = send { player ->
         val places = 0 until player.mediaItemCount
@@ -58,14 +62,24 @@ internal class SessionPlaybackQueue @Inject constructor(
         }
     }
 
+    override fun keepOnlyCurrent() {
+        scope.launch {
+            loader.cancel()
+            link.send { player ->
+                val current = player.currentMediaItemIndex
+                if (current in 0 until player.mediaItemCount) {
+                    // Two calls for any length of queue: the items after the current one, then those before it.
+                    player.removeMediaItems(current + 1, player.mediaItemCount)
+                    player.removeMediaItems(0, current)
+                }
+            }
+        }
+    }
+
     override fun setShuffle(on: Boolean) = send { player -> player.shuffleModeEnabled = on }
 
     override fun setRepeat(mode: RepeatMode) = send { player ->
         player.repeatMode = mode.toPlayerMode()
-    }
-
-    private fun load(mediaUris: List<String>, place: (Player) -> Int) {
-        scope.launch { loader.add(mediaUris, place) }
     }
 
     private fun send(command: (Player) -> Unit) {

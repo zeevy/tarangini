@@ -36,7 +36,6 @@ rootProject.name = "Tarangini"
 
 include(":app")
 include(":baselineprofile")
-include(":feature:home")
 include(":feature:library")
 include(":feature:radio")
 include(":feature:player")

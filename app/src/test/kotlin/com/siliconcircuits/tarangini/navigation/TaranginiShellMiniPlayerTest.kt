@@ -9,9 +9,11 @@ package com.siliconcircuits.tarangini.navigation
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isSelectable
@@ -46,17 +48,21 @@ class TaranginiShellMiniPlayerTest {
     fun showShell() {
         composeRule.setContent {
             TaranginiTheme {
-                TaranginiShell(miniPlayer = { onOpen, modifier ->
-                    Text("mini player", modifier.testTag("mini").clickable(onClick = onOpen))
-                })
+                TaranginiShell(
+                    miniPlayer = { onOpen, modifier ->
+                        Text("mini player", modifier.testTag("mini").clickable(onClick = onOpen))
+                    },
+                    // A button stands in for the player, which needs Hilt; its More menu opens Settings.
+                    player = { targets, _ -> TextButton(onClick = targets.onOpenSettings) { Text("Settings") } },
+                )
             }
         }
     }
 
     @Test
-    fun `the mini player shows on every tab, above the bottom bar`() {
-        // The Radio tab needs Hilt, which this plain activity does not have.
-        listOf("Home", "Library", "Favourites").forEach { name ->
+    fun `the mini player shows on every tab but the player, above the bottom bar`() {
+        composeRule.onNodeWithTag("mini").assertDoesNotExist()
+        listOf("Library", "Favourites").forEach { name ->
             composeRule.onNode(hasText(name) and isSelectable()).performClick()
 
             val mini = composeRule.onNodeWithTag("mini").assertIsDisplayed().getUnclippedBoundsInRoot()
@@ -66,8 +72,18 @@ class TaranginiShellMiniPlayerTest {
     }
 
     @Test
+    fun `a tap on the mini player opens the player tab, where it hides`() {
+        composeRule.onNode(hasText("Library") and isSelectable()).performClick()
+
+        composeRule.onNodeWithTag("mini").performClick()
+
+        composeRule.onNode(hasText("Player") and isSelectable()).assertIsSelected()
+        composeRule.onNodeWithTag("mini").assertDoesNotExist()
+    }
+
+    @Test
     fun `the mini player stays on a screen with no bottom bar`() {
-        composeRule.onNodeWithContentDescription("Settings").performClick()
+        composeRule.onNodeWithText("Settings").performClick()
 
         composeRule.onNodeWithTag("mini").assertIsDisplayed()
     }

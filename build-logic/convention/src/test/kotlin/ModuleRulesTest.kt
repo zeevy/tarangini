@@ -50,21 +50,21 @@ class ModuleRulesTest {
 
     @Test
     fun `the app may use every module`() {
-        assertNull(main(":app", ":feature:home"))
+        assertNull(main(":app", ":feature:player"))
         assertNull(main(":app", ":core:data"))
         assertNull(main(":app", ":core:playback"))
     }
 
     @Test
     fun `the shared fakes are for tests only`() {
-        assertNull(ModuleRules.violation(":feature:home", ":core:testing", "testImplementation"))
-        assertNotNull(main(":feature:home", ":core:testing"))
+        assertNull(ModuleRules.violation(":feature:player", ":core:testing", "testImplementation"))
+        assertNotNull(main(":feature:player", ":core:testing"))
         assertNotNull(main(":app", ":core:testing"))
     }
 
     @Test
     fun `a test configuration still follows the table`() {
-        assertNotNull(ModuleRules.violation(":feature:home", ":core:data", "testImplementation"))
+        assertNotNull(ModuleRules.violation(":feature:player", ":core:data", "testImplementation"))
     }
 
     @Test

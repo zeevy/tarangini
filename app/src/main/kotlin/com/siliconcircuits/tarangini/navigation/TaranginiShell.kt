@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -28,7 +29,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.siliconcircuits.tarangini.feature.player.navigation.isPlayerScreen
-import com.siliconcircuits.tarangini.feature.player.navigation.navigateToNowPlaying
+import com.siliconcircuits.tarangini.feature.player.nowplaying.PlayerTargets
 
 /**
  * The frame every screen sits in: the screens, then the [miniPlayer] slot,
@@ -37,31 +38,34 @@ import com.siliconcircuits.tarangini.feature.player.navigation.navigateToNowPlay
  * ends above it and no row is covered.
  *
  * On a wide window the tabs move to a rail at the left, and on a tablet the
- * [nowPlayingPane] stands at the right of the tab screens in place of the mini
- * player. Folding or turning the device keeps the screen, its scroll place and
+ * [player] stands as a pane at the right of the other tab screens in place of the
+ * mini player. Folding or turning the device keeps the screen, its scroll place and
  * the playback: only the layout around the screens changes.
  *
- * @param miniPlayer the bar with the current item. It gets the way to open the now playing screen,
- *   and the modifier it must put on itself
- * @param nowPlayingPane the now playing screen as a pane, with the controller that opens the
- *   queue and the equalizer, and the modifier it must put on itself
+ * @param miniPlayer the bar with the current item. It gets the way to open the player tab, and the
+ *   modifier it must put on itself
+ * @param player the player, as the first tab and as the pane, with the places it leads to
  */
+// The player slot shows as the first tab or as the pane, never both at once: the pane is hidden on
+// the player tab. Each is a screen of its own with its own state, so the slot is not one moved thing.
+@Suppress("ContentSlotReused")
 @Composable
 internal fun TaranginiShell(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
     miniPlayer: @Composable (onOpen: () -> Unit, modifier: Modifier) -> Unit = { _, _ -> },
-    nowPlayingPane: @Composable (NavHostController, Modifier) -> Unit = { _, _ -> },
-    home: @Composable (HomeTargets) -> Unit = {},
+    player: @Composable (PlayerTargets, Modifier) -> Unit = { _, _ -> },
     settings: @Composable (onOpenLicences: () -> Unit) -> Unit = {},
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val destination = backStackEntry?.destination
     val currentTab = destination?.topLevelDestination()
+    val targets = remember(navController) { playerTargets(navController) }
 
     BoxWithConstraints(modifier = modifier.background(MaterialTheme.colorScheme.background)) {
         val layout = ShellLayout.of(maxWidth, maxHeight)
-        val withPane = layout == ShellLayout.EXPANDED && currentTab != null
+        // The player tab is the player itself, so it needs no pane beside it.
+        val withPane = layout == ShellLayout.EXPANDED && currentTab != null && currentTab != TopLevelDestination.PLAYER
         // The now playing screen shows the same item with all its controls, so the bar would be a second copy.
         val showMiniPlayer = destination?.isPlayerScreen() != true && !withPane
         Row {
@@ -79,7 +83,9 @@ internal fun TaranginiShell(
                             // With no bottom bar the mini player is the lowest thing on screen, and must stay
                             // above the gesture bar of the phone.
                             val aboveGestureBar = if (bottomBar) Modifier else Modifier.navigationBarsPadding()
-                            miniPlayer(navController::navigateToNowPlaying, aboveGestureBar)
+                            miniPlayer({
+                                navController.navigateToTopLevel(TopLevelDestination.PLAYER)
+                            }, aboveGestureBar)
                         }
                         if (bottomBar) {
                             TaranginiBottomBar(selected = currentTab, onSelect = navController::navigateToTopLevel)
@@ -91,13 +97,14 @@ internal fun TaranginiShell(
             ) { innerPadding ->
                 TaranginiNavHost(
                     navController = navController,
+                    targets = targets,
                     modifier = Modifier.padding(innerPadding).consumeWindowInsets(innerPadding),
-                    home = home,
+                    player = { player(it, Modifier) },
                     settings = settings,
                 )
             }
             if (withPane) {
-                nowPlayingPane(navController, Modifier.width(NowPlayingPaneWidth).fillMaxHeight())
+                player(targets, Modifier.width(NowPlayingPaneWidth).fillMaxHeight())
             }
         }
     }

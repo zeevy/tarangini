@@ -17,6 +17,7 @@ import kotlin.math.PI
 import kotlin.math.sin
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
@@ -30,7 +31,11 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class LevelMeterTest {
     private val scope = TestScope()
-    private val meter = LevelMeter(scope.backgroundScope)
+    private val meter =
+        LevelMeter(
+            scope.backgroundScope,
+            SoundVisualMeter(scope.backgroundScope, StandardTestDispatcher(scope.testScheduler)),
+        )
 
     private fun processor(channels: Int, encoding: Int = C.ENCODING_PCM_16BIT) = meter.processor().apply {
         configure(AudioFormat(RATE, channels, encoding))

@@ -9,6 +9,7 @@ package com.siliconcircuits.tarangini.core.testing.settings
 import com.siliconcircuits.tarangini.core.domain.model.Look
 import com.siliconcircuits.tarangini.core.domain.model.ScanSettings
 import com.siliconcircuits.tarangini.core.domain.model.SongSort
+import com.siliconcircuits.tarangini.core.domain.model.VisualMode
 import com.siliconcircuits.tarangini.core.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,6 +23,15 @@ class FakeSettingsRepository : SettingsRepository {
 
     override suspend fun setLook(look: Look) {
         this.look.value = look
+    }
+
+    /** What the player display shows. A test can read and set it. */
+    val visual = MutableStateFlow(VisualMode.BARS)
+
+    override fun visualMode(): Flow<VisualMode> = visual
+
+    override suspend fun setVisualMode(mode: VisualMode) {
+        visual.value = mode
     }
 
     private val sort = MutableStateFlow(SongSort.TITLE)

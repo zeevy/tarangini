@@ -6,210 +6,357 @@
 
 package com.siliconcircuits.tarangini.feature.player.nowplaying
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.text.TextAutoSize
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.siliconcircuits.tarangini.core.domain.audio.LevelReading
-import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.domain.model.QueueSource
 import com.siliconcircuits.tarangini.core.domain.model.QueueSourceKind
-import com.siliconcircuits.tarangini.core.domain.model.SongFormat
 import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
-import com.siliconcircuits.tarangini.core.ui.component.BackButton
-import com.siliconcircuits.tarangini.core.ui.component.LevelMeter
-import com.siliconcircuits.tarangini.core.ui.component.MessageState
+import com.siliconcircuits.tarangini.core.ui.component.FrameCard
+import com.siliconcircuits.tarangini.core.ui.component.LcdPanel
+import com.siliconcircuits.tarangini.core.ui.component.PlaylistNameDialog
 import com.siliconcircuits.tarangini.core.ui.component.PlaylistPick
-import com.siliconcircuits.tarangini.core.ui.component.formatDuration
-import com.siliconcircuits.tarangini.core.ui.component.songFormatText
-import com.siliconcircuits.tarangini.core.ui.theme.DigitsFont
-import com.siliconcircuits.tarangini.core.ui.theme.PanelColor
-import com.siliconcircuits.tarangini.core.ui.theme.PanelEdge
-import com.siliconcircuits.tarangini.core.ui.theme.clearTopBarColors
+import com.siliconcircuits.tarangini.core.ui.theme.lookColors
 import com.siliconcircuits.tarangini.feature.player.R
-import com.siliconcircuits.tarangini.feature.player.equalizer.NowPlayingEqualizer
 import com.siliconcircuits.tarangini.feature.player.lyrics.LyricsViewModel
+import com.siliconcircuits.tarangini.feature.player.queue.PendingRemoval
+import com.siliconcircuits.tarangini.feature.player.queue.QueueActions
+import com.siliconcircuits.tarangini.feature.player.queue.QueueNotice
+import com.siliconcircuits.tarangini.feature.player.queue.QueueUiState
 import com.siliconcircuits.tarangini.feature.player.queue.QueueViewModel
-import com.siliconcircuits.tarangini.feature.player.queue.upNext
+import com.siliconcircuits.tarangini.feature.player.queue.UpNextCard
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.launch
 
-/** The now playing screen: one card with the song, the level meter, the seek bar and the keys of the player. */
+/**
+ * Where the player leads to in other parts of the app.
+ *
+ * @property onOpenAlbum opens an album by its id, title and artist
+ */
+data class PlayerTargets(
+    val onOpenSearch: () -> Unit = {},
+    val onOpenSettings: () -> Unit = {},
+    val onOpenLibrary: () -> Unit = {},
+    val onOpenAlbum: (id: Long, title: String, artist: String) -> Unit = { _, _, _ -> },
+)
+
+/** The player tab: the display card, the seek row and Up next. */
 @Composable
 internal fun NowPlayingScreen(
-    onBackClick: (() -> Unit)?,
-    onOpenQueue: () -> Unit,
+    targets: PlayerTargets,
     modifier: Modifier = Modifier,
-    onOpenEqualizer: () -> Unit = {},
     viewModel: NowPlayingViewModel = hiltViewModel(),
     lyricsViewModel: LyricsViewModel = hiltViewModel(),
-    levelsViewModel: LevelsViewModel = hiltViewModel(),
+    visualViewModel: VisualViewModel = hiltViewModel(),
     queueViewModel: QueueViewModel = hiltViewModel(),
 ) {
-    val queue by queueViewModel.state.collectAsStateWithLifecycle()
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val queue by queueViewModel.state.collectAsStateWithLifecycle()
+    val removal by queueViewModel.pendingRemoval.collectAsStateWithLifecycle()
     val lyrics by lyricsViewModel.state.collectAsStateWithLifecycle()
-    // Collected here, but its value is read only inside the meter.
-    val levelState = levelsViewModel.levels.collectAsStateWithLifecycle()
-    val levels = remember(levelState) { { levelState.value } }
-    val actions = NowPlayingActions(
-        onTogglePlay = viewModel::togglePlay,
-        onNext = viewModel::next,
-        onPrevious = viewModel::previous,
-        onSeek = viewModel::seekTo,
-        onToggleShuffle = viewModel::toggleShuffle,
-        onCycleRepeat = viewModel::cycleRepeat,
-        onToggleFavourite = viewModel::toggleFavourite,
-    )
+    val mode by visualViewModel.mode.collectAsStateWithLifecycle()
+    val levelling by visualViewModel.levelling.collectAsStateWithLifecycle()
+    // Collected here, but its value is read only while the visual draws.
+    val shownState = visualViewModel.shown.collectAsStateWithLifecycle()
+    val moving = state?.let { it.showPause && !it.isBuffering && it.error == null } == true
+    LaunchedEffect(moving) { visualViewModel.setMoving(moving) }
     NowPlayingContent(
-        state,
-        actions,
-        onBackClick,
-        onOpenQueue,
-        modifier,
-        viewModel.playlistPick,
-        viewModel.options.copy(onOpenEqualizer = onOpenEqualizer),
-        lyrics,
-        levels = levels,
-        below = {
-            item(key = EQUALIZER_KEY) {
-                NowPlayingEqualizer(
-                    Modifier.widthIn(max = WidestCard).fillMaxWidth().padding(bottom = CardEdge),
-                )
-            }
-            upNext(queue, WidestCard, queueViewModel::playAt, onOpenQueue)
-        },
+        state = state,
+        actions = NowPlayingActions(
+            onTogglePlay = viewModel::togglePlay,
+            onNext = viewModel::next,
+            onPrevious = viewModel::previous,
+            onSeek = viewModel::seekTo,
+            onSeekBy = viewModel::seekBy,
+            onToggleShuffle = viewModel::toggleShuffle,
+            onCycleRepeat = viewModel::cycleRepeat,
+            onToggleFavourite = viewModel::toggleFavourite,
+        ),
+        targets = targets,
+        modifier = modifier,
+        parts = DisplayParts(mode, levelling, remember(shownState) { { shownState.value } }, visualViewModel::cycle),
+        queue = queue,
+        queueActions = QueueActions(
+            onPlay = queueViewModel::playAt,
+            onMove = queueViewModel::move,
+            onRemove = queueViewModel::remove,
+            onClear = queueViewModel::clear,
+        ),
+        player = PlayerExtras(
+            playlists = viewModel.playlistPick,
+            options = viewModel.options.copy(onOpenSettings = targets.onOpenSettings),
+            lyrics = lyrics,
+            removal = removal,
+            onUndoRemove = queueViewModel::undoRemove,
+            onSaveQueue = queueViewModel::saveAsPlaylist,
+            notices = queueViewModel.notice,
+            onShuffleAll = queueViewModel::shuffleAll,
+        ),
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+/** The parts of the player that come with their own view models. */
+internal data class PlayerExtras(
+    val playlists: PlaylistPick? = null,
+    val options: PlaybackOptionActions = PlaybackOptionActions(),
+    val lyrics: String? = null,
+    val removal: PendingRemoval? = null,
+    val onUndoRemove: () -> Unit = {},
+    val onSaveQueue: (String) -> Unit = {},
+    val notices: Flow<QueueNotice> = emptyFlow(),
+    val onShuffleAll: () -> Unit = {},
+)
+
+/** The player as it is drawn, with no view model, so tests can show every state. */
 @Composable
 internal fun NowPlayingContent(
     state: NowPlayingUiState?,
     actions: NowPlayingActions,
-    onBackClick: (() -> Unit)?,
-    onOpenQueue: () -> Unit,
     modifier: Modifier = Modifier,
-    playlists: PlaylistPick? = null,
-    options: PlaybackOptionActions = PlaybackOptionActions(),
-    lyrics: String? = null,
-    levels: () -> LevelReading = { LevelReading.SILENCE },
-    below: LazyListScope.() -> Unit = {},
+    targets: PlayerTargets = PlayerTargets(),
+    parts: DisplayParts = DisplayParts(),
+    queue: QueueUiState = QueueUiState(),
+    queueActions: QueueActions = QueueActions({}, { _, _ -> }, {}),
+    player: PlayerExtras = PlayerExtras(),
 ) {
-    Scaffold(
-        modifier = modifier.background(MaterialTheme.colorScheme.background),
-        containerColor = Color.Transparent,
-        contentColor = MaterialTheme.colorScheme.onBackground,
-        topBar = {
-            CenterAlignedTopAppBar(
-                colors = clearTopBarColors(),
-                title = { TopBarTitle(state?.source, state?.album) },
-                // As a pane beside the tabs there is nothing to go back to.
-                navigationIcon = { onBackClick?.let { BackButton(onClick = it) } },
-                actions = {
-                    IconButton(onClick = onOpenQueue) {
-                        Icon(
-                            painter = painterResource(CoreUiR.drawable.ic_queue),
-                            contentDescription = stringResource(R.string.queue_open),
-                        )
-                    }
-                    state?.let { now -> PlaybackOptionsMenu(now, options, playlists, lyrics) }
+    val snackbar = remember { SnackbarHostState() }
+    var saving by rememberSaveable { mutableStateOf(false) }
+    QueueMessages(player, snackbar)
+    Box(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onBackground) {
+            PlayerColumn(
+                state,
+                actions,
+                targets,
+                parts,
+                PlayerQueue(
+                    queue,
+                    queueActions.copy(onSave = {
+                        saving = true
+                    }),
+                ),
+                player,
+            )
+        }
+        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(ScreenEdge)) { data ->
+            val look = lookColors
+            Snackbar(data, containerColor = look.snack, contentColor = look.onSnack, actionColor = look.snackAction)
+        }
+    }
+    if (saving) {
+        PlaylistNameDialog(
+            title = stringResource(R.string.up_next_save),
+            confirmLabel = stringResource(R.string.up_next_save_confirm),
+            onConfirm = {
+                saving = false
+                player.onSaveQueue(it)
+            },
+            onDismiss = { saving = false },
+        )
+    }
+}
+
+/** Up next and what can be done with it. */
+private class PlayerQueue(val state: QueueUiState, val actions: QueueActions)
+
+/** The header, the whole card or the compact one, and Up next under them. */
+@Composable
+private fun PlayerColumn(
+    state: NowPlayingUiState?,
+    actions: NowPlayingActions,
+    targets: PlayerTargets,
+    parts: DisplayParts,
+    queue: PlayerQueue,
+    player: PlayerExtras,
+) {
+    val list = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+    val density = LocalDensity.current
+    var fullPx by remember { mutableIntStateOf(0) }
+    var compactPx by remember { mutableIntStateOf(with(density) { CompactGuess.roundToPx() }) }
+    val room by rememberUpdatedState(fullPx - compactPx)
+    // While Up next is scrolled, the card shrinks to one line so more songs show. The list then
+    // grows by the room the card gave up, so it shrinks only when the list still scrolls after
+    // that; else it would flip back and forth.
+    var compact by remember { mutableStateOf(false) }
+    LaunchedEffect(list) {
+        snapshotFlow { list.isScrolled() to list.scrollRange() }.collect { (scrolled, range) ->
+            compact = if (compact) scrolled else scrolled && range > room
+        }
+    }
+    BoxWithConstraints(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars)) {
+        // The card never takes more than most of the height, so Up next always shows a few rows.
+        val cardMax = maxHeight * CARD_SHARE
+        Column(
+            modifier = Modifier.fillMaxSize().padding(start = ScreenEdge, end = ScreenEdge, bottom = ScreenEdge),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            val width = Modifier.widthIn(max = WidestCard).fillMaxWidth()
+            PlayerHeader(state, player, targets.onOpenSearch, width)
+            if (compact && state != null) {
+                CompactCard(
+                    state,
+                    actions,
+                    parts.shown,
+                    { scope.launch { list.animateScrollToItem(0) } },
+                    width.onSizeChanged { compactPx = it.height },
+                )
+            } else {
+                PlayerCard(
+                    state,
+                    actions,
+                    parts,
+                    targets,
+                    player.onShuffleAll,
+                    width.heightIn(max = cardMax).animateContentSize().onSizeChanged { fullPx = it.height },
+                )
+            }
+            UpNextCard(queue.state, queue.actions, list, width.weight(1f), hidden = player.removal?.index)
+        }
+    }
+}
+
+/** Removed with Undo, and what Save as a playlist did. */
+@Composable
+private fun QueueMessages(player: PlayerExtras, snackbar: SnackbarHostState) {
+    val removedText = player.removal?.let {
+        stringResource(
+            R.string.up_next_removed,
+            it.title ?: stringResource(R.string.up_next_no_title),
+        )
+    }
+    val undo = stringResource(R.string.up_next_undo)
+    LaunchedEffect(player.removal) {
+        if (removedText != null) {
+            val result = snackbar.showSnackbar(removedText, actionLabel = undo, withDismissAction = false)
+            if (result == SnackbarResult.ActionPerformed) player.onUndoRemove()
+        }
+    }
+    val saved = stringResource(R.string.up_next_saved, "%s")
+    val notSaved = stringResource(R.string.up_next_not_saved)
+    LaunchedEffect(player.notices) {
+        player.notices.collect { notice ->
+            snackbar.showSnackbar(
+                when (notice) {
+                    is QueueNotice.Saved -> saved.replace("%s", notice.name)
+                    QueueNotice.NotSaved -> notSaved
                 },
             )
-        },
-    ) { padding ->
-        if (state == null) {
-            MessageState(
-                title = stringResource(R.string.now_playing_empty_title),
-                text = stringResource(R.string.now_playing_empty_text),
-                modifier = Modifier.padding(padding),
-                icon = painterResource(CoreUiR.drawable.ic_music_note),
-            )
-        } else {
-            // One list for the whole screen: a short screen with a large font scrolls instead of
-            // cutting the keys off, and the songs of a long queue are drawn only when they come into view.
-            LazyColumn(
-                modifier = Modifier.padding(padding).fillMaxSize(),
-                contentPadding = PaddingValues(start = ScreenEdge, end = ScreenEdge, bottom = CardEdge),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                // On a wide screen the card keeps the width of a phone, so the keys stay in reach.
-                item(key = CARD_KEY) {
-                    NowPlayingCard(
-                        state,
-                        actions,
-                        levels,
-                        Modifier.widthIn(max = WidestCard).fillMaxWidth().padding(bottom = CardEdge),
-                    )
-                }
-                // The equalizer and the next songs.
-                below()
-            }
         }
     }
 }
 
-/**
- * "Playing from album" with the name of the list the queue came from, or "Now playing" with the
- * album of the song when the queue has no such list.
- */
+/** "Tarangini", where the queue came from, Search and More. */
 @Composable
-private fun TopBarTitle(source: QueueSource?, album: String?) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = stringResource(source?.kind?.label() ?: R.string.now_playing_title).uppercase(),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        val name = when {
-            source == null -> album
-            source.kind == QueueSourceKind.FAVOURITES -> stringResource(R.string.source_favourites_name)
-            else -> source.name
+private fun PlayerHeader(
+    state: NowPlayingUiState?,
+    player: PlayerExtras,
+    onSearch: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier.heightIn(min = 48.dp).padding(start = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.player_header),
+                style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp),
+                fontWeight = FontWeight.ExtraBold,
+            )
+            Text(
+                text = fromText(state),
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
-        name?.takeIf { it.isNotBlank() }?.let {
-            Text(text = it, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        IconButton(onClick = onSearch) {
+            Icon(painterResource(CoreUiR.drawable.ic_search), stringResource(CoreUiR.string.action_search))
+        }
+        PlaybackOptionsMenu(state, player.options, player.playlists, player.lyrics)
+    }
+}
+
+/** "Playing from album" and the name of the list the queue came from, or "Now playing". */
+@Composable
+private fun fromText(state: NowPlayingUiState?): String {
+    val source: QueueSource? = state?.source
+    return when {
+        state == null -> stringResource(R.string.player_nothing)
+
+        source == null -> stringResource(R.string.now_playing_title)
+
+        else -> {
+            val name = if (source.kind == QueueSourceKind.FAVOURITES) {
+                stringResource(R.string.source_favourites_name)
+            } else {
+                source.name
+            }
+            stringResource(R.string.player_from, stringResource(source.kind.label()), name).trim()
         }
     }
 }
 
-/** The words above the name of the list a queue came from. */
+/** The words before the name of the list a queue came from. */
 private fun QueueSourceKind.label(): Int = when (this) {
     QueueSourceKind.ALBUM -> R.string.source_album
     QueueSourceKind.ARTIST -> R.string.source_artist
@@ -219,186 +366,69 @@ private fun QueueSourceKind.label(): Int = when (this) {
     QueueSourceKind.FAVOURITES -> R.string.source_favourites
 }
 
+/**
+ * The framed card: the display, and under it the seek row, or with nothing loaded the two ways
+ * to start. A large font can make it taller than its room: then it scrolls inside.
+ */
 @Composable
-private fun NowPlayingCard(
-    state: NowPlayingUiState,
+private fun PlayerCard(
+    state: NowPlayingUiState?,
     actions: NowPlayingActions,
-    levels: () -> LevelReading,
+    parts: DisplayParts,
+    targets: PlayerTargets,
+    onShuffleAll: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val shape = MaterialTheme.shapes.large
-    Column(
-        modifier = modifier.background(PanelColor, shape).border(PanelEdge, shape).padding(CardEdge),
-        verticalArrangement = Arrangement.spacedBy(Spacing8),
-    ) {
-        FormatLine(state.format, state.place, state.queueSize)
-        Row(horizontalArrangement = Arrangement.spacedBy(CardEdge), verticalAlignment = Alignment.Bottom) {
-            // The meter stands still in a pause, while the player waits for data and after an error.
-            val moving = state.showPause && !state.isBuffering && state.error == null
-            LevelMeter(levels, moving)
-            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing6)) {
-                BigTime(state)
-                SongTexts(state, actions.onToggleFavourite)
-            }
-        }
-        when {
-            state.error != null -> ErrorLine(state.error, actions.onTogglePlay)
-            state.isLive -> Unit
-            else -> SeekBar(state, actions.onSeek)
-        }
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-        PlayerButtons(state, actions)
+    val openAlbum = state?.albumId?.let { id ->
+        state.album?.takeIf {
+            it.isNotBlank()
+        }?.let { album -> { targets.onOpenAlbum(id, album, state.artist.orEmpty()) } }
     }
-}
-
-/** The format of the song and its place in the queue, such as "MP3 320 kbps · 44.1 kHz · Stereo" and "2 / 8". */
-@Composable
-private fun FormatLine(format: SongFormat?, place: Int, queueSize: Int) {
-    val rest = format?.let { songFormatText(it.copy(codec = null)) }.orEmpty()
-    // One item has no place worth naming.
-    val hasPlace = queueSize > 1
-    if (format?.codec == null && rest.isEmpty() && !hasPlace) return
-    val small = TextStyle(fontFamily = DigitsFont, fontWeight = FontWeight.SemiBold, fontSize = 11.sp)
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing8)) {
-        format?.codec?.let { codec ->
-            Text(
-                text = codec,
-                modifier = Modifier
-                    .background(MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.shapes.extraSmall)
-                    .padding(horizontal = 7.dp, vertical = 3.dp),
-                style = small,
-                color = MaterialTheme.colorScheme.onSecondaryContainer,
-            )
-        }
-        // Before the player has read the file there is no format: an empty text would be an item with
-        // nothing for a screen reader to say, so only the space is kept.
-        if (rest.isEmpty()) {
-            Spacer(Modifier.weight(1f))
-        } else {
-            Text(
-                text = rest,
-                modifier = Modifier.weight(1f),
-                style = small,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        if (hasPlace) {
-            val spoken = stringResource(R.string.now_playing_place_spoken, place, queueSize)
-            Text(
-                text = stringResource(R.string.now_playing_place, place, queueSize),
-                modifier = Modifier.clearAndSetSemantics { contentDescription = spoken },
-                style = small,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+    FrameCard(modifier = modifier, padding = PaddingValues(start = 6.dp, end = 6.dp, top = 6.dp, bottom = 2.dp)) {
+        Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            LcdPanel(Modifier.fillMaxWidth()) { PlayerDisplay(state, actions, parts, openAlbum) }
+            if (state == null) StartButtons(onShuffleAll, targets.onOpenLibrary) else SeekRow(state, actions)
         }
     }
 }
 
-/** The time played in large digits, with the length after it. A live stream says that it is live. */
+/** With nothing loaded: Shuffle all songs, or open the library to pick. */
 @Composable
-private fun BigTime(state: NowPlayingUiState) {
-    val accent = MaterialTheme.colorScheme.primary
-    val length = state.durationMs
-    if (length == null) {
-        // After an error the line under it says why; "Live" would say the opposite.
-        if (state.error != null) return
-        Text(
-            text = stringResource(if (state.isBuffering) R.string.player_loading else R.string.now_playing_live),
-            style = TextStyle(fontFamily = DigitsFont, fontWeight = FontWeight.Bold, fontSize = 28.sp),
-            color = accent,
-        )
-        return
-    }
-    Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(Spacing8)) {
-        // With a large font the digits get smaller to fit, before anything is cut.
-        BasicText(
-            text = formatDuration(state.positionMs).ifEmpty { ZERO },
-            modifier = Modifier.weight(1f, fill = false),
-            style = TextStyle(fontFamily = DigitsFont, fontWeight = FontWeight.Bold, fontSize = 38.sp, color = accent),
-            maxLines = 1,
-            autoSize = TextAutoSize.StepBased(minFontSize = 18.sp, maxFontSize = 38.sp),
-        )
-        Text(
-            text = stringResource(R.string.now_playing_length, formatDuration(length).ifEmpty { ZERO }),
-            modifier = Modifier.padding(bottom = 4.dp),
-            style = TextStyle(fontFamily = DigitsFont, fontWeight = FontWeight.SemiBold, fontSize = 13.sp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
-        )
-    }
-}
-
-/** The title and the artist, with the heart beside them for a song of the library. */
-@Composable
-private fun SongTexts(state: NowPlayingUiState, onToggleFavourite: () -> Unit) {
-    Row(verticalAlignment = Alignment.Top) {
-        Column(modifier = Modifier.weight(1f)) {
+private fun StartButtons(onShuffleAll: () -> Unit, onOpenLibrary: () -> Unit) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Button(
+            onClick = onShuffleAll,
+            modifier = Modifier.weight(START_WEIGHT).heightIn(min = 48.dp),
+            shape = MaterialTheme.shapes.small,
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+            contentPadding = PaddingValues(horizontal = 8.dp),
+        ) {
+            Icon(painterResource(CoreUiR.drawable.ic_shuffle), null, Modifier.size(18.dp))
             Text(
-                text = state.title ?: stringResource(CoreUiR.string.unknown_title),
-                style = MaterialTheme.typography.titleLarge,
+                stringResource(R.string.player_shuffle_all),
+                Modifier.padding(start = 8.dp),
                 fontWeight = FontWeight.ExtraBold,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
             )
-            // A station that sends no song title has no line here: the large text says that it is live.
-            val hasArtistLine = state.artist != null || !state.isLive
-            if (hasArtistLine) {
-                Text(
-                    text = state.artist ?: stringResource(CoreUiR.string.unknown_artist),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
         }
-        state.isFavourite?.let { on -> FavouriteButton(on, onToggleFavourite) }
+        OutlinedButton(
+            onClick = onOpenLibrary,
+            modifier = Modifier.weight(1f).heightIn(min = 48.dp),
+            shape = MaterialTheme.shapes.small,
+            contentPadding = PaddingValues(horizontal = 8.dp),
+        ) {
+            Text(stringResource(R.string.player_open_library), fontWeight = FontWeight.ExtraBold)
+        }
     }
 }
 
-/** Why the item does not play, with a button that tries again. It takes the place of the seek bar. */
-@Composable
-private fun ErrorLine(error: PlaybackError, onRetry: () -> Unit) {
-    val text = when (error) {
-        PlaybackError.NETWORK -> R.string.player_error_network
-        PlaybackError.FILE_NOT_AVAILABLE -> R.string.player_error_file
-        PlaybackError.CANNOT_PLAY -> R.string.player_error_cannot_play
-        PlaybackError.UNKNOWN -> R.string.player_error_unknown
-    }
-    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = stringResource(text),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.error,
-            textAlign = TextAlign.Center,
-        )
-        TextButton(onClick = onRetry) { Text(stringResource(R.string.player_try_again)) }
-    }
-}
-
-/** The heart. Its name for a screen reader is what a tap does. */
-@Composable
-private fun FavouriteButton(on: Boolean, onToggle: () -> Unit) {
-    IconButton(onClick = onToggle) {
-        Icon(
-            painter = painterResource(if (on) CoreUiR.drawable.ic_favourite_filled else CoreUiR.drawable.ic_favourite),
-            contentDescription = stringResource(
-                if (on) CoreUiR.string.song_remove_favourite else CoreUiR.string.song_add_favourite,
-            ),
-            tint = if (on) MaterialTheme.colorScheme.tertiary else LocalContentColor.current,
-        )
-    }
-}
-
-// The space at the sides of the screen and inside the card. With 12 dp each, the five keys stay
-// 48 dp wide on a phone of 320 dp.
-private val ScreenEdge = 12.dp
-private val CardEdge = 12.dp
-private val Spacing6 = 6.dp
-private val Spacing8 = 8.dp
+// The sides of the screen. With 8 dp the keys and the chips fit on a phone of 320 dp.
+private val ScreenEdge = 8.dp
 private val WidestCard = 560.dp
-private const val CARD_KEY = "card"
-private const val EQUALIZER_KEY = "equalizer"
+private const val CARD_SHARE = 0.72f
+private const val START_WEIGHT = 1.4f
 
 // The shared format leaves a zero out, which is right for a length that is not known. A place is never unknown.
 internal const val ZERO = "0:00"
+
+// The height of the compact card before it is first measured.
+private val CompactGuess = 64.dp

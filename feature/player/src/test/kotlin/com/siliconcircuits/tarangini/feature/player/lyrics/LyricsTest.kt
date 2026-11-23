@@ -30,6 +30,7 @@ import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import com.siliconcircuits.tarangini.feature.player.nowplaying.NowPlayingActions
 import com.siliconcircuits.tarangini.feature.player.nowplaying.NowPlayingContent
 import com.siliconcircuits.tarangini.feature.player.nowplaying.NowPlayingUiState
+import com.siliconcircuits.tarangini.feature.player.nowplaying.PlayerExtras
 import java.io.File
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.collect
@@ -90,7 +91,9 @@ class LyricsTest {
         PlaybackState(queue = listOf(PlaybackItem(id, "Bhairavi")), currentIndex = 0, positionMs = positionMs)
 
     private fun show(lyrics: String?) = composeRule.setContent {
-        TaranginiTheme { NowPlayingContent(song, NowPlayingActions({}, {}, {}, {}, {}, {}), {}, {}, lyrics = lyrics) }
+        TaranginiTheme {
+            NowPlayingContent(song, NowPlayingActions({}, {}, {}, {}, {}, {}), player = PlayerExtras(lyrics = lyrics))
+        }
     }
 
     @Test
@@ -134,7 +137,12 @@ class LyricsTest {
         var words by mutableStateOf<String?>(LYRICS)
         composeRule.setContent {
             TaranginiTheme {
-                NowPlayingContent(song, NowPlayingActions({}, {}, {}, {}, {}, {}), {}, {}, lyrics = words)
+                NowPlayingContent(
+                    song,
+                    NowPlayingActions({
+                    }, {}, {}, {}, {}, {}),
+                    player = PlayerExtras(lyrics = words),
+                )
             }
         }
         openMenu()

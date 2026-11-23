@@ -95,4 +95,4 @@ private fun Artist.route() = ArtistRoute(id, name.take(MAX_TITLE))
 
 private fun Folder.route() = FolderRoute(id, name.take(MAX_TITLE))
 
-private const val MAX_TITLE = 200
+internal const val MAX_TITLE = 200

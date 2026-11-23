@@ -207,21 +207,3 @@ internal val LocalLookColors = staticCompositionLocalOf { LightLook }
 val lookColors: LookColors
     @Composable @ReadOnlyComposable
     get() = LocalLookColors.current
-
-/**
- * The colours of a level meter: [normal] for most of the bar, [hot] near the top, [warn] at the top
- * and [off] for a segment that is not lit. Material 3 has no colours for this, so each look has its own.
- */
-@Immutable
-data class LevelColors(val normal: Color, val hot: Color, val warn: Color, val off: Color)
-
-internal val LightLevelColors = LevelColors(Green, Color(0xFFB7791F), Color(0xFFD9480F), Color(0xFFE7E2D7))
-
-internal val DarkLevelColors = LevelColors(Mint, Color(0xFFF2C14E), Color(0xFFFF7A45), Color(0xFF252C28))
-
-/** The level meter colours of the look that is on, told by the ground colour of the theme. */
-val levelColors: LevelColors
-    @Composable @ReadOnlyComposable
-    get() = if (MaterialTheme.colorScheme.background.luminance() < HALF_LIGHT) DarkLevelColors else LightLevelColors
-
-private const val HALF_LIGHT = 0.5f

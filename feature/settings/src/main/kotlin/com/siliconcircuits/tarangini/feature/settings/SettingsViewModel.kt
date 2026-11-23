@@ -8,10 +8,12 @@ package com.siliconcircuits.tarangini.feature.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.siliconcircuits.tarangini.core.domain.audio.VolumeLevelling
 import com.siliconcircuits.tarangini.core.domain.library.LibraryScanner
 import com.siliconcircuits.tarangini.core.domain.library.ScanState
 import com.siliconcircuits.tarangini.core.domain.model.Look
 import com.siliconcircuits.tarangini.core.domain.model.ScanSettings
+import com.siliconcircuits.tarangini.core.domain.repository.EqualizerRepository
 import com.siliconcircuits.tarangini.core.domain.repository.PlayHistory
 import com.siliconcircuits.tarangini.core.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,6 +23,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -36,6 +40,7 @@ internal data class SettingsUiState(
     val scan: ScanSettings = ScanSettings(),
     val folders: List<String> = emptyList(),
     val scanState: ScanState = ScanState.Idle,
+    val levelling: Boolean = false,
 )
 
 /** Settings: what the library leaves out, a rescan and the play history. */
@@ -44,11 +49,19 @@ internal class SettingsViewModel @Inject constructor(
     private val settings: SettingsRepository,
     private val scanner: LibraryScanner,
     private val history: PlayHistory,
+    private val equalizer: EqualizerRepository,
 ) : ViewModel() {
     private val folders = MutableStateFlow<List<String>>(emptyList())
 
     val state: StateFlow<SettingsUiState> =
-        combine(settings.look(), settings.scanSettings(), folders, scanner.state, ::SettingsUiState)
+        combine(
+            settings.look(),
+            settings.scanSettings(),
+            folders,
+            scanner.state,
+            equalizer.settings().map { it.levelling != VolumeLevelling.OFF },
+            ::SettingsUiState,
+        )
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_AFTER_MS), SettingsUiState())
 
     init {
@@ -72,6 +85,25 @@ internal class SettingsViewModel @Inject constructor(
     fun setFolderHidden(path: String, hidden: Boolean) = changeLibrary { settings.setFolderHidden(path, hidden) }
 
     fun rescan() = changeLibrary { }
+
+    /**
+     * Turns volume levelling on or off. On means each song by its own gain, the choice that suits a
+     * mix of albums; the other saved sound settings stay as they are.
+     */
+    fun setLevelling(on: Boolean) {
+        viewModelScope.launch {
+            attempt {
+                val now = equalizer.settings().first()
+                // A mode saved before (by album) stays when levelling is turned on again.
+                val mode = when {
+                    !on -> VolumeLevelling.OFF
+                    now.levelling == VolumeLevelling.OFF -> VolumeLevelling.TRACK
+                    else -> now.levelling
+                }
+                equalizer.save(now.copy(levelling = mode))
+            }
+        }
+    }
 
     /** Forgets every play and every play count. */
     fun clearHistory() {

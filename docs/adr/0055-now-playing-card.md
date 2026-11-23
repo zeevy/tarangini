@@ -1,6 +1,6 @@
 # ADR 0055: Now playing card
 
-- Status: accepted, 23 Nov 2026. Changes the layout part of ADR 0019.
+- Status: accepted, 23 Nov 2026. Changes the layout part of ADR 0019. Replaced by ADR 0060 on 24 Nov 2026.
 - Rules: U1, U7, U8.
 - Decision D86.
 

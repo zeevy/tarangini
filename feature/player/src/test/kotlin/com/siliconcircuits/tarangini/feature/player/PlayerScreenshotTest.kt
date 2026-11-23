@@ -8,29 +8,25 @@ package com.siliconcircuits.tarangini.feature.player
 
 import androidx.compose.runtime.Composable
 import com.github.takahirom.roborazzi.captureRoboImage
-import com.siliconcircuits.tarangini.core.domain.audio.EqualizerPreset
-import com.siliconcircuits.tarangini.core.domain.audio.EqualizerSettings
-import com.siliconcircuits.tarangini.core.domain.audio.FIVE_BANDS_HZ
-import com.siliconcircuits.tarangini.core.domain.audio.LevelReading
+import com.siliconcircuits.tarangini.core.domain.audio.VisualFrame
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackItem
 import com.siliconcircuits.tarangini.core.domain.model.QueueSource
 import com.siliconcircuits.tarangini.core.domain.model.QueueSourceKind
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
-import com.siliconcircuits.tarangini.core.domain.model.SongFormat
+import com.siliconcircuits.tarangini.core.domain.model.SleepState
+import com.siliconcircuits.tarangini.core.domain.model.VisualMode
 import com.siliconcircuits.tarangini.core.testing.savedPicture
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
-import com.siliconcircuits.tarangini.feature.player.equalizer.EqualizerActions
-import com.siliconcircuits.tarangini.feature.player.equalizer.EqualizerPanel
-import com.siliconcircuits.tarangini.feature.player.equalizer.EqualizerUiState
+import com.siliconcircuits.tarangini.feature.player.nowplaying.CompactCard
+import com.siliconcircuits.tarangini.feature.player.nowplaying.DisplayParts
 import com.siliconcircuits.tarangini.feature.player.nowplaying.NowPlayingActions
 import com.siliconcircuits.tarangini.feature.player.nowplaying.NowPlayingContent
 import com.siliconcircuits.tarangini.feature.player.nowplaying.NowPlayingUiState
-import com.siliconcircuits.tarangini.feature.player.queue.QueueActions
-import com.siliconcircuits.tarangini.feature.player.queue.QueueContent
+import com.siliconcircuits.tarangini.feature.player.nowplaying.ShownVisual
 import com.siliconcircuits.tarangini.feature.player.queue.QueueUiState
-import java.io.File
-import org.junit.Assert.assertTrue
+import kotlin.math.PI
+import kotlin.math.sin
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -38,10 +34,10 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
-/** The now playing screen and the queue at the narrowest widthand on a wide screen. */
+/** The player tab in each of its states, on a phone of 360 by 800 dp, at the narrowest width and on a wide screen. */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(qualifiers = "w320dp-h640dp-xhdpi")
+@Config(qualifiers = "w360dp-h800dp-xhdpi")
 class PlayerScreenshotTest {
     private val actions = NowPlayingActions({}, {}, {}, {}, {}, {})
     private val song = NowPlayingUiState(
@@ -49,145 +45,138 @@ class PlayerScreenshotTest {
         artist = "Ravi Shankar",
         album = "Morning Ragas",
         artworkUri = null,
-        showPause = true,
+        // Paused, so the long title rests at its start; the visual is shown as it plays.
+        showPause = false,
         isBuffering = false,
         positionMs = 65_000,
         durationMs = 185_000,
         shuffle = true,
         repeat = RepeatMode.ONE,
         isFavourite = true,
-        format = SongFormat("MP3", 320, 44_100, 2),
+        albumId = 3,
         place = 2,
-        queueSize = 8,
+        queueSize = 4,
+        source = QueueSource(QueueSourceKind.ALBUM, "Morning Ragas"),
     )
-    private val loud = LevelReading(-3f, -9f)
-    private val equalizer =
-        EqualizerUiState(EqualizerSettings(isOn = true, preset = EqualizerPreset.BASS), FIVE_BANDS_HZ)
-    private val station = song.copy(
+    private val playing = song.copy(title = "Bhairavi", showPause = true)
+    private val station = playing.copy(
         title = "Radio Mirchi",
         artist = "A song on air",
         album = null,
+        albumId = null,
         durationMs = null,
         isFavourite = null,
-        format = SongFormat("AAC", 128, 48_000, 2),
         place = 1,
         queueSize = 1,
+        source = null,
     )
     private val queue = QueueUiState(
         items = listOf(
-            PlaybackItem("a", "Morning raga", "Ravi Shankar"),
-            PlaybackItem("b", "A very long title of a song that does not fit on one line", null),
-            PlaybackItem("c", "Evening raga", "Zakir Hussain"),
+            PlaybackItem("a", "Morning raga", "Ravi Shankar", durationMs = 200_000),
+            PlaybackItem("b", "Bhairavi", "Ravi Shankar", durationMs = 185_000),
+            PlaybackItem("c", "A very long title of a song that does not fit on one line", null, durationMs = 410_000),
+            PlaybackItem("d", "Evening raga", "Zakir Hussain", durationMs = 190_000),
         ),
         currentIndex = 1,
     )
+    private val sound = ShownVisual(
+        bands = List(VisualFrame.BAND_COUNT) { (0.85f - it * 0.02f + 0.12f * sin(it * 0.9f)).coerceIn(0f, 1f) },
+        peaks = List(VisualFrame.BAND_COUNT) { (0.92f - it * 0.02f + 0.12f * sin(it * 0.9f)).coerceIn(0f, 1f) },
+        wave = List(VisualFrame.WAVE_POINTS) { (0.7 * sin(it * 2 * PI / 24) * sin(it * PI / 96)).toFloat() },
+    )
+    private val bars = DisplayParts(VisualMode.BARS, shown = { sound })
 
     @Test
-    fun `a song`() = shot("now_playing_song") { NowPlayingContent(song, actions, {}, {}, levels = { loud }) }
+    fun `a song that plays`() = shot("player_song") { NowPlayingContent(playing, actions, parts = bars, queue = queue) }
 
     @Test
-    fun `a song from an album`() = shot("now_playing_from_album") {
-        NowPlayingContent(song.copy(source = QueueSource(QueueSourceKind.ALBUM, "Morning Ragas")), actions, {}, {})
+    @Config(qualifiers = "+night")
+    fun `a song that plays in the dark look`() = shot("player_song_dark") {
+        NowPlayingContent(playing, actions, parts = bars, queue = queue)
     }
 
     @Test
-    fun `a song from a playlist`() = shot("now_playing_from_playlist") {
-        NowPlayingContent(song.copy(source = QueueSource(QueueSourceKind.PLAYLIST, "Long drive")), actions, {}, {})
+    fun `a long title in a pause`() = shot("player_paused") {
+        NowPlayingContent(song, actions, parts = bars, queue = queue)
     }
 
     @Test
-    fun `a song from an artist`() = shot("now_playing_from_artist") {
-        NowPlayingContent(song.copy(source = QueueSource(QueueSourceKind.ARTIST, "Ravi Shankar")), actions, {}, {})
-    }
-
-    @Test
-    fun `a song from a genre`() = shot("now_playing_from_genre") {
-        NowPlayingContent(song.copy(source = QueueSource(QueueSourceKind.GENRE, "Classical")), actions, {}, {})
-    }
-
-    @Test
-    fun `a song from a folder`() = shot("now_playing_from_folder") {
-        NowPlayingContent(song.copy(source = QueueSource(QueueSourceKind.FOLDER, "Download")), actions, {}, {})
-    }
-
-    @Test
-    fun `a song from the favourites`() = shot("now_playing_from_favourites") {
-        NowPlayingContent(song.copy(source = QueueSource(QueueSourceKind.FAVOURITES)), actions, {}, {})
-    }
-
-    @Test
-    @Config(qualifiers = "w360dp-h800dp-xhdpi")
-    fun `a song with the equalizer under the card`() = shot("now_playing_equalizer") {
-        NowPlayingContent(song, actions, {
-        }, {}, levels = { loud }, below = { item { EqualizerPanel(equalizer, EqualizerActions()) } })
-    }
-
-    @Test
-    @Config(qualifiers = "w360dp-h800dp-night-xhdpi")
-    fun `a song with the equalizer under the card in the dark look`() = shot("now_playing_equalizer_dark") {
-        NowPlayingContent(song, actions, {
-        }, {}, levels = { loud }, below = { item { EqualizerPanel(equalizer, EqualizerActions()) } })
-    }
-
-    @Test
-    fun `a song in a pause`() = shot("now_playing_paused") {
-        NowPlayingContent(song.copy(showPause = false), actions, {}, {}, levels = { loud })
+    fun `the wave with every tag on`() = shot("player_wave_tags") {
+        val tagged = playing.copy(sleep = SleepState.Timed(600_000), speed = 1.25f)
+        NowPlayingContent(
+            tagged,
+            actions,
+            parts = DisplayParts(VisualMode.WAVE, levelling = true, shown = {
+                sound
+            }),
+            queue = queue,
+        )
     }
 
     @Test
     @Config(qualifiers = "+night")
-    fun `a song in the dark look`() = shot("now_playing_song_dark") {
-        NowPlayingContent(song, actions, {}, {}, levels = { loud })
+    fun `the wave in the dark look`() = shot("player_wave_dark") {
+        NowPlayingContent(playing, actions, parts = DisplayParts(VisualMode.WAVE, shown = { sound }), queue = queue)
     }
 
     @Test
-    @Config(qualifiers = "w640dp-h320dp-xhdpi")
-    fun `a song on a wide screen`() = shot("now_playing_song_wide") {
-        NowPlayingContent(song, actions, {}, {}, levels = { loud })
+    fun `the visual off, from the favourites`() = shot("player_visual_off") {
+        val fromFavourites = playing.copy(source = QueueSource(QueueSourceKind.FAVOURITES))
+        NowPlayingContent(fromFavourites, actions, parts = DisplayParts(VisualMode.OFF), queue = queue)
     }
 
     @Test
-    fun `a station`() = shot("now_playing_station") { NowPlayingContent(station, actions, {}, {}) }
-
-    @Test
-    fun `a station with no connection`() = shot("now_playing_station_error") {
-        val failed = station.copy(artist = null, showPause = false, error = PlaybackError.NETWORK)
-        NowPlayingContent(failed, actions, {}, {})
+    fun `a station`() = shot("player_station") {
+        NowPlayingContent(
+            station,
+            actions,
+            parts = bars,
+            queue = QueueUiState(listOf(PlaybackItem("s", "Radio Mirchi", isStream = true)), 0),
+        )
     }
 
     @Test
-    fun `nothing loaded`() = shot("now_playing_empty") { NowPlayingContent(null, actions, {}, {}) }
+    fun `a song that cannot be played`() = shot("player_error") {
+        NowPlayingContent(song.copy(error = PlaybackError.FILE_NOT_AVAILABLE), actions, parts = bars, queue = queue)
+    }
 
     @Test
-    fun `the queue`() = shot("queue") { QueueContent(queue, QueueActions({}, { _, _ -> }, {}), {}) }
+    fun `nothing loaded`() = shot("player_empty") { NowPlayingContent(null, actions) }
 
     @Test
     @Config(qualifiers = "+night")
-    fun `the queue in the dark look`() = shot("queue_dark") {
-        QueueContent(queue, QueueActions({}, { _, _ -> }, {}), {})
+    fun `nothing loaded in the dark look`() = shot("player_empty_dark") { NowPlayingContent(null, actions) }
+
+    @Test
+    fun `the compact card`() = shot("player_compact") { CompactCard(playing, actions, { sound }, {}) }
+
+    @Test
+    @Config(qualifiers = "+night")
+    fun `the compact card in the dark look`() = shot("player_compact_dark") {
+        CompactCard(playing, actions, { sound }, {})
     }
 
     @Test
+    @Config(qualifiers = "w320dp-h640dp-xhdpi")
+    fun `a song at the narrowest width`() = shot("player_song_narrow") {
+        NowPlayingContent(song, actions, parts = bars, queue = queue)
+    }
+
+    @Test
+    @Config(qualifiers = "w320dp-h640dp-xhdpi")
     fun `a song with the largest font`() {
         RuntimeEnvironment.setFontScale(2f)
-        shot("now_playing_song_largest_font") { NowPlayingContent(song, actions, {}, {}, levels = { loud }) }
+        shot("player_song_largest_font") { NowPlayingContent(song, actions, parts = bars, queue = queue) }
     }
 
     @Test
-    fun `the queue with the largest font`() {
-        RuntimeEnvironment.setFontScale(2f)
-        shot("queue_largest_font") { QueueContent(queue, QueueActions({}, { _, _ -> }, {}), {}) }
-    }
-
-    @Test
-    @Config(qualifiers = "w640dp-h320dp-xhdpi")
-    fun `the queue on a wide screen`() = shot("queue_wide") {
-        QueueContent(queue, QueueActions({}, { _, _ -> }, {}), {})
+    @Config(qualifiers = "w640dp-h360dp-xhdpi")
+    fun `a song on a wide screen`() = shot("player_song_wide") {
+        NowPlayingContent(song, actions, parts = bars, queue = queue)
     }
 
     private fun shot(name: String, content: @Composable () -> Unit) {
-        val picture = savedPicture("$name")
-        captureRoboImage(picture.path) {
+        captureRoboImage(savedPicture(name).path) {
             TaranginiTheme { content() }
         }
     }

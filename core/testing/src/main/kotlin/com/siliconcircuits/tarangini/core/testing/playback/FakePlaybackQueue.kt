@@ -38,6 +38,10 @@ class FakePlaybackQueue : PlaybackQueue {
         commands += "clear"
     }
 
+    override fun keepOnlyCurrent() {
+        commands += "keepOnlyCurrent"
+    }
+
     override fun setShuffle(on: Boolean) {
         commands += "setShuffle $on"
     }

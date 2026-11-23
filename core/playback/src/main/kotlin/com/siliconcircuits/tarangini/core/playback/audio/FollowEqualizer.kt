@@ -14,8 +14,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 /**
- * Hands each change of the saved equalizer to [processor], from the screen, a restore or a new
+ * Hands each change of the saved equalizer to [processor], from Settings, a restore or a new
  * start. The car hears the same, because it plays through the same player.
+ *
+ * The equalizer bands are out of the app for now (D91): only volume levelling is applied, and the
+ * saved bands and presets are kept for when the equalizer comes back.
  */
 internal fun followEqualizer(
     saved: EqualizerRepository,
@@ -23,8 +26,12 @@ internal fun followEqualizer(
     processor: EqualizerProcessor,
     scope: CoroutineScope,
 ): Job = scope.launch {
-    saved.settings().collect { settings -> processor.setTargets(targetsOf(settings, bands.centresHz())) }
+    saved.settings().collect { settings -> processor.setTargets(appliedTargets(settings, bands.centresHz())) }
 }
+
+/** What is applied of [settings] while the equalizer is out of the app: volume levelling alone. */
+internal fun appliedTargets(settings: EqualizerSettings, bandsHz: List<Float>): EqualizerTargets =
+    targetsOf(settings.copy(isOn = false), bandsHz)
 
 /** The main target and the target of each genre that has its own preset. */
 internal fun targetsOf(settings: EqualizerSettings, bandsHz: List<Float>): EqualizerTargets {

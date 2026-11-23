@@ -1,6 +1,6 @@
 # ADR 0057: Up next on the now playing screen
 
-- Status: accepted, 23 Nov 2026. Adds to ADR 0019 and ADR 0055.
+- Status: accepted, 23 Nov 2026. Adds to ADR 0019 and ADR 0055. Replaced by ADR 0060 on 24 Nov 2026.
 - Rules: U1, U7, U8.
 - Decision D88.
 

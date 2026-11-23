@@ -75,4 +75,7 @@
     <string name="licences_no_text">The text of this licence is not in the app. The page of the library has it.</string>
     <string name="settings_done">Done</string>
     <string name="settings_cancel">Cancel</string>
+    <string name="settings_sound">Sound</string>
+    <string name="settings_levelling">Volume levelling</string>
+    <string name="settings_levelling_text">Plays songs at the same loudness, by the ReplayGain tags of each file</string>
 </resources>

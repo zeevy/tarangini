@@ -8,14 +8,6 @@ package com.siliconcircuits.tarangini.feature.player.navigation
 
 import kotlinx.serialization.Serializable
 
-/** The now playing screen. It opens over any screen, and the mini player is hidden on it. */
+/** The player tab. The mini player is hidden on it. */
 @Serializable
 data object NowPlayingRoute
-
-/** The queue. It opens from the now playing screen. */
-@Serializable
-internal data object QueueRoute
-
-/** The equalizer. It opens from the menu of the now playing screen. */
-@Serializable
-internal data object EqualizerRoute

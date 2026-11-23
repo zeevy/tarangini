@@ -26,13 +26,16 @@ import kotlinx.coroutines.flow.shareIn
 
 /**
  * The level meter of the app. The playback service puts [processor] into the sound path of the
- * player; the screens read [levels]. The service runs in the process of the app, so both sides
- * share this one object. One loop in [scope] reads the peaks for every screen, so two screens
+ * player; the screens read [levels]. The same processor feeds the visual of the player
+ * ([SoundVisualMeter]). The service runs in the process of the app, so both sides share this one
+ * object. One loop in [scope] reads the peaks for every screen, so two screens
  * that watch at once see the same level.
  */
 @Singleton
-internal class LevelMeter @Inject constructor(@param:PlaybackCoroutineScope private val scope: CoroutineScope) :
-    AudioLevels {
+internal class LevelMeter @Inject constructor(
+    @param:PlaybackCoroutineScope private val scope: CoroutineScope,
+    private val visual: SoundVisualMeter,
+) : AudioLevels {
     private val watchers = AtomicInteger()
     private val lock = Any()
     private var heldLeft = 0f
@@ -66,7 +69,7 @@ internal class LevelMeter @Inject constructor(@param:PlaybackCoroutineScope priv
     /** A new processor for a new player. Each player needs its own, as a processor keeps the format of its player. */
     // A processor of the audio sink is API of Media3 that may still change.
     @OptIn(UnstableApi::class)
-    fun processor(): AudioProcessor = LevelMeterProcessor(this)
+    fun processor(): AudioProcessor = LevelMeterProcessor(this, visual)
 
     /** The peaks of one buffer, from 0 to 1. Called on the playback thread. */
     fun report(left: Float, right: Float) {
