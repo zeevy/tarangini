@@ -14,3 +14,8 @@ dependencies {
     implementation(libs.androidx.test.runner)
     implementation(libs.androidx.test.uiautomator)
 }
+
+android {
+    // The release flow test adds the same three test songs as the in-app end to end test.
+    sourceSets.getByName("main").assets.directories.add("../app/src/androidTest/assets")
+}
