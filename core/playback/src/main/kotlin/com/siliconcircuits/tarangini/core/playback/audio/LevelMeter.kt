@@ -12,25 +12,52 @@ import androidx.media3.common.util.UnstableApi
 import com.siliconcircuits.tarangini.core.domain.audio.AudioLevels
 import com.siliconcircuits.tarangini.core.domain.audio.LevelReading
 import com.siliconcircuits.tarangini.core.domain.audio.SILENCE_DB
+import com.siliconcircuits.tarangini.core.playback.di.PlaybackCoroutineScope
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.log10
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.shareIn
 
 /**
  * The level meter of the app. The playback service puts [processor] into the sound path of the
  * player; the screens read [levels]. The service runs in the process of the app, so both sides
- * share this one object.
+ * share this one object. One loop in [scope] reads the peaks for every screen, so two screens
+ * that watch at once see the same level.
  */
 @Singleton
-internal class LevelMeter @Inject constructor() : AudioLevels {
+internal class LevelMeter @Inject constructor(@param:PlaybackCoroutineScope private val scope: CoroutineScope) :
+    AudioLevels {
     private val watchers = AtomicInteger()
     private val lock = Any()
     private var heldLeft = 0f
     private var heldRight = 0f
+
+    private val shared: Flow<LevelReading> = flow {
+        watchers.incrementAndGet()
+        try {
+            // Peaks from before anybody watched are not shown.
+            take()
+            var shown = LevelReading.SILENCE
+            emit(shown)
+            while (true) {
+                delay(TICK_MS)
+                val (left, right) = take()
+                val next = LevelReading(fall(shown.leftDb, decibels(left)), fall(shown.rightDb, decibels(right)))
+                if (next != shown) {
+                    shown = next
+                    emit(next)
+                }
+            }
+        } finally {
+            watchers.decrementAndGet()
+        }
+    }.shareIn(scope, SharingStarted.WhileSubscribed(), replay = 1)
 
     /** True while a screen collects [levels]. Only then is the sound measured. */
     val isWatched: Boolean
@@ -49,25 +76,7 @@ internal class LevelMeter @Inject constructor() : AudioLevels {
         }
     }
 
-    override fun levels(): Flow<LevelReading> = flow {
-        watchers.incrementAndGet()
-        try {
-            take()
-            var shown = LevelReading.SILENCE
-            emit(shown)
-            while (true) {
-                delay(TICK_MS)
-                val (left, right) = take()
-                val next = LevelReading(fall(shown.leftDb, decibels(left)), fall(shown.rightDb, decibels(right)))
-                if (next != shown) {
-                    shown = next
-                    emit(next)
-                }
-            }
-        } finally {
-            watchers.decrementAndGet()
-        }
-    }
+    override fun levels(): Flow<LevelReading> = shared
 
     // The highest peaks since the last tick, and a new start for the next one.
     private fun take(): Pair<Float, Float> = synchronized(lock) {

@@ -149,7 +149,7 @@ internal class PlaybackService : MediaLibraryService() {
         val sound = LastSound()
         val sounds = EqualizerProcessor()
         val player =
-            // The meter stands after the equalizer, so it shows the sound as it is heard.
+            // The meter stands after the equalizer, so it shows the sound the equalizer made.
             createPlayer(this, sound, listOf(sounds, app.levelMeter().processor()), { item, gain ->
                 sounds.songStarts(item.genreKeys(), gain)
             }, app::httpClient)

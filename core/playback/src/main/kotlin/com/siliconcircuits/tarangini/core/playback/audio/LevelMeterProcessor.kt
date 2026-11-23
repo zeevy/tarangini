@@ -16,7 +16,8 @@ import kotlin.math.abs
 
 /**
  * Measures the sound on its way to the speaker for [meter], and hands every sample on as it came.
- * It stands after the equalizer, so the meter shows what is heard. While nobody watches the meter
+ * It stands after the equalizer and volume levelling, and before the volume and the speed change of
+ * the player, so a fade of the sleep timer does not show on the meter. While nobody watches the meter
  * it only copies the samples.
  */
 // A processor of the audio sink is API of Media3 that may still change.
@@ -25,8 +26,8 @@ internal class LevelMeterProcessor(private val meter: LevelMeter) : BaseAudioPro
     override fun onConfigure(inputAudioFormat: AudioFormat): AudioFormat {
         // The sink hands 16 bit or float samples to the processors. Any other format plays as it is,
         // with no meter, and not as an error.
-        val isKnown =
-            inputAudioFormat.encoding == C.ENCODING_PCM_16BIT || inputAudioFormat.encoding == C.ENCODING_PCM_FLOAT
+        val isKnown = inputAudioFormat.channelCount > 0 &&
+            (inputAudioFormat.encoding == C.ENCODING_PCM_16BIT || inputAudioFormat.encoding == C.ENCODING_PCM_FLOAT)
         return if (isKnown) inputAudioFormat else AudioFormat.NOT_SET
     }
 

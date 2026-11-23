@@ -96,7 +96,7 @@ internal class TestPlaybackApp :
 
         override fun equalizerBands(): EqualizerBands = EqualizerBands { FIVE_BANDS_HZ }
 
-        override fun levelMeter(): LevelMeter = LevelMeter()
+        override fun levelMeter(): LevelMeter = LevelMeter(scope)
 
         override fun playbackScope(): CoroutineScope = scope
 

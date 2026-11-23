@@ -29,7 +29,8 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class LevelMeterTest {
-    private val meter = LevelMeter()
+    private val scope = TestScope()
+    private val meter = LevelMeter(scope.backgroundScope)
 
     private fun processor(channels: Int, encoding: Int = C.ENCODING_PCM_16BIT) = meter.processor().apply {
         configure(AudioFormat(RATE, channels, encoding))
@@ -45,7 +46,7 @@ class LevelMeterTest {
     }
 
     @Test
-    fun `a known tone gives its peak in dB on each side`() = runTest {
+    fun `a known tone gives its peak in dB on each side`() = scope.runTest {
         val seen = watch()
         // Left at half of full scale (-6.02 dB), right at a quarter (-12.04 dB).
         processor(2).queueInput(shorts(stereoTone(left = 0.5, right = 0.25)))
@@ -57,7 +58,7 @@ class LevelMeterTest {
     }
 
     @Test
-    fun `a mono float song has the same level on both sides`() = runTest {
+    fun `a mono float song has the same level on both sides`() = scope.runTest {
         val seen = watch()
         val samples = FloatArray(FRAMES) { (0.1 * sin(2 * PI * TONE_HZ * it / RATE)).toFloat() }
         val input = ByteBuffer.allocateDirect(samples.size * 4).order(ByteOrder.nativeOrder())
@@ -71,7 +72,7 @@ class LevelMeterTest {
     }
 
     @Test
-    fun `the samples come out the same as they went in`() = runTest {
+    fun `the samples come out the same as they went in`() = scope.runTest {
         watch()
         val samples = stereoTone(left = 0.9, right = 0.3)
         val processor = processor(2)
@@ -83,7 +84,7 @@ class LevelMeterTest {
     }
 
     @Test
-    fun `with no sound the level falls 20 dB a second to silence`() = runTest {
+    fun `with no sound the level falls 20 dB a second to silence`() = scope.runTest {
         val seen = watch()
         processor(2).queueInput(shorts(stereoTone(left = 1.0, right = 1.0)))
         advanceTimeBy(TICK_MS + 1)
@@ -98,7 +99,7 @@ class LevelMeterTest {
     }
 
     @Test
-    fun `the sound is measured only while the levels are watched`() = runTest {
+    fun `the sound is measured only while the levels are watched`() = scope.runTest {
         assertFalse(meter.isWatched)
         // Sound that came while nobody watched is not shown later.
         processor(2).queueInput(shorts(stereoTone(left = 1.0, right = 1.0)))
@@ -116,8 +117,20 @@ class LevelMeterTest {
     }
 
     @Test
+    fun `two screens that watch at once see the same level`() = scope.runTest {
+        val first = watch()
+        val second = watch()
+        processor(2).queueInput(shorts(stereoTone(left = 0.5, right = 0.5)))
+        advanceTimeBy(TICK_MS + 1)
+
+        assertEquals(-6.02f, first.last().leftDb, 0.05f)
+        assertEquals(first.last(), second.last())
+    }
+
+    @Test
     fun `a sample format the meter cannot read passes it by`() {
         assertEquals(AudioFormat.NOT_SET, meter.processor().configure(AudioFormat(RATE, 2, C.ENCODING_PCM_24BIT)))
+        assertEquals(AudioFormat.NOT_SET, meter.processor().configure(AudioFormat(RATE, 0, C.ENCODING_PCM_16BIT)))
     }
 
     /** Stereo 16 bit samples of a sine, with its own peak on each side. */
