@@ -21,6 +21,7 @@ package com.siliconcircuits.tarangini.core.domain.model
  * @property speed how fast the queue plays: 1 is the normal speed
  * @property isEnded true when the last item of the queue has played to its end
  * @property error why playback stopped, or null when it did not fail
+ * @property format how the current item is stored, or null until the player has opened it
  */
 data class PlaybackState(
     val queue: List<PlaybackItem> = emptyList(),
@@ -35,6 +36,7 @@ data class PlaybackState(
     val speed: Float = 1f,
     val isEnded: Boolean = false,
     val error: PlaybackError? = null,
+    val format: SongFormat? = null,
 ) {
     /** The item that plays or is paused, or null when nothing is loaded. */
     val currentItem: PlaybackItem?

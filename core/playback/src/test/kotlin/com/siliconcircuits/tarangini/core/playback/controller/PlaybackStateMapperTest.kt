@@ -8,15 +8,21 @@ package com.siliconcircuits.tarangini.core.playback.controller
 
 import android.net.Uri
 import androidx.annotation.OptIn
+import androidx.media3.common.C
+import androidx.media3.common.Format
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.TrackGroup
+import androidx.media3.common.Tracks
 import androidx.media3.common.util.UnstableApi
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackItem
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
+import com.siliconcircuits.tarangini.core.domain.model.SongFormat
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -36,6 +42,19 @@ class PlaybackStateMapperTest {
     @Test
     fun `a player with nothing loaded gives the empty state`() {
         assertEquals(PlaybackState(), player.toPlaybackState())
+    }
+
+    @Test
+    fun `the format of the current item comes from its picked sound track`() {
+        val format = Format.Builder().setSampleMimeType(MimeTypes.AUDIO_MPEG).setAverageBitrate(320_000)
+            .setSampleRate(44_100).setChannelCount(2).build()
+        val tracks = Tracks(
+            listOf(Tracks.Group(TrackGroup(format), false, intArrayOf(C.FORMAT_HANDLED), booleanArrayOf(true))),
+        )
+        val song = FakePlayer.queued("first").buildUpon().setTracks(tracks).build()
+        player.report { setPlaylist(listOf(song)).setCurrentMediaItemIndex(0) }
+
+        assertEquals(SongFormat("MP3", 320, 44_100, 2), player.toPlaybackState().format)
     }
 
     @Test
