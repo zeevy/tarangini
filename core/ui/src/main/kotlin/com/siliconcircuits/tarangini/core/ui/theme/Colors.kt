@@ -6,9 +6,14 @@
 
 package com.siliconcircuits.tarangini.core.ui.theme
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 
 // The app has a light look (Daylight) and a dark look (Night). Both use one green accent, and an
 // orange for warnings and the heart. Cards and panels are a step lighter than the ground in both.
@@ -95,3 +100,21 @@ internal val DarkColors = darkColorScheme(
     surfaceContainerHigh = Color(0xFF202622),
     surfaceContainerHighest = Color(0xFF262D29),
 )
+
+/**
+ * The colours of a level meter: [normal] for most of the bar, [hot] near the top, [warn] at the top
+ * and [off] for a segment that is not lit. Material 3 has no colours for this, so each look has its own.
+ */
+@Immutable
+data class LevelColors(val normal: Color, val hot: Color, val warn: Color, val off: Color)
+
+internal val LightLevelColors = LevelColors(Green, Color(0xFFB7791F), Color(0xFFD9480F), Color(0xFFE7E2D7))
+
+internal val DarkLevelColors = LevelColors(Mint, Color(0xFFF2C14E), Color(0xFFFF7A45), Color(0xFF252C28))
+
+/** The level meter colours of the look that is on, told by the ground colour of the theme. */
+val levelColors: LevelColors
+    @Composable @ReadOnlyComposable
+    get() = if (MaterialTheme.colorScheme.background.luminance() < HALF_LIGHT) DarkLevelColors else LightLevelColors
+
+private const val HALF_LIGHT = 0.5f

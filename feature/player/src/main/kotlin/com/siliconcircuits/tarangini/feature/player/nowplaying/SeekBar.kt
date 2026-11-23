@@ -25,16 +25,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.siliconcircuits.tarangini.core.ui.component.formatDuration
+import com.siliconcircuits.tarangini.core.ui.theme.DigitsFont
 import com.siliconcircuits.tarangini.feature.player.R
 
 /**
- * The seek bar with the time played and the length under it.
+ * The seek bar with the time played and the time left under it.
  *
  * While the thumb is dragged the bar shows the place of the finger, and the player is told only
  * when the finger lifts. A seek for every step of a drag would make the sound stutter.
@@ -83,21 +89,31 @@ internal fun SeekBar(state: NowPlayingUiState, onSeek: (Long) -> Unit, modifier:
             },
         )
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Time(played)
-            Time(total)
+            Time(played, MaterialTheme.colorScheme.onSurface)
+            val left = formatDuration((length - shown.toLong()).coerceAtLeast(0)).ifEmpty { ZERO }
+            val spoken = stringResource(R.string.now_playing_left_spoken, left)
+            Time(
+                stringResource(R.string.now_playing_left, left),
+                MaterialTheme.colorScheme.onSurfaceVariant,
+                Modifier.clearAndSetSemantics { contentDescription = spoken },
+            )
         }
     }
 }
 
+/** A time under the bar, in digits that keep their width. */
 @Composable
-private fun Time(text: String) {
-    Text(text = text, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+private fun Time(text: String, color: Color, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        modifier = modifier,
+        style = TextStyle(fontFamily = DigitsFont, fontWeight = FontWeight.SemiBold, fontSize = 12.sp),
+        color = color,
+    )
 }
 
 // The height of the bar. The area that takes a touch stays the 48 dp of the slider.
 private val BarHeight = 12.dp
 private val NoGap = 0.dp
 
-// The shared format leaves a zero out, which is right for a length that is not known. A place is never unknown.
-private const val ZERO = "0:00"
 private const val UNPLAYED_ALPHA = 0.2f

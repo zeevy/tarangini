@@ -24,6 +24,20 @@ private val Manrope = FontFamily(
     },
 )
 
+/**
+ * JetBrains Mono, for the numbers of the now playing card: every digit is as wide as the next, so
+ * a time that counts up does not move. The file holds only the Latin letters, digits and a few marks.
+ */
+val DigitsFont = FontFamily(
+    listOf(FontWeight.Medium, FontWeight.SemiBold, FontWeight.Bold).map { weight ->
+        Font(
+            R.font.jetbrains_mono,
+            weight,
+            variationSettings = FontVariation.Settings(FontVariation.weight(weight.weight)),
+        )
+    },
+)
+
 private fun TextStyle.manrope(weight: FontWeight? = null) =
     copy(fontFamily = Manrope, fontWeight = weight ?: fontWeight)
 

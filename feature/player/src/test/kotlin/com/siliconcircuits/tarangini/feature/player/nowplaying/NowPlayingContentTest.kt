@@ -10,8 +10,11 @@ import android.app.Application
 import android.content.ComponentName
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -19,6 +22,7 @@ import androidx.compose.ui.test.performSemanticsAction
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
 import com.siliconcircuits.tarangini.core.domain.model.SleepState
+import com.siliconcircuits.tarangini.core.domain.model.SongFormat
 import com.siliconcircuits.tarangini.core.testing.RegisterComponentActivityRule
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import com.siliconcircuits.tarangini.feature.player.checkAccessibility
@@ -54,6 +58,7 @@ class NowPlayingContentTest {
         onSeek = { done += "seek $it" },
         onToggleShuffle = { done += "shuffle" },
         onCycleRepeat = { done += "repeat" },
+        onToggleFavourite = { done += "favourite" },
     )
     private val options = PlaybackOptionActions(
         onSetSpeed = { done += "speed $it" },
@@ -86,9 +91,37 @@ class NowPlayingContentTest {
     fun `a song shows its texts, the time played and its length`() {
         show(song)
 
-        listOf("Bhairavi", "Ravi", "Morning Ragas", "1:05", "3:05").forEach {
+        listOf("Bhairavi", "Ravi", "Morning Ragas", "/ 3:05").forEach {
             composeRule.onNodeWithText(it).assertIsDisplayed()
         }
+        // In large digits at the top and again under the seek bar.
+        composeRule.onAllNodesWithText("1:05").assertCountEquals(2)
+    }
+
+    @Test
+    fun `the card shows the format and the place in the queue`() {
+        show(song.copy(format = SongFormat("MP3", 320, 44_100, 2), place = 2, queueSize = 8))
+
+        composeRule.onNodeWithText("MP3").assertIsDisplayed()
+        composeRule.onNodeWithText("320 kbps · 44.1 kHz · Stereo").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Song 2 of 8").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("2:00 left").assertIsDisplayed()
+    }
+
+    @Test
+    fun `one item alone has no place, and the heart is in the card`() {
+        show(song.copy(isFavourite = false))
+        composeRule.onNodeWithText("1 / 1").assertDoesNotExist()
+        composeRule.onNodeWithContentDescription("Add to favourites").performClick()
+
+        assertEquals(listOf("favourite"), done)
+    }
+
+    @Test
+    fun `the shuffle key says whether it is on`() {
+        show(song.copy(shuffle = true))
+
+        composeRule.onNodeWithContentDescription("Shuffle").assertIsOn()
     }
 
     private fun openOption(line: String) {
