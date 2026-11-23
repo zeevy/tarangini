@@ -24,6 +24,7 @@ import com.siliconcircuits.tarangini.feature.player.nowplaying.NowPlayingActions
 import com.siliconcircuits.tarangini.feature.player.nowplaying.NowPlayingContent
 import com.siliconcircuits.tarangini.feature.player.nowplaying.NowPlayingUiState
 import com.siliconcircuits.tarangini.feature.player.nowplaying.ShownVisual
+import com.siliconcircuits.tarangini.feature.player.nowplaying.toCompact
 import com.siliconcircuits.tarangini.feature.player.queue.QueueUiState
 import kotlin.math.PI
 import kotlin.math.sin
@@ -148,12 +149,14 @@ class PlayerScreenshotTest {
     fun `nothing loaded in the dark look`() = shot("player_empty_dark") { NowPlayingContent(null, actions) }
 
     @Test
-    fun `the compact card`() = shot("player_compact") { CompactCard(playing, actions, { sound }, {}) }
+    fun `the compact card`() = shot("player_compact") {
+        CompactCard(playing.toCompact(), {}, {}, { sound }, {}, R.string.player_expand)
+    }
 
     @Test
     @Config(qualifiers = "+night")
     fun `the compact card in the dark look`() = shot("player_compact_dark") {
-        CompactCard(playing, actions, { sound }, {})
+        CompactCard(playing.toCompact(), {}, {}, { sound }, {}, R.string.player_expand)
     }
 
     @Test

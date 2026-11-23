@@ -11,6 +11,7 @@ import com.siliconcircuits.tarangini.core.domain.model.PlaybackItem
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
 import com.siliconcircuits.tarangini.core.testing.MainDispatcherRule
 import com.siliconcircuits.tarangini.core.testing.playback.FakePlaybackController
+import com.siliconcircuits.tarangini.feature.player.nowplaying.CompactSong
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
@@ -37,22 +38,15 @@ class MiniPlayerViewModelTest {
     }
 
     @Test
-    fun `the current item shows with its texts, picture and progress`() = runTest(mainDispatcher.dispatcher) {
+    fun `the current item shows with its texts and the time in whole seconds`() = runTest(mainDispatcher.dispatcher) {
         val viewModel = MiniPlayerViewModel(playback)
         backgroundScope.launch { viewModel.state.collect() }
 
         playback.state.value =
-            loaded(PlaybackState(isPlaying = true, playWhenReady = true, positionMs = 45_000, durationMs = 180_000))
+            loaded(PlaybackState(isPlaying = true, playWhenReady = true, positionMs = 45_678, durationMs = 180_000))
 
         assertEquals(
-            MiniPlayerUiState(
-                "Bhairavi",
-                "Ravi",
-                "test:1/art",
-                showPause = true,
-                isBuffering = false,
-                progress = 0.25f,
-            ),
+            CompactSong("Bhairavi", "Ravi", 45_000, 180_000, showPause = true, isBuffering = false),
             viewModel.state.value,
         )
     }
@@ -67,34 +61,16 @@ class MiniPlayerViewModelTest {
     }
 
     @Test
-    fun `a stream with no known length has no progress, and says when it waits for data`() =
-        runTest(mainDispatcher.dispatcher) {
-            val viewModel = MiniPlayerViewModel(playback)
-            backgroundScope.launch { viewModel.state.collect() }
+    fun `a stream with no known length says when it waits for data`() = runTest(mainDispatcher.dispatcher) {
+        val viewModel = MiniPlayerViewModel(playback)
+        backgroundScope.launch { viewModel.state.collect() }
 
-            playback.state.value = loaded(PlaybackState(playWhenReady = true, isBuffering = true, positionMs = 9_000))
+        playback.state.value = loaded(PlaybackState(playWhenReady = true, isBuffering = true, durationMs = null))
 
-            assertNull(viewModel.state.value?.progress)
-            assertEquals(true, viewModel.state.value?.isBuffering)
-            assertEquals(true, viewModel.state.value?.showPause)
-        }
-
-    @Test
-    fun `after an error and at the end of the queue the button offers play, and a tap goes on`() =
-        runTest(mainDispatcher.dispatcher) {
-            val viewModel = MiniPlayerViewModel(playback)
-            backgroundScope.launch { viewModel.state.collect() }
-
-            playback.state.value = loaded(PlaybackState(playWhenReady = true, error = PlaybackError.CANNOT_PLAY))
-            assertEquals(false, viewModel.state.value?.showPause)
-            viewModel.togglePlay()
-
-            playback.state.value = loaded(PlaybackState(playWhenReady = true, isEnded = true))
-            assertEquals(false, viewModel.state.value?.showPause)
-            viewModel.togglePlay()
-
-            assertEquals(listOf("resume", "resume"), playback.commands)
-        }
+        assertNull(viewModel.state.value?.durationMs)
+        assertEquals(true, viewModel.state.value?.isBuffering)
+        assertEquals(true, viewModel.state.value?.showPause)
+    }
 
     @Test
     fun `a paused stream that fills its buffer does not show as loading`() = runTest(mainDispatcher.dispatcher) {
@@ -107,15 +83,14 @@ class MiniPlayerViewModelTest {
     }
 
     @Test
-    fun `the progress stays between nothing and all`() = runTest(mainDispatcher.dispatcher) {
+    fun `after an error the bars stand still`() = runTest(mainDispatcher.dispatcher) {
         val viewModel = MiniPlayerViewModel(playback)
         backgroundScope.launch { viewModel.state.collect() }
 
-        playback.state.value = loaded(PlaybackState(positionMs = 200_000, durationMs = 180_000))
-        assertEquals(1f, viewModel.state.value?.progress)
+        playback.state.value = loaded(PlaybackState(playWhenReady = true, error = PlaybackError.NETWORK))
 
-        playback.state.value = loaded(PlaybackState(positionMs = 5, durationMs = 0))
-        assertNull(viewModel.state.value?.progress)
+        assertEquals(true, viewModel.state.value?.hasError)
+        assertEquals(false, viewModel.state.value?.isMoving)
     }
 
     @Test

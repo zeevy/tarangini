@@ -6,28 +6,25 @@
 
 package com.siliconcircuits.tarangini.feature.player.miniplayer
 
-import android.app.Application
-import android.content.ComponentName
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import com.siliconcircuits.tarangini.core.testing.RegisterComponentActivityRule
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
+import com.siliconcircuits.tarangini.feature.player.checkAccessibility
+import com.siliconcircuits.tarangini.feature.player.nowplaying.CompactSong
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
-import org.junit.rules.TestWatcher
-import org.junit.runner.Description
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
-import org.robolectric.Shadows.shadowOf
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 
 @RunWith(RobolectricTestRunner::class)
 class MiniPlayerBarTest {
@@ -39,10 +36,9 @@ class MiniPlayerBarTest {
     val rules: RuleChain = RuleChain.outerRule(registerActivity).around(composeRule)
 
     private val done = mutableListOf<String>()
-    private val playing =
-        MiniPlayerUiState("Bhairavi", "Ravi", null, showPause = true, isBuffering = false, progress = 0.4f)
+    private val playing = CompactSong("Bhairavi", "Ravi", 65_000, 185_000, showPause = true, isBuffering = false)
 
-    private fun show(state: MiniPlayerUiState) {
+    private fun show(state: CompactSong) {
         composeRule.setContent {
             TaranginiTheme {
                 MiniPlayerBar(state, { done += "toggle" }, { done += "next" }, { done += "open" })
@@ -51,14 +47,13 @@ class MiniPlayerBarTest {
     }
 
     @Test
-    fun `the bar shows the item, and each part does its own thing`() {
+    fun `the card shows the item and the time, and each part does its own thing`() {
         show(playing)
 
-        composeRule.onNodeWithText("Bhairavi").assertIsDisplayed()
-        composeRule.onNodeWithText("Ravi").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Bhairavi, Ravi. Open the player").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Pause").performClick()
         composeRule.onNodeWithContentDescription("Next").performClick()
-        composeRule.onNodeWithText("Bhairavi").performClick()
+        composeRule.onNodeWithContentDescription("Bhairavi, Ravi. Open the player").performClick()
 
         assertEquals(listOf("toggle", "next", "open"), done)
     }
@@ -72,45 +67,46 @@ class MiniPlayerBarTest {
     }
 
     @Test
-    fun `a station with no song title shows its name and that it is live`() {
-        show(playing.copy(title = "Radio Mirchi", artist = null, progress = null, isStream = true))
-
-        composeRule.onNodeWithText("Radio Mirchi").assertIsDisplayed()
-        composeRule.onNodeWithText("Live").assertIsDisplayed()
-        composeRule.onNodeWithText("Unknown artist").assertDoesNotExist()
-    }
-
-    @Test
     fun `an item with no texts says so`() {
         show(playing.copy(title = null, artist = null))
 
-        composeRule.onNodeWithText("Unknown title").assertIsDisplayed()
-        composeRule.onNodeWithText("Unknown artist").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Unknown title, Unknown artist. Open the player").assertIsDisplayed()
     }
 
     @Test
-    fun `a stream that waits for data says that it loads, and can still be paused`() {
-        // The line of this state moves for ever, so the test does not wait for it to stop.
-        composeRule.mainClock.autoAdvance = false
-        show(playing.copy(isBuffering = true, progress = null))
+    fun `a station with no song artist says that it is live`() {
+        show(CompactSong("Radio Mirchi", null, 0, null, showPause = true, isBuffering = false, isStream = true))
 
-        composeRule.onNodeWithContentDescription("Loading").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Pause").performClick()
-
-        assertEquals(listOf("toggle"), done)
+        composeRule.onNodeWithContentDescription("Radio Mirchi, Live. Open the player").assertIsDisplayed()
     }
 
     @Test
-    fun `each button of the bar can be touched on 48 dp`() {
+    fun `each key of the card can be touched on 48 dp`() {
         show(playing)
 
-        // Measured here and not with the framework check: on the JVM it reads the buttons as 46 dp high.
-        listOf("Pause", "Next").forEach { button ->
-            val touch = composeRule.onNodeWithContentDescription(button).fetchSemanticsNode().touchBoundsInRoot
+        listOf("Pause", "Next").forEach { key ->
+            val touch = composeRule.onNodeWithContentDescription(key).fetchSemanticsNode().touchBoundsInRoot
             with(composeRule.density) {
-                assertTrue("$button is ${touch.width} x ${touch.height} px", touch.width >= 48.dp.toPx())
-                assertTrue("$button is ${touch.width} x ${touch.height} px", touch.height >= 48.dp.toPx())
+                assertTrue("$key is ${touch.width} x ${touch.height} px", touch.width >= 48.dp.toPx())
+                assertTrue("$key is ${touch.width} x ${touch.height} px", touch.height >= 48.dp.toPx())
             }
         }
+    }
+
+    @Test
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    fun `the card passes the accessibility checks`() {
+        show(playing)
+
+        composeRule.checkAccessibility()
+    }
+
+    @Test
+    @Config(qualifiers = "+night")
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    fun `the card passes the accessibility checks in the dark look`() {
+        show(playing)
+
+        composeRule.checkAccessibility()
     }
 }

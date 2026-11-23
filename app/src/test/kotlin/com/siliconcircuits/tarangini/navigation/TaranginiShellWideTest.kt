@@ -63,14 +63,14 @@ class TaranginiShellWideTest {
 
     @Test
     @Config(qualifiers = TABLET)
-    fun `a screen outside the tabs fills the window with no rail or pane`() {
+    fun `Settings fills the window with no rail, pane or mini player`() {
         showShell()
 
         composeRule.onNodeWithTag(TAB).performClick()
 
         composeRule.onNode(tab("Player")).assertDoesNotExist()
         composeRule.onNodeWithTag(PANE).assertDoesNotExist()
-        composeRule.onNodeWithTag(MINI).assertIsDisplayed()
+        composeRule.onNodeWithTag(MINI).assertDoesNotExist()
     }
 
     @Test

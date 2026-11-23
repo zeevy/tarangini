@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackController
+import com.siliconcircuits.tarangini.feature.player.nowplaying.CompactSong
 import com.siliconcircuits.tarangini.feature.player.showsPause
 import com.siliconcircuits.tarangini.feature.player.togglePlay
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,36 +21,15 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-/**
- * What the mini player shows.
- *
- * @property title the title of the current item, or null when the player does not know it
- * @property showPause true when the button pauses. It is true from the tap on play, also while
- *   the player still loads, so a second tap pauses. It is false after an error and at the end of
- *   the queue
- * @property isBuffering true while the player waits for data
- * @property progress how much of the item has played, from 0 to 1, or null when its length is
- *   not known, as with live radio
- */
-internal data class MiniPlayerUiState(
-    val title: String?,
-    val artist: String?,
-    val artworkUri: String?,
-    val showPause: Boolean,
-    val isBuffering: Boolean,
-    val progress: Float?,
-    val isStream: Boolean = false,
-)
-
 /** The mini player: the current item with play or pause and next, on every screen. */
 @HiltViewModel
 internal class MiniPlayerViewModel @Inject constructor(private val playback: PlaybackController) : ViewModel() {
     /**
-     * What to show, or null when nothing is loaded and the bar is hidden. The player is watched
-     * only while the bar is on screen, and a short time after, so a turn of the phone does not
+     * What to show, or null when nothing is loaded and the card is hidden. The player is watched
+     * only while the card is on screen, and a short time after, so a turn of the phone does not
      * start again.
      */
-    val state: StateFlow<MiniPlayerUiState?> = playback.state
+    val state: StateFlow<CompactSong?> = playback.state
         .map { it.toUiState() }
         .distinctUntilChanged()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_AFTER_MS), playback.state.value.toUiState())
@@ -66,24 +46,20 @@ internal class MiniPlayerViewModel @Inject constructor(private val playback: Pla
     }
 }
 
-private fun PlaybackState.toUiState(): MiniPlayerUiState? {
+private fun PlaybackState.toUiState(): CompactSong? {
     val item = currentItem ?: return null
-    val length = durationMs?.takeIf { it > 0 }
-    return MiniPlayerUiState(
+    return CompactSong(
         title = item.title,
         artist = item.artist,
-        artworkUri = item.artworkUri,
-        isStream = item.isStream,
+        // Whole seconds: the card shows no more, and every tick of the position would draw it again.
+        positionMs = positionMs / MS_PER_SECOND * MS_PER_SECOND,
+        durationMs = durationMs?.takeIf { it > 0 },
         showPause = showsPause,
         // A paused stream that still fills its buffer is at rest for the person.
         isBuffering = isBuffering && showsPause,
-        // The line is 2 dp high and at most a screen wide, so steps of a thousandth are enough.
-        // Without the rounding every tick of the position would draw the bar again.
-        progress = length?.let {
-            (positionMs * PROGRESS_STEPS / it).coerceIn(0, PROGRESS_STEPS) /
-                PROGRESS_STEPS.toFloat()
-        },
+        hasError = error != null,
+        isStream = item.isStream,
     )
 }
 
-private const val PROGRESS_STEPS = 1_000L
+private const val MS_PER_SECOND = 1_000L

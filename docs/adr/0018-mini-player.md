@@ -1,6 +1,6 @@
 # ADR 0018: Mini player
 
-- Status: accepted, 20 Nov 2026.
+- Status: accepted, 20 Nov 2026. Changed on 24 Nov 2026 by D92: see the section at the end.
 - Rules: A10, A12, U1, U7, U8, T2.
 
 ## Context
@@ -30,3 +30,10 @@ The item that plays must be in view and under control on every screen: its pictu
 - Previous and seek are not on the bar. They are on the now playing screen and in the notification.
 - A picture test of a state that moves (the wait for data) holds the clock of the test, or it never ends.
 - The checks that need a phone are in `docs/MANUAL-TESTS.md`.
+
+## Change of 24 Nov 2026 (D92)
+
+- The mini player is now the compact display card of the player tab (`CompactCard` with `CompactSong`): six small moving bars from the visual, title, artist, the time played, play or pause, next, and a thin line of the place in the song along the bottom. It has no cover.
+- The time shows "Loading" while the player waits for data, and "Live" for a stream. A stream with no artist also says "Live" on the second line.
+- It is hidden on the player tab, on Settings and the licences screen, and while the tablet pane is shown. A tap opens the player tab.
+- The position comes in whole seconds, the most the card shows, so it is not drawn again for each tick.

@@ -6,6 +6,7 @@
 
 package com.siliconcircuits.tarangini.feature.player.nowplaying
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,9 +24,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -47,56 +50,54 @@ import com.siliconcircuits.tarangini.core.ui.theme.lookColors
 import com.siliconcircuits.tarangini.feature.player.R
 
 /**
- * The player in one line, shown in place of the whole card while Up next scrolls: a few bars, the
- * song, the time, Play and Next, and a thin line of the place in the song. A tap on the song shows
- * the whole card again.
+ * The player in one line: a few bars, the song, the time, Play and Next, and a thin line of the
+ * place in the song. The player shows it while Up next scrolls, and every other screen shows it
+ * as the mini player. A tap on the song calls [onOpen], which TalkBack names with [openLabel].
  */
 @Composable
 internal fun CompactCard(
-    state: NowPlayingUiState,
-    actions: NowPlayingActions,
+    song: CompactSong,
+    onTogglePlay: () -> Unit,
+    onNext: () -> Unit,
     shown: () -> ShownVisual,
-    onExpand: () -> Unit,
+    onOpen: () -> Unit,
+    @StringRes openLabel: Int,
     modifier: Modifier = Modifier,
 ) {
     val look = lookColors
-    val title = state.title ?: stringResource(CoreUiR.string.unknown_title)
-    val artist = state.artist ?: stringResource(CoreUiR.string.unknown_artist)
-    val time = shownTime(state, left = false)
-    val part = state.durationMs?.takeIf { it > 0 }?.let { (state.positionMs.toFloat() / it).coerceIn(0f, 1f) } ?: 0f
-    val moving = state.showPause && !state.isBuffering && state.error == null
+    val title = song.title ?: stringResource(CoreUiR.string.unknown_title)
+    val artist =
+        song.artist ?: stringResource(if (song.isStream) R.string.now_playing_live else CoreUiR.string.unknown_artist)
+    val part = song.durationMs?.takeIf { it > 0 }?.let { (song.positionMs.toFloat() / it).coerceIn(0f, 1f) } ?: 0f
     FrameCard(modifier = modifier, padding = PaddingValues(6.dp)) {
         LcdPanel(
             modifier = Modifier
                 .fillMaxWidth()
-                .drawBehind {
+                // Over the display, which draws its own ground, and inside its round corners.
+                .clip(MaterialTheme.shapes.small)
+                .drawWithContent {
+                    drawContent()
                     val line = 2.dp.toPx()
                     drawRect(look.lcdAccent, Offset(0f, size.height - line), Size(size.width * part, line))
                 },
             padding = PaddingValues(0.dp),
         ) {
             Row(modifier = Modifier.heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
-                val expand = stringResource(R.string.player_expand, title, artist)
+                val open = stringResource(openLabel, title, artist)
                 Row(
                     modifier = Modifier
                         .weight(1f)
                         .heightIn(min = 56.dp)
-                        .clickable(role = Role.Button, onClick = onExpand)
+                        .clickable(role = Role.Button, onClick = onOpen)
                         .clearAndSetSemantics {
-                            contentDescription = expand
+                            contentDescription = open
                             role = Role.Button
                         }
                         .padding(start = 10.dp, end = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    MiniBars(
-                        if (moving) {
-                            shown
-                        } else {
-                            { ShownVisual.STILL }
-                        },
-                    )
+                    MiniBars(if (song.isMoving) shown else Still)
                     Column(Modifier.weight(1f)) {
                         Text(
                             title,
@@ -115,29 +116,37 @@ internal fun CompactCard(
                         )
                     }
                     Text(
-                        text = time,
+                        text = compactTime(song),
                         style = TextStyle(fontFamily = DigitsFont, fontWeight = FontWeight.Bold, fontSize = 15.sp),
                         color = look.lcdAccent,
                         maxLines = 1,
                     )
                 }
                 SmallKey(
-                    icon = if (state.showPause) CoreUiR.drawable.ic_pause else CoreUiR.drawable.ic_play,
+                    icon = if (song.showPause) CoreUiR.drawable.ic_pause else CoreUiR.drawable.ic_play,
                     label = stringResource(
-                        if (state.showPause) CoreUiR.string.action_pause else CoreUiR.string.action_play,
+                        if (song.showPause) CoreUiR.string.action_pause else CoreUiR.string.action_play,
                     ),
-                    onClick = actions.onTogglePlay,
+                    onClick = onTogglePlay,
                     tint = look.lcdAccent,
                 )
                 SmallKey(
                     CoreUiR.drawable.ic_skip_next,
                     stringResource(CoreUiR.string.action_next),
-                    actions.onNext,
+                    onNext,
                     look.lcdText,
                 )
             }
         }
     }
+}
+
+/** The time played, or a word while the player waits for data or plays a live stream. */
+@Composable
+private fun compactTime(song: CompactSong): String = when {
+    song.isBuffering -> stringResource(R.string.player_loading)
+    song.durationMs != null -> formatDuration(song.positionMs).ifEmpty { ZERO }
+    else -> stringResource(R.string.now_playing_live)
 }
 
 /** Six bars taken from the spectrum, low to high. */
@@ -158,7 +167,7 @@ private fun MiniBars(shown: () -> ShownVisual) {
 }
 
 @Composable
-private fun SmallKey(icon: Int, label: String, onClick: () -> Unit, tint: androidx.compose.ui.graphics.Color) {
+private fun SmallKey(icon: Int, label: String, onClick: () -> Unit, tint: Color) {
     Box(
         modifier = Modifier
             .size(48.dp)
@@ -175,5 +184,6 @@ private fun SmallKey(icon: Int, label: String, onClick: () -> Unit, tint: androi
     }
 }
 
+private val Still: () -> ShownVisual = { ShownVisual.STILL }
 private const val MINI_BARS = 6
 private const val MIN_MINI_BAR = 0.1f

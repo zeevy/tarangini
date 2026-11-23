@@ -30,6 +30,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.siliconcircuits.tarangini.feature.player.navigation.isPlayerScreen
 import com.siliconcircuits.tarangini.feature.player.nowplaying.PlayerTargets
+import com.siliconcircuits.tarangini.feature.settings.navigation.isSettingsScreen
 
 /**
  * The frame every screen sits in: the screens, then the [miniPlayer] slot,
@@ -66,8 +67,10 @@ internal fun TaranginiShell(
         val layout = ShellLayout.of(maxWidth, maxHeight)
         // The player tab is the player itself, so it needs no pane beside it.
         val withPane = layout == ShellLayout.EXPANDED && currentTab != null && currentTab != TopLevelDestination.PLAYER
-        // The now playing screen shows the same item with all its controls, so the bar would be a second copy.
-        val showMiniPlayer = destination?.isPlayerScreen() != true && !withPane
+        // The player tab shows the same item with all its controls, so the card would be a second copy.
+        // Settings is a quiet place of its own and has none either.
+        val showMiniPlayer =
+            destination?.isPlayerScreen() != true && destination?.isSettingsScreen() != true && !withPane
         Row {
             if (layout != ShellLayout.COMPACT && currentTab != null) {
                 TaranginiNavRail(selected = currentTab, onSelect = navController::navigateToTopLevel)
