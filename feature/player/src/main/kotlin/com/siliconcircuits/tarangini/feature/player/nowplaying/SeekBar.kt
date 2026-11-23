@@ -17,6 +17,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.SliderState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -50,15 +51,17 @@ internal fun SeekBar(state: NowPlayingUiState, onSeek: (Long) -> Unit, modifier:
     val label = stringResource(R.string.now_playing_position)
     // A screen reader says the times, not a bare percentage.
     val place = stringResource(R.string.now_playing_position_state, played, total)
+    val slider = remember(length) { SliderState(trackRange = 0f..length.toFloat()) }
+    // The slider shows what this screen says, so a new place from the player moves the bar too.
+    slider.value = shown.coerceIn(0f, length.toFloat())
     Column(modifier = modifier.fillMaxWidth()) {
         Slider(
-            value = shown.coerceIn(0f, length.toFloat()),
+            state = slider,
             onValueChange = { dragged = it },
             onValueChangeFinished = {
                 dragged?.let { onSeek(it.toLong()) }
                 dragged = null
             },
-            valueRange = 0f..length.toFloat(),
             modifier = Modifier.semantics {
                 contentDescription = label
                 stateDescription = place
