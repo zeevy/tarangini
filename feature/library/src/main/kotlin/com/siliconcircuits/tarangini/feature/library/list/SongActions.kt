@@ -7,6 +7,7 @@
 package com.siliconcircuits.tarangini.feature.library.list
 
 import com.siliconcircuits.tarangini.core.domain.model.Page
+import com.siliconcircuits.tarangini.core.domain.model.QueueSource
 import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackController
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackQueue
@@ -32,14 +33,18 @@ internal class SongActions @Inject constructor(
      * The actions for the rows of one list. [read] gives that list page by
      * page, in the order the screen shows it. A tap plays the song with the
      * whole list as the queue, and a second tap takes the place of a first
-     * one that still reads the list.
+     * one that still reads the list. [source] names the list for now playing.
      */
-    fun rowActions(scope: CoroutineScope, read: suspend (Page) -> List<Song>): SongRowActions {
+    fun rowActions(
+        scope: CoroutineScope,
+        source: QueueSource? = null,
+        read: suspend (Page) -> List<Song>,
+    ): SongRowActions {
         var starting: Job? = null
         return SongRowActions(
             onPlay = { song ->
                 starting?.cancel()
-                starting = scope.launch { play(song, read) }
+                starting = scope.launch { play(song, source, read) }
             },
             onPlayNext = { queue.playNext(listOf(it.mediaUri)) },
             onAddToQueue = { queue.addToEnd(listOf(it.mediaUri)) },
@@ -56,10 +61,11 @@ internal class SongActions @Inject constructor(
      * list may have changed since the screen read it. A song that is not in
      * the list any more, or a list that cannot be read, plays the song alone.
      */
-    private suspend fun play(song: Song, read: suspend (Page) -> List<Song>) {
+    private suspend fun play(song: Song, source: QueueSource?, read: suspend (Page) -> List<Song>) {
         val uris = attempt { wholeList(read) }.getOrDefault(emptyList())
         val index = uris.indexOf(song.mediaUri)
-        if (index >= 0) playback.play(uris, index) else playback.play(listOf(song.mediaUri))
+        // A song played alone is not the list any more, so it has no source.
+        if (index >= 0) playback.play(uris, index, source) else playback.play(listOf(song.mediaUri))
     }
 
     private suspend fun wholeList(read: suspend (Page) -> List<Song>): List<String> {

@@ -12,6 +12,7 @@ import android.os.Process
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaLibraryInfo
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.LibraryResult
@@ -19,6 +20,8 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionError
 import androidx.media3.session.SessionResult
+import com.siliconcircuits.tarangini.core.domain.model.QueueSource
+import com.siliconcircuits.tarangini.core.domain.model.QueueSourceKind
 import com.siliconcircuits.tarangini.core.playback.TestPlaybackApp
 import com.siliconcircuits.tarangini.core.playback.browse.BrowseItems
 import com.siliconcircuits.tarangini.core.playback.browse.BrowseLabels
@@ -26,6 +29,7 @@ import com.siliconcircuits.tarangini.core.playback.browse.BrowseTree
 import com.siliconcircuits.tarangini.core.playback.browse.CarSearch
 import com.siliconcircuits.tarangini.core.playback.browse.LibraryList
 import com.siliconcircuits.tarangini.core.playback.browse.MediaId
+import com.siliconcircuits.tarangini.core.playback.controller.toPlaylistMetadata
 import com.siliconcircuits.tarangini.core.playback.service.PlaybackService
 import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakeLibraryLetters
@@ -136,6 +140,48 @@ class SessionCallerAccessTest {
         assertTrue(player.shuffleModeEnabled)
         assertEquals(Player.REPEAT_MODE_ALL, player.repeatMode)
         assertTrue(callback.onConnect(session, theCar).availableSessionCommands.contains(SessionButtons.SHUFFLE))
+    }
+
+    @Test
+    fun `a queue the car starts takes away the name of the list, a queue of this app keeps it`() {
+        val album = QueueSource(QueueSourceKind.ALBUM, "Morning Ragas").toPlaylistMetadata()
+        val thisApp = caller(service.packageName, Process.myUid(), false)
+        val song = MediaItem.fromUri("content://media/external/audio/media/7")
+
+        session.player.playlistMetadata = album
+        callback.onSetMediaItems(session, thisApp, listOf(song), 0, 0)
+        assertEquals(album, session.player.playlistMetadata)
+
+        callback.onSetMediaItems(session, theCar, listOf(song), 0, 0)
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals(MediaMetadata.EMPTY, session.player.playlistMetadata)
+    }
+
+    @Test
+    fun `a spoken request that finds nothing leaves the name of the list`() {
+        val album = QueueSource(QueueSourceKind.ALBUM, "Morning Ragas").toPlaylistMetadata()
+        val request = MediaItem.RequestMetadata.Builder().setSearchQuery("nothing like this").build()
+        session.player.playlistMetadata = album
+
+        callback.onSetMediaItems(session, theCar, listOf(MediaItem.Builder().setRequestMetadata(request).build()), 0, 0)
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertEquals(album, session.player.playlistMetadata)
+    }
+
+    @Test
+    fun `only this app may write the name of the list`() {
+        val thisApp = caller(service.packageName, Process.myUid(), false)
+        val systemUi = caller("com.android.systemui", Process.myUid() + 2, isTrusted = true)
+
+        assertTrue(
+            callback.onConnect(session, thisApp).availablePlayerCommands.contains(Player.COMMAND_SET_PLAYLIST_METADATA),
+        )
+        listOf(theCar, systemUi).forEach {
+            assertFalse(
+                callback.onConnect(session, it).availablePlayerCommands.contains(Player.COMMAND_SET_PLAYLIST_METADATA),
+            )
+        }
     }
 }
 

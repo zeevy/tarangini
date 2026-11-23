@@ -39,6 +39,7 @@ import com.siliconcircuits.tarangini.core.data.local.entity.StationEntity
 import com.siliconcircuits.tarangini.core.data.local.entity.StationPlayEntity
 import com.siliconcircuits.tarangini.core.data.local.entity.StationStreamEntity
 import com.siliconcircuits.tarangini.core.data.local.migration.GenreTables
+import com.siliconcircuits.tarangini.core.data.local.migration.ResumeSource
 import com.siliconcircuits.tarangini.core.data.local.migration.SearchTableWholeWords
 
 /**
@@ -66,7 +67,7 @@ import com.siliconcircuits.tarangini.core.data.local.migration.SearchTableWholeW
         StationPlayEntity::class,
         StationStreamEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 @Suppress("TooManyFunctions") // One function per DAO of the database.
@@ -99,6 +100,6 @@ internal abstract class TaranginiDatabase : RoomDatabase() {
         const val FILE_NAME = "tarangini.db"
 
         /** Every step from an older version to this one. A new version adds its step here. */
-        val MIGRATIONS: List<Migration> = listOf(SearchTableWholeWords, GenreTables)
+        val MIGRATIONS: List<Migration> = listOf(SearchTableWholeWords, GenreTables, ResumeSource)
     }
 }

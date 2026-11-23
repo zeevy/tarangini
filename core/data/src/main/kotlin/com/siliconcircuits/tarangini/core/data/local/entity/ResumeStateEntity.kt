@@ -37,6 +37,10 @@ internal data class ResumeStateEntity(
     @ColumnInfo(name = "station_id") val stationId: Long?,
     val shuffle: Boolean,
     @ColumnInfo(name = "repeat_mode") val repeatMode: StoredRepeatMode,
+    /** The kind of list the queue came from, by the name of its `QueueSourceKind`; null with no source. */
+    @ColumnInfo(name = "source_kind") val sourceKind: String? = null,
+    /** The name of that list. */
+    @ColumnInfo(name = "source_name") val sourceName: String? = null,
 ) {
     companion object {
         const val SINGLE_ROW_ID = 0

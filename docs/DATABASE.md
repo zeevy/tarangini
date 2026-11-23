@@ -2,7 +2,7 @@
 
 This page says what the app stores on the phone, in which tables, and why. The code is in `core/data/src/main/kotlin/.../core/data/local`. The exported schema of every version is in `core/data/schemas/`.
 
-Status: version 3, 21 Nov 2026 (version 1 is of 19 Nov 2026). Rule ids such as D1 are from [CONTRIBUTING.md](../CONTRIBUTING.md#rules-with-ids).
+Status: version 4, 24 Nov 2026 (version 1 is of 19 Nov 2026). Rule ids such as D1 are from [CONTRIBUTING.md](../CONTRIBUTING.md#rules-with-ids).
 
 ## 1. Context
 
@@ -111,7 +111,7 @@ Every id is a whole number that the database gives and never uses again. Every t
 | `song_plays` | `song_id` (key), `play_count`, `last_played_at` | One row per song | Goes with its song |
 | `station_plays` | `station_id` (key), `play_count`, `last_played_at` | One row per station | Goes with its station |
 | `queue_items` | `position` (key), `song_id` | One row per place | Goes with its song |
-| `resume_state` | `id` (always 0), `queue_position`, `position_ms`, `station_id`, `shuffle`, `repeat_mode` | One row | `station_id` is emptied when the station goes |
+| `resume_state` | `id` (always 0), `queue_position`, `position_ms`, `station_id`, `shuffle`, `repeat_mode`, `source_kind`, `source_name` | One row | `station_id` is emptied when the station goes. `source_kind` and `source_name` name the list the queue came from (version 4); both are empty for a queue with no such list |
 
 Choices worth a line:
 

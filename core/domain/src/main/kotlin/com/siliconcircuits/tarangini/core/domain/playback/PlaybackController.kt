@@ -7,6 +7,7 @@
 package com.siliconcircuits.tarangini.core.domain.playback
 
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
+import com.siliconcircuits.tarangini.core.domain.model.QueueSource
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -24,8 +25,9 @@ interface PlaybackController {
      *
      * @param mediaUris the addresses of the audio files, as MediaStore gives them
      * @param startIndex the place in [mediaUris] of the item to play first
+     * @param source the list the queue comes from, or null when it has no name worth showing
      */
-    fun play(mediaUris: List<String>, startIndex: Int = 0)
+    fun play(mediaUris: List<String>, startIndex: Int = 0, source: QueueSource? = null)
 
     /**
      * Plays what a spoken request asks for: the song, artist or album of the library that fits [words] best.

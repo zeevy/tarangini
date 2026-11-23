@@ -56,6 +56,8 @@ internal fun Player.toPlaybackState(knownQueue: List<PlaybackItem>? = null): Pla
         isEnded = playbackState == Player.STATE_ENDED,
         error = playerError?.toPlaybackError(),
         format = if (current != null) currentTracks.playingFormat() else null,
+        // An empty player plays from no list, whatever name is left in its metadata.
+        source = if (mediaItemCount == 0) null else playlistMetadata.toQueueSource(),
         playOrder = if (shuffleModeEnabled && current != null) currentTimeline.playOrderFrom(current) else null,
     )
 }

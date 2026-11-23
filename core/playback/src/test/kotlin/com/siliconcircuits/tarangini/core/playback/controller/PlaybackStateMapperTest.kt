@@ -22,6 +22,8 @@ import androidx.media3.common.util.UnstableApi
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackItem
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
+import com.siliconcircuits.tarangini.core.domain.model.QueueSource
+import com.siliconcircuits.tarangini.core.domain.model.QueueSourceKind
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
 import com.siliconcircuits.tarangini.core.domain.model.SongFormat
 import org.junit.Assert.assertEquals
@@ -223,6 +225,24 @@ class PlaybackStateMapperTest {
 
             assertEquals("error code $code", error, player.toPlaybackState().error)
         }
+    }
+
+    @Test
+    fun `the source of the queue comes from the metadata this app wrote, and other metadata gives none`() {
+        val practice = QueueSource(QueueSourceKind.PLAYLIST, "Practice")
+        player.report { setPlaylist(twoSongs()).setPlaylistMetadata(practice.toPlaylistMetadata()) }
+        assertEquals(practice, player.toPlaybackState().source)
+
+        player.report { setPlaylistMetadata(MediaMetadata.Builder().setTitle("A list of another app").build()) }
+        assertNull(player.toPlaybackState().source)
+    }
+
+    @Test
+    fun `an empty player plays from no list, even with a name left in its metadata`() {
+        val practice = QueueSource(QueueSourceKind.PLAYLIST, "Practice")
+        player.report { setPlaylistMetadata(practice.toPlaylistMetadata()) }
+
+        assertNull(player.toPlaybackState().source)
     }
 
     @Test

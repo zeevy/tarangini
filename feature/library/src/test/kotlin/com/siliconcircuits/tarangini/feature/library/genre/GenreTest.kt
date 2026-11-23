@@ -133,7 +133,7 @@ class GenreTest {
         viewModel.songActions.onPlay(both)
         advanceUntilIdle()
 
-        assertEquals(listOf("play [test:1, test:2] from 1"), playback.commands)
+        assertEquals(listOf("play [test:1, test:2] from 1 as GENRE Rock"), playback.commands)
     }
 
     @Test

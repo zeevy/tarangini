@@ -9,6 +9,8 @@ package com.siliconcircuits.tarangini.feature.player.nowplaying
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackItem
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
+import com.siliconcircuits.tarangini.core.domain.model.QueueSource
+import com.siliconcircuits.tarangini.core.domain.model.QueueSourceKind
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
 import com.siliconcircuits.tarangini.core.domain.model.SleepState
 import com.siliconcircuits.tarangini.core.domain.model.Song
@@ -85,6 +87,17 @@ class NowPlayingViewModelTest {
             ),
             viewModel.state.value,
         )
+    }
+
+    @Test
+    fun `the list the queue came from is shown`() = runTest(mainDispatcher.dispatcher) {
+        val viewModel = watched()
+        val album = QueueSource(QueueSourceKind.ALBUM, "Morning Ragas")
+
+        playback.state.value = loaded(PlaybackState(durationMs = 180_000, source = album))
+        runCurrent()
+
+        assertEquals(album, viewModel.state.value?.source)
     }
 
     @Test

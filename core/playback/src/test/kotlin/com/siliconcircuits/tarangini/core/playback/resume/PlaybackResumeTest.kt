@@ -10,10 +10,14 @@ import android.database.SQLException
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
+import com.siliconcircuits.tarangini.core.domain.model.QueueSource
+import com.siliconcircuits.tarangini.core.domain.model.QueueSourceKind
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
 import com.siliconcircuits.tarangini.core.domain.playback.ResumePlace
 import com.siliconcircuits.tarangini.core.domain.playback.SavedPlayback
 import com.siliconcircuits.tarangini.core.playback.controller.FakePlayer
+import com.siliconcircuits.tarangini.core.playback.controller.toPlaylistMetadata
+import com.siliconcircuits.tarangini.core.playback.controller.toQueueSource
 import com.siliconcircuits.tarangini.core.testing.playback.FakeResumeStore
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -94,6 +98,34 @@ class PlaybackResumeTest {
         assertEquals(0, store.queueSaves)
         assertEquals(2, store.saved?.place?.index)
         assertEquals(5_000L, store.saved?.place?.positionMs)
+    }
+
+    @Test
+    fun `the list the queue came from comes back with it, and a new source for the same songs is saved`() = runTest {
+        val album = QueueSource(QueueSourceKind.ALBUM, "Morning Ragas")
+        store.saved = threeSongs.copy(source = album)
+        started()
+        assertEquals(album, player.playlistMetadata.toQueueSource())
+
+        val favourites = QueueSource(QueueSourceKind.FAVOURITES)
+        player.playlistMetadata = favourites.toPlaylistMetadata()
+        player.report()
+        advanceTimeBy(2.seconds)
+
+        assertEquals(1, store.queueSaves)
+        assertEquals(favourites, store.saved?.source)
+    }
+
+    @Test
+    fun `a resume asked for by a headset brings back the list the queue came from`() = runTest {
+        val album = QueueSource(QueueSourceKind.ALBUM, "Morning Ragas")
+        store.saved = threeSongs.copy(source = album)
+        val resume = PlaybackResume(player, store, backgroundScope)
+
+        val items = resume.resumption()
+
+        assertEquals(listOf("a", "b", "c"), items?.mediaItems?.map { it.mediaId })
+        assertEquals(album, player.playlistMetadata.toQueueSource())
     }
 
     @Test

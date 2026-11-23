@@ -62,7 +62,10 @@ class PlaylistViewModelsTest {
 
         assertEquals(listOf("One", "Two", "Three"), viewModel.titles())
         assertEquals(
-            listOf("play [test:1, test:2, test:3] from 1", "play [test:1, test:2, test:3] from 0"),
+            listOf(
+                "play [test:1, test:2, test:3] from 1 as PLAYLIST Drive",
+                "play [test:1, test:2, test:3] from 0 as PLAYLIST Drive",
+            ),
             playback.commands,
         )
     }
@@ -94,7 +97,10 @@ class PlaylistViewModelsTest {
         advanceUntilIdle()
 
         val command = playback.commands.single()
-        assertTrue(command, listOf("test:1", "test:2", "test:3").all { it in command } && command.endsWith("from 0"))
+        assertTrue(
+            command,
+            listOf("test:1", "test:2", "test:3").all { it in command } && command.endsWith("from 0 as PLAYLIST Drive"),
+        )
     }
 
     @Test

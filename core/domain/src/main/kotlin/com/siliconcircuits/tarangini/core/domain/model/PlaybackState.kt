@@ -22,6 +22,7 @@ package com.siliconcircuits.tarangini.core.domain.model
  * @property isEnded true when the last item of the queue has played to its end
  * @property error why playback stopped, or null when it did not fail
  * @property format how the current item is stored, or null until the player has opened it
+ * @property source the list the queue was started from, or null when it is not known or was changed by hand
  * @property playOrder with shuffle on, the places in [queue] from the current item to the last one the
  *   player will play, in the order it plays them. Null with shuffle off, when that is the order of [queue]
  */
@@ -40,6 +41,7 @@ data class PlaybackState(
     val error: PlaybackError? = null,
     val format: SongFormat? = null,
     val playOrder: List<Int>? = null,
+    val source: QueueSource? = null,
 ) {
     /** The item that plays or is paused, or null when nothing is loaded. */
     val currentItem: PlaybackItem?

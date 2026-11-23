@@ -7,6 +7,7 @@
 package com.siliconcircuits.tarangini.core.testing.playback
 
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
+import com.siliconcircuits.tarangini.core.domain.model.QueueSource
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackController
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -20,8 +21,8 @@ class FakePlaybackController : PlaybackController {
     /** Every command received, oldest first, as short text such as `pause` or `seekTo 5000`. */
     val commands = mutableListOf<String>()
 
-    override fun play(mediaUris: List<String>, startIndex: Int) {
-        commands += "play $mediaUris from $startIndex"
+    override fun play(mediaUris: List<String>, startIndex: Int, source: QueueSource?) {
+        commands += "play $mediaUris from $startIndex" + source?.let { " as ${it.kind} ${it.name}".trimEnd() }.orEmpty()
     }
 
     override fun playSpoken(words: String) {

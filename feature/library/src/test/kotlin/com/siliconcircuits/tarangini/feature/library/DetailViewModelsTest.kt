@@ -62,7 +62,7 @@ class DetailViewModelsTest {
 
         viewModel.songActions.onPlay(library.songs[0])
         advanceUntilIdle()
-        assertEquals(listOf("play [test:1] from 0"), playback.commands)
+        assertEquals(listOf("play [test:1] from 0 as ALBUM First"), playback.commands)
     }
 
     @Test
@@ -78,7 +78,7 @@ class DetailViewModelsTest {
 
             viewModel.songActions.onPlay(library.songs[1])
             advanceUntilIdle()
-            assertEquals(listOf("play [test:1, test:2] from 1"), playback.commands)
+            assertEquals(listOf("play [test:1, test:2] from 1 as ARTIST Ravi"), playback.commands)
         }
 
     @Test
@@ -92,7 +92,7 @@ class DetailViewModelsTest {
 
         viewModel.songActions.onPlay(library.songs[1])
         advanceUntilIdle()
-        assertEquals(listOf("play [test:1, test:2] from 1"), playback.commands)
+        assertEquals(listOf("play [test:1, test:2] from 1 as FOLDER Music"), playback.commands)
     }
 
     @Test
@@ -124,6 +124,6 @@ class DetailViewModelsTest {
 
             assertEquals(listOf("One"), before)
             assertEquals(listOf("Three", "One"), viewModel.songs.state.value.items.map { it.title })
-            assertEquals(listOf("play [test:3, test:1] from 1"), playback.commands)
+            assertEquals(listOf("play [test:3, test:1] from 1 as FAVOURITES"), playback.commands)
         }
 }

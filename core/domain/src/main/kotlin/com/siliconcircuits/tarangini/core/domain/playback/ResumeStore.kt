@@ -6,6 +6,7 @@
 
 package com.siliconcircuits.tarangini.core.domain.playback
 
+import com.siliconcircuits.tarangini.core.domain.model.QueueSource
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
 
 /**
@@ -38,5 +39,6 @@ data class ResumePlace(val index: Int, val positionMs: Long, val shuffle: Boolea
  * A queue and the place in it.
  *
  * @property mediaIds the id of every item of the queue, in order, as the player knows them
+ * @property source the list the queue was started from, or null when it has none
  */
-data class SavedPlayback(val mediaIds: List<String>, val place: ResumePlace)
+data class SavedPlayback(val mediaIds: List<String>, val place: ResumePlace, val source: QueueSource? = null)

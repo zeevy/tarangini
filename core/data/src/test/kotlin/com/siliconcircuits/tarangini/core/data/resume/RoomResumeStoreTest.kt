@@ -8,6 +8,8 @@ package com.siliconcircuits.tarangini.core.data.resume
 
 import com.siliconcircuits.tarangini.core.data.local.addSong
 import com.siliconcircuits.tarangini.core.data.local.testDatabase
+import com.siliconcircuits.tarangini.core.domain.model.QueueSource
+import com.siliconcircuits.tarangini.core.domain.model.QueueSourceKind
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
 import com.siliconcircuits.tarangini.core.domain.playback.ResumePlace
 import com.siliconcircuits.tarangini.core.domain.playback.SavedPlayback
@@ -51,6 +53,31 @@ class RoomResumeStoreTest {
         store().saveQueue(playback)
 
         assertEquals(playback, store().load())
+    }
+
+    @Test
+    fun `the list the queue came from comes back after a restart, also after a save of the place alone`() = runTest {
+        addSongs(1, 2)
+        val source = QueueSource(QueueSourceKind.ALBUM, "Morning Ragas")
+        val store = store()
+        store.saveQueue(SavedPlayback(listOf(song(1), song(2)), place(0), source))
+        store.savePlace(place(1, positionMs = 3_000))
+
+        assertEquals(source, store().load()?.source)
+
+        val afterRestart = store()
+        afterRestart.load()
+        afterRestart.savePlace(place(0))
+        assertEquals(source, store().load()?.source)
+    }
+
+    @Test
+    fun `a queue saved with no source comes back with none`() = runTest {
+        addSongs(1)
+        store().saveQueue(SavedPlayback(listOf(song(1)), place(0), QueueSource(QueueSourceKind.FAVOURITES)))
+        store().saveQueue(SavedPlayback(listOf(song(1)), place(0)))
+
+        assertNull(store().load()?.source)
     }
 
     @Test

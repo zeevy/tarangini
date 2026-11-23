@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
+import com.siliconcircuits.tarangini.core.domain.model.QueueSource
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
 import com.siliconcircuits.tarangini.core.domain.model.SleepState
 import com.siliconcircuits.tarangini.core.domain.model.SongFormat
@@ -72,6 +73,7 @@ internal data class NowPlayingUiState(
     val format: SongFormat? = null,
     val place: Int = 1,
     val queueSize: Int = 1,
+    val source: QueueSource? = null,
 ) {
     val isLive: Boolean get() = durationMs == null
 }
@@ -220,5 +222,6 @@ private fun PlaybackState.toUiState(seekTarget: SeekTarget?, mark: FavouriteMark
         format = format,
         place = (currentIndex ?: 0) + 1,
         queueSize = queue.size.coerceAtLeast(1),
+        source = source,
     )
 }
