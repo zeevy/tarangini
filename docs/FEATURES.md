@@ -453,6 +453,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D79 | Volume levelling from ReplayGain tags, read by the player from each file, applied in the equalizer processor with a 20 ms fade. Modes off, per song, per album; a lift never passes the peak; works also with the equalizer off | 21 Nov 2026 | No new database version and no extra scan; one processor keeps gapless playback. See `docs/adr/0050-volume-levelling.md` |
 | D80 | Large screens: from 600 dp wide the tabs move to a rail at the left, and from 840 dp wide and 480 dp high the now playing screen stands as a pane at the right of the tab screens in place of the mini player. Read from the window width, with no new library | 22 Nov 2026 | A wide window uses its width and keeps the glass look; folding keeps the screen and the playback. See `docs/adr/0051-large-screens.md` |
 | D81 | The app ships in English only. The Hindi and Telugu translations (#63) are dropped for now | 23 Nov 2026 | One language to write, check and keep right. The texts stay in string resources, so a language can still be added later |
+| D82 | Crossfade is built as a wrapper in front of the audio sink of the one player: it holds the end of a song and mixes it into the start of the next with equal power curves. Not as a Media3 audio processor and not with two players | 23 Nov 2026 | The trial (#68) showed the processor way loses the held end at every song change in Media3 1.11.1, and two players break rule H1. The wrapper fades evenly, keeps the time on the screen right and leaves gapless playback unchanged when it is off |
 
 ## 9. Checks before building
 
@@ -462,6 +463,6 @@ All open questions are answered. These points still need a check at the source o
 |---|---|---|
 | C2 | Our own check of the rules before the paid tier | Linking to public streams, showing station names, stream recording, and use of the Radio Browser data, whose licence its pages do not state. Read the Play policy and the terms of each source again, and ask the Radio Browser project about its data |
 | C4 | Exact alarm permission for the radio alarm | Play allows `USE_EXACT_ALARM` only for some app types |
-| C5 | Trial builds | The pause and rewind buffer for live radio, crossfade with gapless. The equalizer processor was tried on 21 Nov 2026 and is a go (D76); its numbers on real phones are rows 136 and 137 of `docs/MANUAL-TESTS.md` |
+| C5 | Trial builds | The pause and rewind buffer for live radio. Crossfade was tried on 23 Nov 2026 and is a go as a wrapper in front of the audio sink (D82, `docs/adr/0052-crossfade-trial.md`); a person must still listen on a real phone. The equalizer processor was tried on 21 Nov 2026 and is a go (D76); its numbers on real phones are rows 136 and 137 of `docs/MANUAL-TESTS.md` |
 | C7 | Subscription prices | Monthly and yearly amounts |
 | C8 | Google Drive rules, if it is added later | Verification and yearly assessment cost |
