@@ -88,8 +88,11 @@ class MainFlowTest {
         val current = onMain { session.currentMediaItem?.mediaMetadata?.title?.toString() }
         assertTrue("The session plays one of the new songs, not $current", current in titles)
         val song = requireNotNull(current)
-        // The mini player shows the song, as well as its row in the list.
-        waitFor("the mini player to show $song") { nodesWithText(song).size >= 2 }
+        // The mini player names the song, as well as its row in the list. It is one button, so
+        // TalkBack reads its name and not the texts inside.
+        waitFor("the mini player to show $song") {
+            composeRule.onAllNodes(hasContentDescription("$song,", substring = true)).fetchNodes().isNotEmpty()
+        }
 
         // Favourite: the row gets the heart, the session the filled heart and a Favourites entry.
         menuOf(song, "Add to favourites")
@@ -115,12 +118,16 @@ class MainFlowTest {
         val second = onMain { session.getMediaItemAt(1).mediaMetadata.title?.toString() }
         composeRule.onNode(hasContentDescription("Open the player", substring = true)).performClick()
         val row = hasContentDescription("Number 2, $second", substring = true)
+        // The player card scrolls too, so each list that scrolls is tried until one holds the row.
         waitFor("the up next row of $second") {
-            try {
-                composeRule.onAllNodes(hasScrollToNodeAction()).onFirst().performScrollToNode(row)
-                true
-            } catch (_: AssertionError) {
-                false
+            val lists = composeRule.onAllNodes(hasScrollToNodeAction())
+            lists.fetchNodes().indices.any { place ->
+                try {
+                    lists[place].performScrollToNode(row)
+                    true
+                } catch (_: AssertionError) {
+                    false
+                }
             }
         }
         composeRule.onNode(row).performClick()
@@ -189,8 +196,6 @@ class MainFlowTest {
         composeRule.onNodeWithContentDescription("More options for $title").performClick()
         composeRule.onNodeWithText(entry).performClick()
     }
-
-    private fun nodesWithText(text: String) = composeRule.onAllNodesWithText(text).fetchNodes()
 
     private fun SemanticsNodeInteractionCollection.fetchNodes() = fetchSemanticsNodes(atLeastOneRootRequired = false)
 
