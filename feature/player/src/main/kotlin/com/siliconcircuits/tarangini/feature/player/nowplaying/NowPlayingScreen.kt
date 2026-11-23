@@ -56,7 +56,7 @@ import com.siliconcircuits.tarangini.feature.player.lyrics.LyricsViewModel
 /** The now playing screen: the cover, the texts, the seek bar and the buttons of the player. */
 @Composable
 internal fun NowPlayingScreen(
-    onBackClick: () -> Unit,
+    onBackClick: (() -> Unit)?,
     onOpenQueue: () -> Unit,
     modifier: Modifier = Modifier,
     onOpenEqualizer: () -> Unit = {},
@@ -91,7 +91,7 @@ internal fun NowPlayingScreen(
 internal fun NowPlayingContent(
     state: NowPlayingUiState?,
     actions: NowPlayingActions,
-    onBackClick: () -> Unit,
+    onBackClick: (() -> Unit)?,
     onOpenQueue: () -> Unit,
     modifier: Modifier = Modifier,
     playlists: PlaylistPick? = null,
@@ -106,7 +106,8 @@ internal fun NowPlayingContent(
             TopAppBar(
                 colors = glassTopBarColors(),
                 title = { Text(stringResource(R.string.now_playing_title)) },
-                navigationIcon = { BackButton(onClick = onBackClick) },
+                // As a pane beside the tabs there is nothing to go back to.
+                navigationIcon = { onBackClick?.let { BackButton(onClick = it) } },
                 actions = {
                     state?.isFavourite?.let { on -> FavouriteButton(on, actions.onToggleFavourite) }
                     IconButton(onClick = onOpenQueue) {

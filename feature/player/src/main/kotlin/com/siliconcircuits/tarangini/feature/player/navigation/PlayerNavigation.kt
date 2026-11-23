@@ -6,6 +6,8 @@
 
 package com.siliconcircuits.tarangini.feature.player.navigation
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
@@ -46,6 +48,20 @@ fun NavGraphBuilder.playerScreens(navController: NavController) {
     composable<QueueRoute> { entry ->
         QueueScreen(onBackClick = { if (entry.isShown()) navController.popBackStack() })
     }
+}
+
+/**
+ * The now playing screen as a pane beside the tab screens on a wide window, with no back arrow.
+ * The queue and the equalizer still open as their own screens.
+ */
+@Composable
+fun NowPlayingPane(navController: NavController, modifier: Modifier = Modifier) {
+    NowPlayingScreen(
+        onBackClick = null,
+        onOpenQueue = { navController.navigate(QueueRoute) { launchSingleTop = true } },
+        modifier = modifier,
+        onOpenEqualizer = { navController.navigate(EqualizerRoute) { launchSingleTop = true } },
+    )
 }
 
 private fun NavBackStackEntry.isShown() = lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
