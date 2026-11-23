@@ -98,16 +98,9 @@ private fun RowScope.ShuffleKey(on: Boolean, onToggle: () -> Unit) {
 @Composable
 private fun RowScope.RepeatKey(mode: RepeatMode, onCycle: () -> Unit) {
     val on = mode != RepeatMode.OFF
+    val icon = if (mode == RepeatMode.ONE) CoreUiR.drawable.ic_repeat_one else CoreUiR.drawable.ic_repeat
     Key(
-        icon = painterResource(
-            if (mode ==
-                RepeatMode.ONE
-            ) {
-                CoreUiR.drawable.ic_repeat_one
-            } else {
-                CoreUiR.drawable.ic_repeat
-            },
-        ),
+        icon = painterResource(icon),
         name = stringResource(
             when (mode) {
                 RepeatMode.OFF -> R.string.now_playing_repeat_off

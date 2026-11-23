@@ -35,18 +35,20 @@ import kotlin.math.roundToInt
 /**
  * A left and a right level meter of [SEGMENTS] segments each, lit from the bottom by [reading].
  * While [moving] is false, as in a pause, every segment is off. It only shows what is heard, so a
- * screen reader skips it.
+ * screen reader skips it. [reading] is called here and nowhere above, so a new level draws only
+ * the meter again, not the screen around it.
  */
 @Composable
-fun LevelMeter(reading: LevelReading, moving: Boolean, modifier: Modifier = Modifier) {
+fun LevelMeter(reading: () -> LevelReading, moving: Boolean, modifier: Modifier = Modifier) {
     val colors = levelColors
+    val now = if (moving) reading() else LevelReading.SILENCE
     Row(
         modifier = modifier.clearAndSetSemantics {},
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.Bottom,
     ) {
-        Side(if (moving) litSegments(reading.leftDb) else 0, stringResource(R.string.meter_left), colors)
-        Side(if (moving) litSegments(reading.rightDb) else 0, stringResource(R.string.meter_right), colors)
+        Side(litSegments(now.leftDb), stringResource(R.string.meter_left), colors)
+        Side(litSegments(now.rightDb), stringResource(R.string.meter_right), colors)
     }
 }
 
@@ -58,7 +60,7 @@ private fun Side(lit: Int, label: String, colors: LevelColors) {
             for (segment in SEGMENTS - 1 downTo 0) {
                 Box(
                     Modifier.size(width = 12.dp, height = 4.dp)
-                        .background(segmentColor(segment, lit, colors), RoundedCornerShape(1.dp)),
+                        .background(segmentColor(segment, lit, colors), SegmentShape),
                 )
             }
         }
@@ -82,6 +84,8 @@ private fun segmentColor(segment: Int, lit: Int, colors: LevelColors): Color = w
 /** How many segments [db] lights: none at silence, all at full scale, in even steps of dB between. */
 internal fun litSegments(db: Float): Int =
     ((db - SILENCE_DB) / -SILENCE_DB * SEGMENTS).roundToInt().coerceIn(0, SEGMENTS)
+
+private val SegmentShape = RoundedCornerShape(1.dp)
 
 /** The segments of each side. */
 const val SEGMENTS = 16

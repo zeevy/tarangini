@@ -32,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -77,6 +78,9 @@ internal fun NowPlayingScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val lyrics by lyricsViewModel.state.collectAsStateWithLifecycle()
+    // Collected here, but its value is read only inside the meter.
+    val levelState = levelsViewModel.levels.collectAsStateWithLifecycle()
+    val levels = remember(levelState) { { levelState.value } }
     val actions = NowPlayingActions(
         onTogglePlay = viewModel::togglePlay,
         onNext = viewModel::next,
@@ -95,8 +99,7 @@ internal fun NowPlayingScreen(
         viewModel.playlistPick,
         viewModel.options.copy(onOpenEqualizer = onOpenEqualizer),
         lyrics,
-        // Read only inside the meter, so a new level draws the meter again and nothing else.
-        levels = { levelsViewModel.levels.collectAsStateWithLifecycle().value },
+        levels = levels,
     )
 }
 
@@ -111,7 +114,7 @@ internal fun NowPlayingContent(
     playlists: PlaylistPick? = null,
     options: PlaybackOptionActions = PlaybackOptionActions(),
     lyrics: String? = null,
-    levels: @Composable () -> LevelReading = { LevelReading.SILENCE },
+    levels: () -> LevelReading = { LevelReading.SILENCE },
 ) {
     Scaffold(
         modifier = modifier.background(MaterialTheme.colorScheme.background),
@@ -175,7 +178,7 @@ private fun TopBarTitle(album: String?) {
 private fun NowPlayingCard(
     state: NowPlayingUiState,
     actions: NowPlayingActions,
-    levels: @Composable () -> LevelReading,
+    levels: () -> LevelReading,
     modifier: Modifier = Modifier,
 ) {
     val shape = MaterialTheme.shapes.large
@@ -187,7 +190,7 @@ private fun NowPlayingCard(
         Row(horizontalArrangement = Arrangement.spacedBy(CardEdge), verticalAlignment = Alignment.Bottom) {
             // The meter stands still in a pause, while the player waits for data and after an error.
             val moving = state.showPause && !state.isBuffering && state.error == null
-            LevelMeter(levels(), moving)
+            LevelMeter(levels, moving)
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing6)) {
                 BigTime(state)
                 SongTexts(state, actions.onToggleFavourite)
