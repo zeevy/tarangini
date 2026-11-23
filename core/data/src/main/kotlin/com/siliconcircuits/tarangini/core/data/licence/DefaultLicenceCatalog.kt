@@ -32,7 +32,7 @@ internal class DefaultLicenceCatalog @Inject constructor(
     override suspend fun libraries(): List<OpenSourceLibrary> = withContext(io) {
         // A build with no list still shows the font and the notice of the app.
         val notices = parseNotices(asset(NOTICES).orEmpty())
-        (parseArtifacts(asset(ARTIFACTS).orEmpty(), notices) + FONT).sortedBy { it.name.lowercase() }
+        (parseArtifacts(asset(ARTIFACTS).orEmpty(), notices) + FONTS).sortedBy { it.name.lowercase() }
     }
 
     // The id becomes a part of a file name, so only the plain form of a licence id is read.
@@ -50,7 +50,12 @@ internal class DefaultLicenceCatalog @Inject constructor(
         const val NOTICES = "licences/notices.json"
         const val TEXTS = "licences"
         val LICENCE_ID = Regex("[A-Za-z0-9][A-Za-z0-9.+-]{0,39}")
-        val FONT = OpenSourceLibrary("Manrope", "", LibraryLicence("Manrope-OFL", "SIL Open Font License 1.1"))
+
+        // The fonts ship as files of the app, not as libraries, so the licence check does not list them.
+        val FONTS = listOf(
+            OpenSourceLibrary("Manrope", "", LibraryLicence("Manrope-OFL", "SIL Open Font License 1.1")),
+            OpenSourceLibrary("JetBrains Mono", "", LibraryLicence("JetBrainsMono-OFL", "SIL Open Font License 1.1")),
+        )
     }
 }
 

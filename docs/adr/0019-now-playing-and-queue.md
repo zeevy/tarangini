@@ -1,6 +1,6 @@
 # ADR 0019: Now playing screen and queue
 
-- Status: accepted, 20 Nov 2026.
+- Status: accepted, 20 Nov 2026. The layout of the now playing screen is replaced by ADR 0055.
 - Rules: A10, A12, U1, U7, U8, T2.
 
 ## Context

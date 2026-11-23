@@ -12,6 +12,7 @@ import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
 import com.siliconcircuits.tarangini.core.domain.model.SleepState
 import com.siliconcircuits.tarangini.core.domain.model.Song
+import com.siliconcircuits.tarangini.core.domain.model.SongFormat
 import com.siliconcircuits.tarangini.core.testing.MainDispatcherRule
 import com.siliconcircuits.tarangini.core.testing.library.FakeFavouriteRepository
 import com.siliconcircuits.tarangini.core.testing.library.FakePlaylistRepository
@@ -84,6 +85,24 @@ class NowPlayingViewModelTest {
             ),
             viewModel.state.value,
         )
+    }
+
+    @Test
+    fun `the format and the place in the queue come from the player`() = runTest(mainDispatcher.dispatcher) {
+        val viewModel = watched()
+        val format = SongFormat("MP3", 320, 44_100, 2)
+
+        playback.state.value = PlaybackState(
+            queue = listOf(song, song.copy(id = "test:2"), song.copy(id = "test:3")),
+            currentIndex = 1,
+            durationMs = 180_000,
+            format = format,
+        )
+        runCurrent()
+
+        assertEquals(format, viewModel.state.value?.format)
+        assertEquals(2, viewModel.state.value?.place)
+        assertEquals(3, viewModel.state.value?.queueSize)
     }
 
     @Test

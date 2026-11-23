@@ -8,9 +8,11 @@ package com.siliconcircuits.tarangini.feature.player
 
 import androidx.compose.runtime.Composable
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.siliconcircuits.tarangini.core.domain.audio.LevelReading
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackItem
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
+import com.siliconcircuits.tarangini.core.domain.model.SongFormat
 import com.siliconcircuits.tarangini.core.testing.savedPicture
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import com.siliconcircuits.tarangini.feature.player.nowplaying.NowPlayingActions
@@ -45,8 +47,22 @@ class PlayerScreenshotTest {
         durationMs = 185_000,
         shuffle = true,
         repeat = RepeatMode.ONE,
+        isFavourite = true,
+        format = SongFormat("MP3", 320, 44_100, 2),
+        place = 2,
+        queueSize = 8,
     )
-    private val station = song.copy(title = "Radio Mirchi", artist = "A song on air", album = null, durationMs = null)
+    private val loud = LevelReading(-3f, -9f)
+    private val station = song.copy(
+        title = "Radio Mirchi",
+        artist = "A song on air",
+        album = null,
+        durationMs = null,
+        isFavourite = null,
+        format = SongFormat("AAC", 128, 48_000, 2),
+        place = 1,
+        queueSize = 1,
+    )
     private val queue = QueueUiState(
         items = listOf(
             PlaybackItem("a", "Morning raga", "Ravi Shankar"),
@@ -57,15 +73,24 @@ class PlayerScreenshotTest {
     )
 
     @Test
-    fun `a song`() = shot("now_playing_song") { NowPlayingContent(song, actions, {}, {}) }
+    fun `a song`() = shot("now_playing_song") { NowPlayingContent(song, actions, {}, {}, levels = { loud }) }
+
+    @Test
+    fun `a song in a pause`() = shot("now_playing_paused") {
+        NowPlayingContent(song.copy(showPause = false), actions, {}, {}, levels = { loud })
+    }
 
     @Test
     @Config(qualifiers = "+night")
-    fun `a song in the dark look`() = shot("now_playing_song_dark") { NowPlayingContent(song, actions, {}, {}) }
+    fun `a song in the dark look`() = shot("now_playing_song_dark") {
+        NowPlayingContent(song, actions, {}, {}, levels = { loud })
+    }
 
     @Test
     @Config(qualifiers = "w640dp-h320dp-xhdpi")
-    fun `a song on a wide screen`() = shot("now_playing_song_wide") { NowPlayingContent(song, actions, {}, {}) }
+    fun `a song on a wide screen`() = shot("now_playing_song_wide") {
+        NowPlayingContent(song, actions, {}, {}, levels = { loud })
+    }
 
     @Test
     fun `a station`() = shot("now_playing_station") { NowPlayingContent(station, actions, {}, {}) }
@@ -91,7 +116,7 @@ class PlayerScreenshotTest {
     @Test
     fun `a song with the largest font`() {
         RuntimeEnvironment.setFontScale(2f)
-        shot("now_playing_song_largest_font") { NowPlayingContent(song, actions, {}, {}) }
+        shot("now_playing_song_largest_font") { NowPlayingContent(song, actions, {}, {}, levels = { loud }) }
     }
 
     @Test

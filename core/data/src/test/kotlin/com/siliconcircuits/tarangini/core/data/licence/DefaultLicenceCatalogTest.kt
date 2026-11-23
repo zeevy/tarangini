@@ -69,12 +69,13 @@ class DefaultLicenceCatalogTest {
     }
 
     @Test
-    fun `with no list of the build the font is still listed, and an id that is no licence id reads nothing`() =
+    fun `with no list of the build the fonts are still listed, and an id that is no licence id reads nothing`() =
         runTest {
             val app = RuntimeEnvironment.getApplication()
             val catalog = DefaultLicenceCatalog(app, StandardTestDispatcher(testScheduler))
 
             assertTrue(catalog.libraries().any { it.name == "Manrope" })
+            assertTrue(catalog.libraries().any { it.name == "JetBrains Mono" })
             assertNull(catalog.text("../licences/Apache-2.0"))
             assertNull(catalog.text(""))
             assertNull(catalog.text("No-Such-Licence"))

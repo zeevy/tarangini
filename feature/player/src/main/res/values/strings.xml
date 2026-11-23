@@ -18,6 +18,14 @@
     <string name="now_playing_position">Position in the song</string>
     <string name="now_playing_position_state">%1$s of %2$s</string>
     <string name="now_playing_live">Live</string>
+    <!-- The place of the song in the queue, such as "2 / 8", and what a screen reader says for it. -->
+    <string name="now_playing_place">%1$d / %2$d</string>
+    <string name="now_playing_place_spoken">Song %1$d of %2$d</string>
+    <!-- The length after the large time, such as "/ 4:05". -->
+    <string name="now_playing_length">/ %1$s</string>
+    <!-- The time left under the seek bar, such as "-2:23", and what a screen reader says for it. -->
+    <string name="now_playing_left">-%1$s</string>
+    <string name="now_playing_left_spoken">%1$s left</string>
     <string name="now_playing_shuffle">Shuffle</string>
     <string name="now_playing_repeat_off">Repeat is off</string>
     <string name="now_playing_repeat_all">Repeat all</string>

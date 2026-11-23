@@ -7,17 +7,22 @@
 package com.siliconcircuits.tarangini.feature.player.nowplaying
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -25,35 +30,42 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.min
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.siliconcircuits.tarangini.core.domain.audio.LevelReading
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
+import com.siliconcircuits.tarangini.core.domain.model.SongFormat
 import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
-import com.siliconcircuits.tarangini.core.ui.component.AlbumArt
 import com.siliconcircuits.tarangini.core.ui.component.BackButton
+import com.siliconcircuits.tarangini.core.ui.component.LevelMeter
 import com.siliconcircuits.tarangini.core.ui.component.MessageState
 import com.siliconcircuits.tarangini.core.ui.component.PlaylistPick
-import com.siliconcircuits.tarangini.core.ui.theme.Spacing
+import com.siliconcircuits.tarangini.core.ui.component.formatDuration
+import com.siliconcircuits.tarangini.core.ui.component.songFormatText
+import com.siliconcircuits.tarangini.core.ui.theme.DigitsFont
+import com.siliconcircuits.tarangini.core.ui.theme.PanelColor
+import com.siliconcircuits.tarangini.core.ui.theme.PanelEdge
 import com.siliconcircuits.tarangini.core.ui.theme.clearTopBarColors
 import com.siliconcircuits.tarangini.feature.player.R
 import com.siliconcircuits.tarangini.feature.player.lyrics.LyricsViewModel
 
-/** The now playing screen: the cover, the texts, the seek bar and the buttons of the player. */
+/** The now playing screen: one card with the song, the level meter, the seek bar and the keys of the player. */
 @Composable
 internal fun NowPlayingScreen(
     onBackClick: (() -> Unit)?,
@@ -62,9 +74,13 @@ internal fun NowPlayingScreen(
     onOpenEqualizer: () -> Unit = {},
     viewModel: NowPlayingViewModel = hiltViewModel(),
     lyricsViewModel: LyricsViewModel = hiltViewModel(),
+    levelsViewModel: LevelsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val lyrics by lyricsViewModel.state.collectAsStateWithLifecycle()
+    // Collected here, but its value is read only inside the meter.
+    val levelState = levelsViewModel.levels.collectAsStateWithLifecycle()
+    val levels = remember(levelState) { { levelState.value } }
     val actions = NowPlayingActions(
         onTogglePlay = viewModel::togglePlay,
         onNext = viewModel::next,
@@ -83,6 +99,7 @@ internal fun NowPlayingScreen(
         viewModel.playlistPick,
         viewModel.options.copy(onOpenEqualizer = onOpenEqualizer),
         lyrics,
+        levels = levels,
     )
 }
 
@@ -97,19 +114,19 @@ internal fun NowPlayingContent(
     playlists: PlaylistPick? = null,
     options: PlaybackOptionActions = PlaybackOptionActions(),
     lyrics: String? = null,
+    levels: () -> LevelReading = { LevelReading.SILENCE },
 ) {
     Scaffold(
         modifier = modifier.background(MaterialTheme.colorScheme.background),
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onBackground,
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 colors = clearTopBarColors(),
-                title = { Text(stringResource(R.string.now_playing_title)) },
+                title = { TopBarTitle(state?.album) },
                 // As a pane beside the tabs there is nothing to go back to.
                 navigationIcon = { onBackClick?.let { BackButton(onClick = it) } },
                 actions = {
-                    state?.isFavourite?.let { on -> FavouriteButton(on, actions.onToggleFavourite) }
                     IconButton(onClick = onOpenQueue) {
                         Icon(
                             painter = painterResource(CoreUiR.drawable.ic_queue),
@@ -129,87 +146,163 @@ internal fun NowPlayingContent(
                 icon = painterResource(CoreUiR.drawable.ic_music_note),
             )
         } else {
-            Player(state, actions, Modifier.padding(padding))
-        }
-    }
-}
-
-/** The cover above the controls on an upright screen, and beside them on a wide one. */
-@Composable
-private fun Player(state: NowPlayingUiState, actions: NowPlayingActions, modifier: Modifier = Modifier) {
-    BoxWithConstraints(modifier = modifier.fillMaxSize().padding(horizontal = Spacing.large)) {
-        // Read here: inside the row and the column the names would mean something else.
-        val width = maxWidth
-        val height = maxHeight
-        if (width > height) {
-            Row(
-                modifier = Modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.spacedBy(Spacing.large),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                AlbumArt(state.artworkUri, size = coverSide(height - Spacing.large, width / 2))
-                // A wide screen is low: with one line for the title every button fits without a scroll.
-                Controls(state, actions, Modifier.weight(1f).verticalScroll(rememberScrollState()), titleLines = 1)
-            }
-        } else {
             Column(
-                // A short screen with a large font scrolls instead of cutting the buttons off.
-                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                // A short screen with a large font scrolls instead of cutting the keys off.
+                modifier = Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState())
+                    .padding(horizontal = ScreenEdge),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(Spacing.large, Alignment.CenterVertically),
             ) {
-                AlbumArt(state.artworkUri, size = coverSide(width, height / 2))
-                Controls(state, actions)
+                // On a wide screen the card keeps the width of a phone, so the keys stay in reach.
+                NowPlayingCard(state, actions, levels, Modifier.widthIn(max = WidestCard).fillMaxWidth())
             }
         }
     }
 }
 
-/** The side of the cover: as large as the space allows, but never larger than a hand can take in. */
-private fun coverSide(first: Dp, second: Dp): Dp = min(min(first, second), Spacing.extraLarge * LARGEST_COVER)
+/** "Now playing" with the album of the song under it. */
+@Composable
+private fun TopBarTitle(album: String?) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = stringResource(R.string.now_playing_title).uppercase(),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        album?.let {
+            Text(text = it, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+    }
+}
 
 @Composable
-private fun Controls(
+private fun NowPlayingCard(
     state: NowPlayingUiState,
     actions: NowPlayingActions,
+    levels: () -> LevelReading,
     modifier: Modifier = Modifier,
-    titleLines: Int = 2,
 ) {
+    val shape = MaterialTheme.shapes.large
     Column(
-        modifier = modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(Spacing.small),
+        modifier = modifier.background(PanelColor, shape).border(PanelEdge, shape).padding(CardEdge),
+        verticalArrangement = Arrangement.spacedBy(Spacing8),
     ) {
-        Text(
-            text = state.title ?: stringResource(CoreUiR.string.unknown_title),
-            style = MaterialTheme.typography.headlineSmall,
-            textAlign = TextAlign.Center,
-            maxLines = titleLines,
-            overflow = TextOverflow.Ellipsis,
-        )
-        // A station that sends no song title has no line here. The line below says that it is live.
-        val hasArtistLine = state.artist != null || !state.isLive
-        if (hasArtistLine) OneLine(state.artist ?: stringResource(CoreUiR.string.unknown_artist))
-        // A station has no album. An empty line would only push the buttons down.
-        state.album?.let { OneLine(it) }
+        FormatLine(state.format, state.place, state.queueSize)
+        Row(horizontalArrangement = Arrangement.spacedBy(CardEdge), verticalAlignment = Alignment.Bottom) {
+            // The meter stands still in a pause, while the player waits for data and after an error.
+            val moving = state.showPause && !state.isBuffering && state.error == null
+            LevelMeter(levels, moving)
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing6)) {
+                BigTime(state)
+                SongTexts(state, actions.onToggleFavourite)
+            }
+        }
         when {
             state.error != null -> ErrorLine(state.error, actions.onTogglePlay)
-            state.isLive -> LiveLine(state.isBuffering)
+            state.isLive -> Unit
             else -> SeekBar(state, actions.onSeek)
         }
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         PlayerButtons(state, actions)
     }
 }
 
+/** The format of the song and its place in the queue, such as "MP3 320 kbps · 44.1 kHz · Stereo" and "2 / 8". */
 @Composable
-private fun OneLine(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.bodyLarge,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
-    )
+private fun FormatLine(format: SongFormat?, place: Int, queueSize: Int) {
+    val rest = format?.let { songFormatText(it.copy(codec = null)) }.orEmpty()
+    // One item has no place worth naming.
+    val hasPlace = queueSize > 1
+    if (format?.codec == null && rest.isEmpty() && !hasPlace) return
+    val small = TextStyle(fontFamily = DigitsFont, fontWeight = FontWeight.SemiBold, fontSize = 11.sp)
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing8)) {
+        format?.codec?.let { codec ->
+            Text(
+                text = codec,
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.shapes.extraSmall)
+                    .padding(horizontal = 7.dp, vertical = 3.dp),
+                style = small,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+            )
+        }
+        Text(
+            text = rest,
+            modifier = Modifier.weight(1f),
+            style = small,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        if (hasPlace) {
+            val spoken = stringResource(R.string.now_playing_place_spoken, place, queueSize)
+            Text(
+                text = stringResource(R.string.now_playing_place, place, queueSize),
+                modifier = Modifier.clearAndSetSemantics { contentDescription = spoken },
+                style = small,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+/** The time played in large digits, with the length after it. A live stream says that it is live. */
+@Composable
+private fun BigTime(state: NowPlayingUiState) {
+    val accent = MaterialTheme.colorScheme.primary
+    val length = state.durationMs
+    if (length == null) {
+        // After an error the line under it says why; "Live" would say the opposite.
+        if (state.error != null) return
+        Text(
+            text = stringResource(if (state.isBuffering) R.string.player_loading else R.string.now_playing_live),
+            style = TextStyle(fontFamily = DigitsFont, fontWeight = FontWeight.Bold, fontSize = 28.sp),
+            color = accent,
+        )
+        return
+    }
+    Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(Spacing8)) {
+        // With a large font the digits get smaller to fit, before anything is cut.
+        BasicText(
+            text = formatDuration(state.positionMs).ifEmpty { ZERO },
+            modifier = Modifier.weight(1f, fill = false),
+            style = TextStyle(fontFamily = DigitsFont, fontWeight = FontWeight.Bold, fontSize = 38.sp, color = accent),
+            maxLines = 1,
+            autoSize = TextAutoSize.StepBased(minFontSize = 18.sp, maxFontSize = 38.sp),
+        )
+        Text(
+            text = stringResource(R.string.now_playing_length, formatDuration(length).ifEmpty { ZERO }),
+            modifier = Modifier.padding(bottom = 4.dp),
+            style = TextStyle(fontFamily = DigitsFont, fontWeight = FontWeight.SemiBold, fontSize = 13.sp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+        )
+    }
+}
+
+/** The title and the artist, with the heart beside them for a song of the library. */
+@Composable
+private fun SongTexts(state: NowPlayingUiState, onToggleFavourite: () -> Unit) {
+    Row(verticalAlignment = Alignment.Top) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = state.title ?: stringResource(CoreUiR.string.unknown_title),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.ExtraBold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            // A station that sends no song title has no line here: the large text says that it is live.
+            val hasArtistLine = state.artist != null || !state.isLive
+            if (hasArtistLine) {
+                Text(
+                    text = state.artist ?: stringResource(CoreUiR.string.unknown_artist),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+        state.isFavourite?.let { on -> FavouriteButton(on, onToggleFavourite) }
+    }
 }
 
 /** Why the item does not play, with a button that tries again. It takes the place of the seek bar. */
@@ -221,7 +314,7 @@ private fun ErrorLine(error: PlaybackError, onRetry: () -> Unit) {
         PlaybackError.CANNOT_PLAY -> R.string.player_error_cannot_play
         PlaybackError.UNKNOWN -> R.string.player_error_unknown
     }
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = stringResource(text),
             style = MaterialTheme.typography.bodyMedium,
@@ -232,20 +325,7 @@ private fun ErrorLine(error: PlaybackError, onRetry: () -> Unit) {
     }
 }
 
-/** A live stream has no length, so there is nothing to seek in. The line says that it is live, or that it loads. */
-@Composable
-private fun LiveLine(isBuffering: Boolean) {
-    Text(
-        text = stringResource(if (isBuffering) R.string.player_loading else R.string.now_playing_live),
-        modifier = Modifier.padding(vertical = Spacing.medium),
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
-    )
-}
-
-private const val LARGEST_COVER = 7
-
-/** The heart in the top bar. Its name for a screen reader is what a tap does. */
+/** The heart. Its name for a screen reader is what a tap does. */
 @Composable
 private fun FavouriteButton(on: Boolean, onToggle: () -> Unit) {
     IconButton(onClick = onToggle) {
@@ -254,7 +334,18 @@ private fun FavouriteButton(on: Boolean, onToggle: () -> Unit) {
             contentDescription = stringResource(
                 if (on) CoreUiR.string.song_remove_favourite else CoreUiR.string.song_add_favourite,
             ),
-            tint = if (on) MaterialTheme.colorScheme.primary else LocalContentColor.current,
+            tint = if (on) MaterialTheme.colorScheme.tertiary else LocalContentColor.current,
         )
     }
 }
+
+// The space at the sides of the screen and inside the card. With 12 dp each, the five keys stay
+// 48 dp wide on a phone of 320 dp.
+private val ScreenEdge = 12.dp
+private val CardEdge = 12.dp
+private val Spacing6 = 6.dp
+private val Spacing8 = 8.dp
+private val WidestCard = 560.dp
+
+// The shared format leaves a zero out, which is right for a length that is not known. A place is never unknown.
+internal const val ZERO = "0:00"

@@ -50,5 +50,6 @@ class LicenceListTest {
     @Test
     fun `the font has its licence text`() {
         assertTrue(hasText("Manrope-OFL"))
+        assertTrue(hasText("JetBrainsMono-OFL"))
     }
 }

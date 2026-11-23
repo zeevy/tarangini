@@ -12,6 +12,7 @@ import com.siliconcircuits.tarangini.core.domain.model.PlaybackError
 import com.siliconcircuits.tarangini.core.domain.model.PlaybackState
 import com.siliconcircuits.tarangini.core.domain.model.RepeatMode
 import com.siliconcircuits.tarangini.core.domain.model.SleepState
+import com.siliconcircuits.tarangini.core.domain.model.SongFormat
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackController
 import com.siliconcircuits.tarangini.core.domain.playback.PlaybackQueue
 import com.siliconcircuits.tarangini.core.domain.playback.SleepTimer
@@ -46,6 +47,9 @@ import kotlinx.coroutines.withTimeoutOrNull
  *   the player is there
  * @property durationMs the length of the item, or null for a live stream, which has no seek bar
  * @property songId the library row of the song that plays, or null for an item that is no song of the library
+ * @property format how the item is stored, or null until the player has opened it
+ * @property place the place of the item in the queue, counted from 1
+ * @property queueSize how many items the queue holds
  * @property error why the item does not play, or null. For a stream it is set only after the player
  *   has given up trying
  */
@@ -65,6 +69,9 @@ internal data class NowPlayingUiState(
     val songId: Long? = null,
     val speed: Float = 1f,
     val sleep: SleepState = SleepState.Off,
+    val format: SongFormat? = null,
+    val place: Int = 1,
+    val queueSize: Int = 1,
 ) {
     val isLive: Boolean get() = durationMs == null
 }
@@ -210,5 +217,8 @@ private fun PlaybackState.toUiState(seekTarget: SeekTarget?, mark: FavouriteMark
         isFavourite = mark?.takeIf { it.itemId == item.id }?.on,
         songId = mark?.takeIf { it.itemId == item.id }?.songId,
         speed = speed,
+        format = format,
+        place = (currentIndex ?: 0) + 1,
+        queueSize = queue.size.coerceAtLeast(1),
     )
 }
