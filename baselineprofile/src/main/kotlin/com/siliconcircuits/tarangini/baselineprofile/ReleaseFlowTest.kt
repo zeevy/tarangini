@@ -76,7 +76,7 @@ class ReleaseFlowTest {
         // has the menu button, so this does not find the title in the mini player.
         need(By.desc("More options for $song"), "the menu of $song", scroll = true).click()
         need(By.text("Add to favourites"), "the favourite entry").click()
-        need(By.desc("Favourite"), "the heart on the row of $song")
+        need(By.descStartsWith("Favourite."), "the heart on the row of $song")
         need(By.text("Favourites"), "the Favourites tab").click()
         need(By.desc("More options for $song"), "$song in Favourites")
     }
