@@ -8,38 +8,46 @@ package com.siliconcircuits.tarangini.feature.search
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.siliconcircuits.tarangini.core.domain.model.Album
@@ -49,11 +57,13 @@ import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
 import com.siliconcircuits.tarangini.core.ui.component.AlbumRow
 import com.siliconcircuits.tarangini.core.ui.component.ArtistRow
 import com.siliconcircuits.tarangini.core.ui.component.BackButton
+import com.siliconcircuits.tarangini.core.ui.component.LcdPanel
+import com.siliconcircuits.tarangini.core.ui.component.ListCard
 import com.siliconcircuits.tarangini.core.ui.component.MessageState
 import com.siliconcircuits.tarangini.core.ui.component.SectionTitle
 import com.siliconcircuits.tarangini.core.ui.component.SongRow
 import com.siliconcircuits.tarangini.core.ui.component.SongRowActions
-import com.siliconcircuits.tarangini.core.ui.theme.clearTopBarColors
+import com.siliconcircuits.tarangini.core.ui.theme.lookColors
 import kotlinx.coroutines.flow.filter
 
 /** The search screen: one field, and under it the songs, albums and artists that were found. */
@@ -78,7 +88,7 @@ internal fun SearchScreen(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class) // TopAppBar is still marked experimental in Material 3.
+/** The search screen in the look of the app: the field on the display, the results on a list card. */
 @Composable
 internal fun SearchContent(
     text: String,
@@ -90,22 +100,22 @@ internal fun SearchContent(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Scaffold(
-        modifier = modifier.background(MaterialTheme.colorScheme.background),
-        containerColor = Color.Transparent,
-        contentColor = MaterialTheme.colorScheme.onBackground,
-        topBar = {
-            TopAppBar(
-                colors = clearTopBarColors(),
-                title = { SearchField(text, onTextChange) },
-                navigationIcon = {
-                    BackButton(onClick = onBack)
-                },
-            )
-        },
-    ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-            val results = state.results
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .windowInsetsPadding(WindowInsets.statusBars)
+            .padding(horizontal = 10.dp),
+    ) {
+        Row(Modifier.heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
+            BackButton(onClick = onBack)
+            SearchField(text, onTextChange, Modifier.weight(1f))
+        }
+        val results = state.results
+        ListCard(
+            count = resultCount(results),
+            modifier = Modifier.weight(1f).fillMaxWidth().padding(top = 8.dp, bottom = 10.dp),
+        ) {
             when {
                 state.failed -> MessageState(
                     title = stringResource(R.string.search_error_title),
@@ -132,42 +142,72 @@ internal fun SearchContent(
     }
 }
 
+/** "3 results", or "Search" while nothing was searched. */
 @Composable
-private fun SearchField(text: String, onTextChange: (String) -> Unit) {
+private fun resultCount(results: SearchResults?): String {
+    if (results == null) return stringResource(CoreUiR.string.action_search)
+    val count = results.songs.size + results.albums.size + results.artists.size
+    return pluralStringResource(R.plurals.search_results, count, count)
+}
+
+/** The field on the dark display, with a magnifier in front and a button that clears it. */
+@Composable
+private fun SearchField(text: String, onTextChange: (String) -> Unit, modifier: Modifier = Modifier) {
     val focus = remember { FocusRequester() }
     val keyboard = LocalSoftwareKeyboardController.current
-    val label = stringResource(CoreUiR.string.action_search)
+    val label = stringResource(R.string.search_field)
+    val look = lookColors
     // The person opened this screen to type, so the field has the cursor from the start. Coming
     // back from an album with a text in the field, the results matter and the keyboard stays away.
     LaunchedEffect(Unit) { if (text.isEmpty()) focus.requestFocus() }
-    TextField(
-        value = text,
-        onValueChange = onTextChange,
-        // The hint is gone once a text is typed, so a screen reader gets a name that stays.
-        modifier = Modifier.fillMaxWidth().focusRequester(focus).semantics { contentDescription = label },
-        placeholder = { Text(stringResource(R.string.search_hint)) },
-        trailingIcon = {
+    LcdPanel(modifier = modifier, padding = PaddingValues(start = 12.dp, end = 0.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                painterResource(CoreUiR.drawable.ic_search),
+                contentDescription = null,
+                Modifier.size(18.dp),
+                look.lcdMuted,
+            )
+            BasicTextField(
+                value = text,
+                onValueChange = onTextChange,
+                // The hint is gone once a text is typed, so a screen reader gets a name that stays.
+                modifier = Modifier
+                    .weight(1f)
+                    .heightIn(min = 48.dp)
+                    .padding(start = 8.dp)
+                    .focusRequester(focus)
+                    .semantics { contentDescription = label },
+                textStyle = MaterialTheme.typography.bodyLarge.copy(color = look.lcdText, fontWeight = FontWeight.Bold),
+                cursorBrush = SolidColor(look.lcdAccent),
+                singleLine = true,
+                // The results are there already, so the search key only closes the keyboard.
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = { keyboard?.hide() }),
+                decorationBox = { field ->
+                    Box(contentAlignment = Alignment.CenterStart) {
+                        if (text.isEmpty()) {
+                            Text(
+                                stringResource(R.string.search_hint),
+                                color = look.lcdMuted,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                        field()
+                    }
+                },
+            )
             if (text.isNotEmpty()) {
                 IconButton(onClick = { onTextChange("") }) {
                     Icon(
                         painter = painterResource(CoreUiR.drawable.ic_close),
                         contentDescription = stringResource(R.string.search_clear),
+                        tint = look.lcdMuted,
                     )
                 }
             }
-        },
-        singleLine = true,
-        // The results are there already, so the search key only closes the keyboard.
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-        keyboardActions = KeyboardActions(onSearch = { keyboard?.hide() }),
-        // The field is part of the top bar: no box of its own and no line under it.
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.Transparent,
-            unfocusedContainerColor = Color.Transparent,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-        ),
-    )
+        }
+    }
 }
 
 @Composable

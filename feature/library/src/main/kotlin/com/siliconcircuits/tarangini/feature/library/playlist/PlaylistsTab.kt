@@ -8,35 +8,38 @@ package com.siliconcircuits.tarangini.feature.library.playlist
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.Text
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.siliconcircuits.tarangini.core.domain.model.Playlist
 import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
+import com.siliconcircuits.tarangini.core.ui.component.ListCard
+import com.siliconcircuits.tarangini.core.ui.component.MessageState
 import com.siliconcircuits.tarangini.core.ui.component.PlaylistNameDialog
 import com.siliconcircuits.tarangini.core.ui.component.PlaylistRow
 import com.siliconcircuits.tarangini.feature.library.R
 import com.siliconcircuits.tarangini.feature.library.component.ListBody
+import com.siliconcircuits.tarangini.feature.library.sizeText
 
 /** The Playlists page of the Library tab. */
 @Composable
-internal fun PlaylistsTab(onOpenPlaylist: (Playlist) -> Unit, viewModel: PlaylistsViewModel = hiltViewModel()) {
+internal fun PlaylistsTab(
+    onOpenPlaylist: (Playlist) -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: PlaylistsViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val imported by viewModel.import.result.collectAsStateWithLifecycle()
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { file ->
@@ -46,6 +49,7 @@ internal fun PlaylistsTab(onOpenPlaylist: (Playlist) -> Unit, viewModel: Playlis
         playlists = state.items.takeUnless { state.isLoading },
         onOpenPlaylist = onOpenPlaylist,
         onCreate = viewModel::create,
+        modifier = modifier,
         failed = state.failed && state.items.isEmpty(),
         onRetry = viewModel::retry,
         files = PlaylistFileActions(
@@ -57,7 +61,10 @@ internal fun PlaylistsTab(onOpenPlaylist: (Playlist) -> Unit, viewModel: Playlis
     )
 }
 
-/** "New playlist" and "Import a playlist file" first, then every playlist by name. */
+/**
+ * Every playlist by name on a list card, with the buttons for a new playlist and a playlist file at
+ * its top. With no playlist the card says so and offers a new one.
+ */
 @Composable
 internal fun PlaylistsContent(
     playlists: List<Playlist>?,
@@ -78,30 +85,32 @@ internal fun PlaylistsContent(
             onDismiss = { naming = false },
         )
     }
-    ListBody(isLoading = playlists == null, failed = failed, onRetry = onRetry) {
-        LazyColumn(modifier = modifier.fillMaxSize()) {
-            item(key = "new") {
-                ListItem(
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                    headlineContent = { Text(stringResource(CoreUiR.string.playlist_new)) },
-                    leadingContent = {
-                        Icon(painter = painterResource(CoreUiR.drawable.ic_add), contentDescription = null)
-                    },
-                    modifier = Modifier.clickable { naming = true },
-                )
+    ListCard(
+        count = sizeText(R.plurals.library_count_playlists, playlists),
+        modifier = modifier,
+        tools = {
+            IconButton(onClick = { naming = true }) {
+                Icon(painterResource(CoreUiR.drawable.ic_add), stringResource(CoreUiR.string.playlist_new))
             }
-            item(key = "import") {
-                ListItem(
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                    headlineContent = { Text(stringResource(R.string.playlist_import)) },
-                    leadingContent = {
-                        Icon(painter = painterResource(CoreUiR.drawable.ic_folder), contentDescription = null)
-                    },
-                    modifier = Modifier.clickable(onClick = files.onImport),
-                )
+            IconButton(onClick = files.onImport) {
+                Icon(painterResource(CoreUiR.drawable.ic_import), stringResource(R.string.playlist_import))
             }
-            items(items = playlists.orEmpty(), key = Playlist::id) { playlist ->
-                PlaylistRow(playlist, onClick = { onOpenPlaylist(playlist) })
+        },
+    ) {
+        ListBody(isLoading = playlists == null, failed = failed, onRetry = onRetry) {
+            if (playlists.isNullOrEmpty()) {
+                MessageState(
+                    title = stringResource(R.string.playlists_empty_title),
+                    text = stringResource(R.string.playlists_empty_text),
+                    actionLabel = stringResource(CoreUiR.string.playlist_new),
+                    onAction = { naming = true },
+                )
+            } else {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    items(items = playlists, key = Playlist::id) { playlist ->
+                        PlaylistRow(playlist, onClick = { onOpenPlaylist(playlist) })
+                    }
+                }
             }
         }
     }

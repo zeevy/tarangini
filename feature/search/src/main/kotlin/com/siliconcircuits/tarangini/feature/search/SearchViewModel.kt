@@ -81,6 +81,8 @@ internal class SearchViewModel @Inject constructor(
             viewModelScope.launch { runCatching { favourites.setFavourite(song.id, favourite) } }
         },
         playlists = playlists.pickIn(viewModelScope),
+        playing = playback.state.map { it.currentItem?.id }.distinctUntilChanged()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_AFTER_MS), null),
     )
 
     init {
@@ -129,3 +131,6 @@ internal class SearchViewModel @Inject constructor(
         private const val MAX_TEXT = 256
     }
 }
+
+// The row lamp stops following the player a short while after the screen closes.
+private const val STOP_AFTER_MS = 5_000L

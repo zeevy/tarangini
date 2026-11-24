@@ -24,15 +24,20 @@ import kotlinx.coroutines.launch
 /** The favourite songs, the one marked last first. */
 @HiltViewModel
 internal class FavouritesViewModel @Inject constructor(
-    favourites: FavouriteRepository,
+    private val favourites: FavouriteRepository,
     library: LibraryRepository,
-    actions: SongActions,
+    private val actions: SongActions,
 ) : ViewModel() {
     val songs = PagedList(viewModelScope, Song::id) { favourites.songs(it) }
 
     /** A tap plays the song with the favourites as the queue. */
     val songActions = actions.rowActions(viewModelScope, QueueSource(QueueSourceKind.FAVOURITES)) {
         favourites.songs(it)
+    }
+
+    /** Plays the favourites in a random order. */
+    fun shuffle() {
+        actions.shuffle(viewModelScope, QueueSource(QueueSourceKind.FAVOURITES)) { favourites.songs(it) }
     }
 
     init {

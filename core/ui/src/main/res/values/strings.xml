@@ -23,7 +23,7 @@
     <string name="song_add_to_queue">Add to queue</string>
     <string name="song_add_favourite">Add to favourites</string>
     <string name="song_remove_favourite">Remove from favourites</string>
-    <string name="song_is_favourite">Favourite</string>
+    <string name="song_is_favourite">Favourite. Remove %1$s from favourites</string>
     <string name="song_add_to_playlist">Add to playlist</string>
     <string name="playlist_new">New playlist</string>
     <string name="playlist_name">Name</string>

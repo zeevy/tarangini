@@ -24,8 +24,8 @@ import javax.inject.Inject
 @HiltViewModel
 internal class AlbumViewModel @Inject constructor(
     saved: SavedStateHandle,
-    library: LibraryRepository,
-    actions: SongActions,
+    private val library: LibraryRepository,
+    private val actions: SongActions,
 ) : ViewModel() {
     private val albumId: Long = checkNotNull(saved[AlbumRoute.ALBUM_ID])
 
@@ -37,6 +37,13 @@ internal class AlbumViewModel @Inject constructor(
     /** A tap plays the song with the whole album as the queue. */
     val songActions = actions.rowActions(viewModelScope, QueueSource.named(QueueSourceKind.ALBUM, title)) {
         library.songsOfAlbum(albumId, it)
+    }
+
+    /** Plays the album in a random order. */
+    fun shuffle() {
+        actions.shuffle(viewModelScope, QueueSource.named(QueueSourceKind.ALBUM, title)) {
+            library.songsOfAlbum(albumId, it)
+        }
     }
 
     init {

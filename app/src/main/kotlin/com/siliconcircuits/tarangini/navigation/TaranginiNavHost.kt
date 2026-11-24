@@ -35,13 +35,17 @@ internal fun TaranginiNavHost(
 ) {
     NavHost(navController = navController, startDestination = NowPlayingRoute, modifier = modifier) {
         playerScreen(targets, player)
-        libraryGraph(navController, onSearch = navController::navigateToSearch)
+        libraryGraph(
+            navController,
+            onSearch = navController::navigateToSearch,
+            onSettings = navController::navigateToSettings,
+        )
         searchScreen(
             onBack = navController::popBackStack,
             onOpenAlbum = navController::navigateToAlbum,
             onOpenArtist = navController::navigateToArtist,
         )
-        favouritesScreen()
+        favouritesScreen(onSearch = navController::navigateToSearch)
         settingsScreen(onBackClick = navController::popBackStack) { settings(navController::navigateToLicences) }
         licencesScreen(onBack = navController::popBackStack)
     }

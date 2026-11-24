@@ -25,6 +25,7 @@ import com.siliconcircuits.tarangini.feature.library.R
 import com.siliconcircuits.tarangini.feature.library.component.DetailScaffold
 import com.siliconcircuits.tarangini.feature.library.component.ListBody
 import com.siliconcircuits.tarangini.feature.library.component.PagedColumn
+import com.siliconcircuits.tarangini.feature.library.countText
 import com.siliconcircuits.tarangini.feature.library.list.PagedItems
 import com.siliconcircuits.tarangini.feature.library.permission.AudioPermissionGate
 
@@ -66,7 +67,12 @@ internal fun FolderContent(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    DetailScaffold(title = name, onBack = onBack, modifier = modifier) {
+    DetailScaffold(
+        title = name,
+        onBack = onBack,
+        count = countText(R.plurals.library_count_songs, total = null, songs),
+        modifier = modifier,
+    ) {
         ListBody(songs.isLoading, failed = songs.failed && songs.items.isEmpty(), onRetry = onRetry) {
             if (folders.isEmpty() && songs.items.isEmpty()) {
                 // The files of a folder can go while its screen is open.
