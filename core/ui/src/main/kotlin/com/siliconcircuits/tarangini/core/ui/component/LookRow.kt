@@ -12,10 +12,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -27,6 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.siliconcircuits.tarangini.core.ui.R
@@ -41,6 +44,8 @@ import com.siliconcircuits.tarangini.core.ui.theme.lookColors
  * @param lead the tile at the start, such as [AlbumArt] or [IconTile]
  * @param meta a short value in digits at the end, such as "4:05", or null
  * @param isCurrent true for the row of the song that plays: it is lit
+ * @param columns more texts after the title, each in its own column, as in the songs table of a
+ *   tablet; the [meta] then has a fixed width so the columns line up
  * @param end a button after the row, such as a menu, or nothing
  */
 @Composable
@@ -53,6 +58,7 @@ fun LookRow(
     modifier: Modifier = Modifier,
     meta: String? = null,
     isCurrent: Boolean = false,
+    columns: List<String> = emptyList(),
     end: @Composable () -> Unit = {},
 ) {
     val look = lookColors
@@ -67,12 +73,13 @@ fun LookRow(
                 .weight(1f)
                 .heightIn(min = RowHeight)
                 .clickable(onClickLabel = clickLabel, onClick = onClick)
-                .padding(start = 8.dp, top = 4.dp, bottom = 4.dp, end = 4.dp),
+                .padding(start = RowStart, top = 4.dp, bottom = 4.dp, end = RowEnd),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(RowGap),
         ) {
             lead()
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            val titleWeight = if (columns.isEmpty()) 1f else TITLE_COLUMN
+            Column(Modifier.weight(titleWeight), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleSmall,
@@ -92,13 +99,28 @@ fun LookRow(
                     )
                 }
             }
+            columns.forEach { text ->
+                Text(
+                    text = text,
+                    modifier = Modifier.weight(OTHER_COLUMN),
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = look.listMuted,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            // In a table a row with no time keeps its place, so the columns stay in line.
+            if (meta == null && columns.isNotEmpty()) Spacer(Modifier.width(TimeColumn))
             meta?.let {
                 Text(
                     text = it,
+                    modifier = if (columns.isEmpty()) Modifier else Modifier.widthIn(min = TimeColumn),
                     style = MaterialTheme.typography.bodySmall,
                     fontFamily = DigitsFont,
                     fontWeight = FontWeight.SemiBold,
                     color = look.listMuted,
+                    textAlign = TextAlign.End,
                     maxLines = 1,
                 )
             }
@@ -156,4 +178,19 @@ fun initialsOf(name: String): String =
 val TileSize = 40.dp
 
 private val RowHeight = 56.dp
+
+// The edges and the gap inside a row. The header of the songs table uses them too, to line up.
+internal val RowStart = 8.dp
+internal val RowEnd = 4.dp
+internal val RowGap = 12.dp
+
+/** The width of one icon button at the end of a row: the heart or the menu. */
+internal val ButtonWidth = 48.dp
 private const val TILE_TINT = 0.12f
+
+// The share of the width of the title and of each other column in a table row.
+internal const val TITLE_COLUMN = 2f
+internal const val OTHER_COLUMN = 1.3f
+
+/** The width of the time at the end of a table row: room for "1:02:03". */
+internal val TimeColumn = 60.dp

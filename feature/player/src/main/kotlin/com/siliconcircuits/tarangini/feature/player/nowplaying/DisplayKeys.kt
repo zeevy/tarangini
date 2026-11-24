@@ -64,10 +64,10 @@ import com.siliconcircuits.tarangini.feature.player.R
 
 /** The play mark, the time and the two mode chips. */
 @Composable
-internal fun TopLine(state: NowPlayingUiState?, actions: NowPlayingActions) {
+internal fun TopLine(state: NowPlayingUiState?, actions: NowPlayingActions, large: Boolean = false) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         if (state != null) PlayMark(state.showPause, actions.onTogglePlay)
-        TimeButton(state)
+        TimeButton(state, large)
         Spacer(Modifier.weight(1f))
         // A live stream has no order to change and no end to repeat.
         if (state != null && !state.isLive) {
@@ -140,7 +140,7 @@ private fun PlayMark(showPause: Boolean, onToggle: () -> Unit) {
 
 /** The time in large digits. A tap switches between the time played and the time left. */
 @Composable
-private fun TimeButton(state: NowPlayingUiState?) {
+private fun TimeButton(state: NowPlayingUiState?, large: Boolean) {
     val look = lookColors
     var showsLeft by rememberSaveable { mutableStateOf(false) }
     val length = state?.durationMs
@@ -175,7 +175,7 @@ private fun TimeButton(state: NowPlayingUiState?) {
             style = TextStyle(
                 fontFamily = DigitsFont,
                 fontWeight = FontWeight.Bold,
-                fontSize = 34.sp,
+                fontSize = if (large) 52.sp else 34.sp,
                 letterSpacing = 0.6.sp,
                 shadow = Shadow(look.glow, blurRadius = 20f),
             ),

@@ -9,6 +9,7 @@ package com.siliconcircuits.tarangini.feature.library
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -66,6 +67,7 @@ import com.siliconcircuits.tarangini.core.ui.component.MessageState
 import com.siliconcircuits.tarangini.core.ui.component.ScreenHeader
 import com.siliconcircuits.tarangini.core.ui.component.SongRow
 import com.siliconcircuits.tarangini.core.ui.component.SongRowActions
+import com.siliconcircuits.tarangini.core.ui.component.SongTableHeader
 import com.siliconcircuits.tarangini.feature.library.component.ListBody
 import com.siliconcircuits.tarangini.feature.library.component.PagedColumn
 import com.siliconcircuits.tarangini.feature.library.component.PagedGrid
@@ -256,19 +258,24 @@ private fun LibraryList(
     val artistsScroll = rememberLazyListState()
     val foldersScroll = rememberLazyListState()
     when (tab) {
-        LibraryTab.SONGS -> ListCard(
-            count = countText(R.plurals.library_count_songs, lists.counts?.songs, lists.songs),
-            modifier = modifier,
-            tools = {
-                IconButton(onClick = actions.onShuffleAll) {
-                    Icon(painterResource(CoreUiR.drawable.ic_shuffle), stringResource(R.string.library_shuffle_all))
-                }
-                SortMenu(lists.sort, actions.onSort)
-            },
-        ) {
-            TabBody(lists.songs, actions) {
-                PagedColumn(lists.songs, Song::id, actions.onMoreSongs, state = songsScroll) {
-                    SongRow(it, songActions)
+        LibraryTab.SONGS -> BoxWithConstraints(modifier) {
+            // A wide card, as on a tablet, has room for the songs as a table.
+            val inTable = maxWidth >= TableWidth
+            ListCard(
+                count = countText(R.plurals.library_count_songs, lists.counts?.songs, lists.songs),
+                modifier = Modifier.fillMaxSize(),
+                tools = {
+                    IconButton(onClick = actions.onShuffleAll) {
+                        Icon(painterResource(CoreUiR.drawable.ic_shuffle), stringResource(R.string.library_shuffle_all))
+                    }
+                    SortMenu(lists.sort, actions.onSort)
+                },
+            ) {
+                if (inTable && lists.songs.items.isNotEmpty()) SongTableHeader()
+                TabBody(lists.songs, actions) {
+                    PagedColumn(lists.songs, Song::id, actions.onMoreSongs, state = songsScroll) {
+                        SongRow(it, songActions, inTable = inTable)
+                    }
                 }
             }
         }
@@ -387,3 +394,6 @@ private fun SongSort.label(): Int = when (this) {
     SongSort.DATE_ADDED -> R.string.library_sort_date_added
     SongSort.DURATION -> R.string.library_sort_duration
 }
+
+// From this width of the card the songs show as a table with a column each for the artist and album.
+private val TableWidth = 640.dp

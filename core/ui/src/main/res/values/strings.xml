@@ -54,4 +54,8 @@
     <!-- The on and off mark of a settings switch, in capitals as on a hardware player. -->
     <string name="switch_on">ON</string>
     <string name="switch_off">OFF</string>
+    <string name="table_title">Title</string>
+    <string name="table_artist">Artist</string>
+    <string name="table_album">Album</string>
+    <string name="table_time">Time</string>
 </resources>

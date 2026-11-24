@@ -167,7 +167,11 @@ private fun DrawScope.drawWave(wave: List<Float>, look: LookColors) {
     drawPath(path, look.lcdAccent, style = Stroke(width = 2.dp.toPx()))
 }
 
-private val VisualHeight = 52.dp
+/** The height of the visual on a phone. */
+internal val VisualHeight = 52.dp
+
+/** The height of the visual on a tall screen, such as a tablet held upright. */
+internal val LargeVisualHeight = 104.dp
 private val BarGap = 2.dp
 private val PeakHeight = 2.dp
 private const val MIN_BAR = 0.06f

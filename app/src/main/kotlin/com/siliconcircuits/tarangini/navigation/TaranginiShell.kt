@@ -31,6 +31,7 @@ import androidx.navigation.compose.rememberNavController
 import com.siliconcircuits.tarangini.feature.player.navigation.isPlayerScreen
 import com.siliconcircuits.tarangini.feature.player.nowplaying.PlayerTargets
 import com.siliconcircuits.tarangini.feature.settings.navigation.isSettingsScreen
+import com.siliconcircuits.tarangini.feature.settings.navigation.navigateToSettings
 
 /**
  * The frame every screen sits in: the screens, then the [miniPlayer] slot,
@@ -73,7 +74,11 @@ internal fun TaranginiShell(
             destination?.isPlayerScreen() != true && destination?.isSettingsScreen() != true && !withPane
         Row {
             if (layout != ShellLayout.COMPACT && currentTab != null) {
-                TaranginiNavRail(selected = currentTab, onSelect = navController::navigateToTopLevel)
+                TaranginiNavRail(
+                    selected = currentTab,
+                    onSelect = navController::navigateToTopLevel,
+                    onSettings = navController::navigateToSettings,
+                )
             }
             Scaffold(
                 modifier = Modifier.weight(1f),

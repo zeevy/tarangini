@@ -109,6 +109,41 @@ class TaranginiShellWideTest {
         capture("shell_foldable")
     }
 
+    @Test
+    @Config(qualifiers = TABLET)
+    fun `the Settings button at the foot of the rail opens Settings`() {
+        showShell()
+
+        composeRule.onNodeWithContentDescription("Settings").performClick()
+
+        composeRule.onNode(tab("Player")).assertDoesNotExist()
+        composeRule.onNodeWithTag(TAB).assertDoesNotExist()
+    }
+
+    @Test
+    @Config(qualifiers = TABLET_NIGHT)
+    fun `the tablet layout in the dark look`() {
+        capture("shell_tablet_dark")
+    }
+
+    @Test
+    @Config(qualifiers = OPEN_FOLDABLE_NIGHT)
+    fun `the open foldable layout in the dark look`() {
+        capture("shell_foldable_dark")
+    }
+
+    @Test
+    @Config(qualifiers = PHONE_ON_ITS_SIDE)
+    fun `a phone on its side has the rail`() {
+        capture("shell_landscape")
+    }
+
+    @Test
+    @Config(qualifiers = PHONE_ON_ITS_SIDE_NIGHT)
+    fun `a phone on its side in the dark look`() {
+        capture("shell_landscape_dark")
+    }
+
     // The tabs show once the navigation has its first screen, so the picture waits for that.
     private fun capture(name: String) {
         showShell()
@@ -141,3 +176,9 @@ private const val PANE = "pane"
 private const val TAB = "tab"
 private const val TABLET = "w1280dp-h800dp-land-mdpi"
 private const val OPEN_FOLDABLE = "w673dp-h841dp-xhdpi"
+private const val PHONE_ON_ITS_SIDE = "w800dp-h360dp-land-xhdpi"
+
+// The dark look: "night" comes before the density in a qualifier string.
+private const val TABLET_NIGHT = "w1280dp-h800dp-land-night-mdpi"
+private const val OPEN_FOLDABLE_NIGHT = "w673dp-h841dp-night-xhdpi"
+private const val PHONE_ON_ITS_SIDE_NIGHT = "w800dp-h360dp-land-night-xhdpi"
