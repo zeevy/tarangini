@@ -136,7 +136,6 @@ The calls the app needs: `/json/stations/search` (`name`, `countrycode`, `langua
 | Lock screen controls | From the media session | [MVP] | Yes | - |
 | Media session | One `MediaLibrarySession` for the phone, Auto, Assistant, Bluetooth and the system media controls | [MVP] | Yes | Yes |
 | Playback resumption | Show Tarangini in the system media controls after reboot (Android 13+). Built (D65) | [v1.1] | Yes | - |
-| Wear OS controls | Basic controls show on the watch from the media session. A full watch app is extra work | [Future] | Watch | - |
 
 ### 2.7 Audio
 
@@ -230,7 +229,7 @@ Versions: use the latest stable versions of Kotlin, the Compose BOM, Media3 and 
 
 ### 3.2 Main idea
 
-One `MediaLibraryService` holds one ExoPlayer and one `MediaLibrarySession`. Every client talks to that session: the phone UI (through a `MediaController`), Android Auto, Google Assistant, Bluetooth, the notification, the lock screen and Wear OS. The service builds the browse tree from the same repositories the phone UI uses, so both always show the same data.
+One `MediaLibraryService` holds one ExoPlayer and one `MediaLibrarySession`. Every client talks to that session: the phone UI (through a `MediaController`), Android Auto, Google Assistant, Bluetooth, the notification and the lock screen. The service builds the browse tree from the same repositories the phone UI uses, so both always show the same data.
 
 ### 3.3 Component diagram
 
@@ -366,7 +365,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 |---|---|---|
 | MVP | A stable player for local files and radio that passes the Android Auto review | Library scan and browse, core playback, queue, resume, radio stations the user adds by name and URL, favourites, ICY metadata, reconnect, Auto browse tree, voice play, search, notification, Material 3 UI with mini player |
 | v1.1 | Daily use comfort and data care | The radio directory (Radio Browser) with the India section, genres, sleep timer, speed, equalizer and bass boost, widget, most played, playlist import and export, station import, stream quality, data saver, cache size, Auto custom actions, playback resumption |
-| Future | Grow reach and test a paid tier | Android Automotive OS build, Wear OS app, tablet layout, crossfade, normalization, lyrics, stream recording, backup and sync, premium subscription with Play Billing |
+| Future | Grow reach and test a paid tier | Android Automotive OS build, tablet layout, crossfade, normalization, lyrics, stream recording, backup and sync, premium subscription with Play Billing |
 
 ## 8. Decisions made
 
@@ -467,6 +466,7 @@ The app is open core (decision D5). The core player is open source. The premium 
 | D93 | The library, Favourites, search, Settings and the screens of an album, an artist, a folder, a genre and a playlist take the look of D90: a plain header, chips with lamps for the lists, every list on its own card with its size and tools, rows with a colour tile with the first letters of the album when there is no picture, an album grid, and an album card with Play and Shuffle | 24 Nov 2026 | One look for every screen. See `docs/adr/0061-library-look.md` |
 | D94 | Wide screens in the new look: the rail with the app mark and a Settings button, the player card and Up next side by side on a wide and low window, a larger time and visual on a tablet held upright, and the library songs as a table with Title, Artist, Album and Time on a wide card | 24 Nov 2026 | Use the room of a wide screen. See `docs/adr/0062-wide-screens-in-the-new-look.md` |
 | D95 | The crossfade hook: `CrossfadeLength` in `core:domain/premium` gives the fade length (core: 0). `CrossfadeSink` is always in front of the audio sink and `FadeMixer` mixes on equal power curves; `CrossfadePlan` follows the order the player plays. No fade between songs of one album, for a station, at another speed, with repeat one or at the end of the queue; at most half of each song and 12 seconds | The premium module only sets the length, and the core build plays byte for byte as before. `docs/adr/0063-crossfade-hook.md` |
+| D96 | No Wear OS support: no watch app, no watch module and no watch check. Issue #67 is closed | 24 Nov 2026 | The work goes to Android Auto and the phone. A watch paired with the phone can still show the media notification, because Android does that by itself |
 
 ## 9. Checks before building
 

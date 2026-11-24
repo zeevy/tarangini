@@ -212,7 +212,6 @@ footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line)
           <rect x="20" y="142" width="180" height="36" rx="6" class="d-box"/><text x="110" y="165" class="d-t" text-anchor="middle">Google Assistant</text>
           <rect x="20" y="188" width="180" height="36" rx="6" class="d-box"/><text x="110" y="211" class="d-t" text-anchor="middle">Notification, lock screen</text>
           <rect x="20" y="234" width="180" height="36" rx="6" class="d-box"/><text x="110" y="257" class="d-t" text-anchor="middle">Bluetooth, headset</text>
-          <rect x="20" y="280" width="180" height="36" rx="6" class="d-box"/><text x="110" y="303" class="d-t" text-anchor="middle">Wear OS (Future)</text>
         </g>
         <g>
           <line x1="200" y1="68" x2="288" y2="108" class="d-edge hot" marker-end="url(#a1h)"/>
@@ -220,7 +219,6 @@ footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line)
           <line x1="200" y1="160" x2="288" y2="118" class="d-edge" marker-end="url(#a1)"/>
           <line x1="200" y1="206" x2="288" y2="122" class="d-edge" marker-end="url(#a1)"/>
           <line x1="200" y1="252" x2="288" y2="126" class="d-edge" marker-end="url(#a1)"/>
-          <line x1="200" y1="298" x2="288" y2="130" class="d-edge" marker-end="url(#a1)"/>
         </g>
 
         <!-- service boundary -->
@@ -266,7 +264,7 @@ footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line)
 
       </svg>
     </div>
-    <figcaption><b>One session, many clients.</b> The phone, Android Auto, Assistant, the notification, Bluetooth and Wear OS all send their commands to the same <code>MediaLibrarySession</code>, so they always agree on what is playing. The car's browse tree and the phone's screens read the same repositories, so both show the same library and favourites. The paid cloud storage source (Nextcloud, S3, OneDrive) plugs in at the same place as MediaStore, so the rest of the app does not care where a song lives.</figcaption>
+    <figcaption><b>One session, many clients.</b> The phone, Android Auto, Assistant, the notification and Bluetooth all send their commands to the same <code>MediaLibrarySession</code>, so they always agree on what is playing. The car's browse tree and the phone's screens read the same repositories, so both show the same library and favourites. The paid cloud storage source (Nextcloud, S3, OneDrive) plugs in at the same place as MediaStore, so the rest of the app does not care where a song lives.</figcaption>
   </figure>
 
   <figure>
@@ -533,7 +531,7 @@ footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line)
     </div>
     <div class="panel">
       <h3><span class="tag future">Future</span> Reach and the premium subscription</h3>
-      <p class="muted">Android Automotive OS build, Wear OS app, tablet layout, crossfade, normalization, lyrics. Premium subscription with Play Billing: stream recording, advanced equalizer, cloud sync, themes, pause and rewind live radio, radio alarm, sound profiles, smart playlists, cast, play from your own cloud storage.</p>
+      <p class="muted">Android Automotive OS build, tablet layout, crossfade, normalization, lyrics. Premium subscription with Play Billing: stream recording, advanced equalizer, cloud sync, themes, pause and rewind live radio, radio alarm, sound profiles, smart playlists, cast, play from your own cloud storage.</p>
     </div>
   </div>
 </section>
@@ -651,8 +649,7 @@ const F = [
     ["Media notification", "Built by Media3 from the session", "mvp", "Phone"],
     ["Lock screen controls", "From the media session", "mvp", "Phone"],
     ["One media session", "Shared by phone, Auto, Assistant, Bluetooth", "mvp", "Phone, Auto"],
-    ["Playback resumption", "Show in system media controls after reboot", "v11", "Phone"],
-    ["Wear OS controls", "Basic controls from the session, full app later", "future", "Watch"]
+    ["Playback resumption", "Show in system media controls after reboot", "v11", "Phone"]
   ]],
   ["Audio", [
     ["Equalizer and presets", "5 bands, our own audio processor. Flat, Bass, Vocal, Classical, Carnatic, Bollywood", "v11", "Phone, Auto"],
