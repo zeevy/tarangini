@@ -92,14 +92,7 @@ fun ListCard(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val look = lookColors
-    val shape = MaterialTheme.shapes.medium
-    Column(
-        modifier = modifier
-            .shadow(CardShadow, shape, clip = false)
-            .clip(shape)
-            .background(look.list)
-            .border(1.dp, look.frameEdge, shape),
-    ) {
+    PlainCard(modifier) {
         CompositionLocalProvider(LocalContentColor provides look.listMuted) {
             Row(
                 modifier = Modifier.heightIn(min = 48.dp).padding(start = 14.dp, end = 2.dp),
@@ -116,9 +109,24 @@ fun ListCard(
             }
         }
         HorizontalDivider(color = look.frameEdge)
-        CompositionLocalProvider(LocalContentColor provides look.listText) {
-            Column(Modifier.padding(4.dp), content = content)
-        }
+        Column(Modifier.padding(4.dp), content = content)
+    }
+}
+
+/** The plain card of a list with no top bar, such as Settings. Text in it takes the list text colour. */
+@Composable
+fun PlainCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+    val look = lookColors
+    val shape = MaterialTheme.shapes.medium
+    CompositionLocalProvider(LocalContentColor provides look.listText) {
+        Column(
+            modifier = modifier
+                .shadow(CardShadow, shape, clip = false)
+                .clip(shape)
+                .background(look.list)
+                .border(1.dp, look.frameEdge, shape),
+            content = content,
+        )
     }
 }
 

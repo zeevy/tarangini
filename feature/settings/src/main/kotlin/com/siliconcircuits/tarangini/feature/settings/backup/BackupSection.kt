@@ -74,6 +74,7 @@ internal fun BackupContent(state: BackupUiState, actions: BackupActions, asksHow
         stringResource(R.string.settings_backup_save),
         if (state.busy) busy else stringResource(R.string.settings_backup_save_text),
         actions.onBackUp.takeUnless { state.busy },
+        isFirst = true,
     )
     SettingsRow(
         stringResource(R.string.settings_backup_restore),

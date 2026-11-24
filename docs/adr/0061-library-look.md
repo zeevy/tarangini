@@ -19,6 +19,7 @@ The player, the mini player and the bars had the look of D90, while the library,
 - The heart on a favourite song is a button that takes the song out of Favourites.
 - Search has its field on the dark display and its results on a list card with titles in capitals.
 - Recent searches of the design are not built: the app keeps no search history.
+- Settings is one plain card under the header. The look is picked with three lamp buttons in a well (Follow phone, Daylight, Night) in place of a dialog; with a large font they go one under another. Groups have titles in capitals, a row has its name, a short note and its value in digits, a row that opens something has an arrow, and Clear history is in the danger colour. The design also shows gapless, resume and sleep timer rows; they are not settings of the app, so they are not there.
 
 ## Results
 

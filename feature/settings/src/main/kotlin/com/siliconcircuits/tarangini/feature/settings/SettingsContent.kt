@@ -6,37 +6,29 @@
 
 package com.siliconcircuits.tarangini.feature.settings
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
 import com.siliconcircuits.tarangini.core.domain.library.ScanFailure
 import com.siliconcircuits.tarangini.core.domain.library.ScanOutcome
 import com.siliconcircuits.tarangini.core.domain.library.ScanState
 import com.siliconcircuits.tarangini.core.domain.model.Look
-import com.siliconcircuits.tarangini.core.ui.component.LedSwitch
-import com.siliconcircuits.tarangini.core.ui.theme.Spacing
 
-/** The rows of Settings in groups: Library, History, Backup (the [backup] slot) and About. */
+/**
+ * The rows of Settings in groups: the look, Library, Playback, History, Backup (the [backup] slot)
+ * and About.
+ */
 @Composable
 internal fun SettingsContent(
     state: SettingsUiState,
@@ -49,8 +41,6 @@ internal fun SettingsContent(
     var dialog by rememberSaveable { mutableStateOf(firstDialog) }
     val close = { dialog = SettingsDialog.NONE }
     when (dialog) {
-        SettingsDialog.LOOK -> LookDialog(state.look, actions.onSetLook, close)
-
         SettingsDialog.FOLDERS -> FoldersDialog(
             state.folders,
             state.scan.hiddenFolders,
@@ -64,52 +54,64 @@ internal fun SettingsContent(
 
         SettingsDialog.NONE -> Unit
     }
-    Column(modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+    Column(modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 8.dp)) {
         SettingsGroupTitle(stringResource(R.string.settings_look))
-        SettingsRow(
-            title = stringResource(R.string.settings_colours),
-            text = lookLabel(state.look),
-            onClick = { dialog = SettingsDialog.LOOK },
-        )
-
-        SettingsGroupTitle(stringResource(R.string.settings_sound))
-        SettingsSwitchRow(
-            title = stringResource(R.string.settings_levelling),
-            text = stringResource(R.string.settings_levelling_text),
-            on = state.levelling,
-            onChange = actions.onSetLevelling,
-        )
+        LookPicker(state.look, actions.onSetLook)
 
         SettingsGroupTitle(stringResource(R.string.settings_library))
         val hidden = state.scan.hiddenFolders.size
         SettingsRow(
             title = stringResource(R.string.settings_hidden_folders),
-            text = if (hidden == 0) {
+            note = null,
+            onClick = { dialog = SettingsDialog.FOLDERS },
+            value = if (hidden == 0) {
                 stringResource(R.string.settings_hidden_folders_none)
             } else {
                 pluralStringResource(R.plurals.settings_hidden_folders_count, hidden, hidden)
             },
-            onClick = { dialog = SettingsDialog.FOLDERS },
+            isFirst = true,
         )
         SettingsRow(
             title = stringResource(R.string.settings_min_track),
-            text = minTrackLabel(state.scan.minTrackSeconds),
+            note = stringResource(R.string.settings_min_track_note),
             onClick = { dialog = SettingsDialog.MIN_TRACK },
+            // The row has its own note, so "Off" says enough there; the dialog keeps the long text.
+            value = if (state.scan.minTrackSeconds <= 0) {
+                stringResource(R.string.settings_min_track_off_short)
+            } else {
+                minTrackLabel(state.scan.minTrackSeconds)
+            },
         )
         SettingsRow(stringResource(R.string.settings_rescan), scanText(state.scanState), actions.onRescan)
+
+        SettingsGroupTitle(stringResource(R.string.settings_sound))
+        SettingsSwitchRow(
+            title = stringResource(R.string.settings_levelling),
+            note = stringResource(R.string.settings_levelling_text),
+            on = state.levelling,
+            onChange = actions.onSetLevelling,
+            isFirst = true,
+        )
 
         SettingsGroupTitle(stringResource(R.string.settings_history))
         SettingsRow(
             title = stringResource(R.string.settings_clear_history),
-            text = stringResource(R.string.settings_clear_history_text),
+            note = stringResource(R.string.settings_clear_history_text),
             onClick = { dialog = SettingsDialog.CLEAR_HISTORY },
+            isFirst = true,
+            isDanger = true,
         )
 
         // The backup rows have their own state, so a test of the other rows needs none of it.
         backup()
 
         SettingsGroupTitle(stringResource(R.string.settings_about))
-        SettingsRow(stringResource(R.string.settings_version), version, onClick = null)
+        SettingsRow(
+            stringResource(R.string.settings_privacy),
+            stringResource(R.string.settings_privacy_text),
+            actions.onOpenPrivacy,
+            isFirst = true,
+        )
         SettingsRow(
             stringResource(R.string.settings_source),
             stringResource(R.string.settings_source_text),
@@ -120,50 +122,11 @@ internal fun SettingsContent(
             stringResource(R.string.settings_licences_text),
             actions.onOpenLicences,
         )
-        SettingsRow(
-            stringResource(R.string.settings_privacy),
-            stringResource(R.string.settings_privacy_text),
-            actions.onOpenPrivacy,
-        )
+        SettingsRow(stringResource(R.string.settings_version), note = null, onClick = null, value = version)
     }
 }
 
-@Composable
-internal fun SettingsGroupTitle(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier
-            .padding(start = Spacing.medium, end = Spacing.medium, top = Spacing.large, bottom = Spacing.small)
-            .semantics { heading() },
-    )
-}
-
-/** One setting: its name and its value. A row with no [onClick] only shows something. */
-@Composable
-internal fun SettingsRow(title: String, text: String, onClick: (() -> Unit)?) {
-    ListItem(
-        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-        headlineContent = { Text(title) },
-        supportingContent = { Text(text) },
-        modifier = if (onClick == null) Modifier else Modifier.clickable(onClick = onClick),
-    )
-}
-
-/** A setting that is on or off. The whole row takes the tap and TalkBack hears it as a switch. */
-@Composable
-internal fun SettingsSwitchRow(title: String, text: String, on: Boolean, onChange: (Boolean) -> Unit) {
-    ListItem(
-        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-        headlineContent = { Text(title) },
-        supportingContent = { Text(text) },
-        trailingContent = { LedSwitch(on) },
-        modifier = Modifier.toggleable(value = on, role = Role.Switch, onValueChange = onChange),
-    )
-}
-
-/** The look as a person reads it: "Follow the phone", "Light" or "Dark". */
+/** The look as a person reads it: "Follow phone", "Daylight" or "Night". */
 @Composable
 internal fun lookLabel(look: Look): String = when (look) {
     Look.FOLLOW_PHONE -> stringResource(R.string.settings_look_follow_phone)

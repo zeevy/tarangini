@@ -7,19 +7,20 @@
 <resources>
     <string name="settings_title">Settings</string>
     <string name="settings_look">Look</string>
-    <string name="settings_colours">Colours</string>
-    <string name="settings_look_follow_phone">Follow the phone</string>
-    <string name="settings_look_light">Light</string>
-    <string name="settings_look_dark">Dark</string>
+    <string name="settings_look_follow_phone">Follow phone</string>
+    <string name="settings_look_light">Daylight</string>
+    <string name="settings_look_dark">Night</string>
     <string name="settings_library">Library</string>
     <string name="settings_hidden_folders">Hidden folders</string>
-    <string name="settings_hidden_folders_none">No folder is hidden</string>
+    <string name="settings_hidden_folders_none">None</string>
     <plurals name="settings_hidden_folders_count">
-        <item quantity="one">%1$d folder is hidden</item>
-        <item quantity="other">%1$d folders are hidden</item>
+        <item quantity="one">%1$d hidden</item>
+        <item quantity="other">%1$d hidden</item>
     </plurals>
     <string name="settings_no_folders">No folder with audio was found yet. Open the Library first.</string>
     <string name="settings_min_track">Shortest track</string>
+    <string name="settings_min_track_note">Shorter files are left out</string>
+    <string name="settings_min_track_off_short">Off</string>
     <string name="settings_min_track_off">Off: every file is shown</string>
     <plurals name="settings_seconds">
         <item quantity="one">%1$d second</item>
@@ -75,7 +76,7 @@
     <string name="licences_no_text">The text of this licence is not in the app. The page of the library has it.</string>
     <string name="settings_done">Done</string>
     <string name="settings_cancel">Cancel</string>
-    <string name="settings_sound">Sound</string>
+    <string name="settings_sound">Playback</string>
     <string name="settings_levelling">Volume levelling</string>
     <string name="settings_levelling_text">Plays songs at the same loudness, by the ReplayGain tags of each file</string>
 </resources>
