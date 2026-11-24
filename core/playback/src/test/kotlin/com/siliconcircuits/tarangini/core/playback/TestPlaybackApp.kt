@@ -11,6 +11,7 @@ import com.siliconcircuits.tarangini.core.domain.audio.FIVE_BANDS_HZ
 import com.siliconcircuits.tarangini.core.domain.playback.NowPlayingCards
 import com.siliconcircuits.tarangini.core.domain.playback.ResumeStore
 import com.siliconcircuits.tarangini.core.domain.premium.CrashReporter
+import com.siliconcircuits.tarangini.core.domain.premium.CrossfadeLength
 import com.siliconcircuits.tarangini.core.domain.premium.EqualizerBands
 import com.siliconcircuits.tarangini.core.domain.repository.AudioAccess
 import com.siliconcircuits.tarangini.core.domain.repository.EqualizerRepository
@@ -44,6 +45,7 @@ import dagger.hilt.internal.GeneratedComponentManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.flow.flowOf
 import okhttp3.OkHttpClient
 
 /**
@@ -97,6 +99,8 @@ internal class TestPlaybackApp :
         override fun equalizerRepository(): EqualizerRepository = FakeEqualizerRepository()
 
         override fun equalizerBands(): EqualizerBands = EqualizerBands { FIVE_BANDS_HZ }
+
+        override fun crossfadeLength(): CrossfadeLength = CrossfadeLength { flowOf(0) }
 
         override fun levelMeter(): LevelMeter = LevelMeter(scope, SoundVisualMeter(scope, Dispatchers.Default))
 

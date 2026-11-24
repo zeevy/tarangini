@@ -21,6 +21,7 @@ import com.siliconcircuits.tarangini.core.domain.model.SongSort
 import com.siliconcircuits.tarangini.core.domain.playback.NowPlayingCards
 import com.siliconcircuits.tarangini.core.domain.playback.ResumeStore
 import com.siliconcircuits.tarangini.core.domain.premium.CrashReporter
+import com.siliconcircuits.tarangini.core.domain.premium.CrossfadeLength
 import com.siliconcircuits.tarangini.core.domain.premium.EqualizerBands
 import com.siliconcircuits.tarangini.core.domain.repository.AudioAccess
 import com.siliconcircuits.tarangini.core.domain.repository.EqualizerRepository
@@ -48,6 +49,7 @@ import com.siliconcircuits.tarangini.core.playback.di.PlaybackCoroutineScope
 import com.siliconcircuits.tarangini.core.playback.mapper.LibraryTexts
 import com.siliconcircuits.tarangini.core.playback.mapper.genreKeys
 import com.siliconcircuits.tarangini.core.playback.player.CountPlays
+import com.siliconcircuits.tarangini.core.playback.player.CrossfadePlan
 import com.siliconcircuits.tarangini.core.playback.player.LastSound
 import com.siliconcircuits.tarangini.core.playback.player.ReportPlayerErrors
 import com.siliconcircuits.tarangini.core.playback.player.ResetSpeed
@@ -89,6 +91,7 @@ internal class PlaybackService : MediaLibraryService() {
     private var sleep: DefaultSleepTimer? = null
     private var feed: NowPlayingFeed? = null
     private var equalizer: Job? = null
+    private var crossfade: CrossfadePlan? = null
 
     /** What the service needs for the lists the car shows. */
     interface CarDependencies {
@@ -114,6 +117,8 @@ internal class PlaybackService : MediaLibraryService() {
         fun equalizerBands(): EqualizerBands
 
         fun levelMeter(): LevelMeter
+
+        fun crossfadeLength(): CrossfadeLength
     }
 
     /** What the service takes from the app. The system makes a service, so nothing can be handed to its constructor. */
@@ -148,12 +153,14 @@ internal class PlaybackService : MediaLibraryService() {
         val app = EntryPointAccessors.fromApplication(applicationContext, Dependencies::class.java)
         val sound = LastSound()
         val sounds = EqualizerProcessor()
+        val fade = CrossfadePlan(app.crossfadeLength())
         val player =
             // The meter stands after the equalizer, so it shows the sound the equalizer made.
             createPlayer(this, sound, listOf(sounds, app.levelMeter().processor()), { item, gain ->
                 sounds.songStarts(item.genreKeys(), gain)
-            }, app::httpClient)
+            }, fade::fadeUs, app::httpClient)
         equalizer = followEqualizer(app.equalizerRepository(), app.equalizerBands(), sounds, app.playbackScope())
+        crossfade = fade.also { it.follow(player, app.playbackScope()) }
         player.addListener(StreamFailover(player, app.stationStreams(), app.playbackScope()))
         player.addListener(SkipSilentEnd(player, sound, app.playbackScope()))
         player.addListener(playCounter(app))
@@ -311,6 +318,8 @@ internal class PlaybackService : MediaLibraryService() {
     override fun onDestroy() {
         equalizer?.cancel()
         equalizer = null
+        crossfade?.end()
+        crossfade = null
         favouriteButton?.cancel()
         favouriteButton = null
         notices?.end()

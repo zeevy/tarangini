@@ -7,11 +7,12 @@ The public code defines a few interfaces that the private premium module fills i
 | `PremiumGate` | `core.domain.premium` | `NoPremiumGate` (`app/src/core`): always locked | `@Binds` in a module of the `play` build; the core one is not part of that build |
 | `CrashReporter` | `core.domain.premium` | `NoCrashReporter` (`app/src/core`): sends nothing | `@Binds`, the same way |
 | `EqualizerBands` | `core.domain.premium` | `FiveEqualizerBands` (`app/src/core`): 60 Hz to 14 kHz | `@Binds`, the same way, for example with ten bands. The presets follow any band count |
+| `CrossfadeLength` | `core.domain.premium` | `NoCrossfade` (`app/src/core`): 0, no crossfade | `@Binds`, the same way. It gives the fade length in milliseconds and again on each change; the player does the fade (ADR 0063) |
 | `StorageSource` | `core.domain.premium` | `LocalStorageSource` (`core:data`): the media of the phone, id `local` | `@Binds @IntoSet`: the source is added to the set. The local source stays in the set in both builds |
 
 ## One binding per build
 
-The core versions of `PremiumGate`, `CrashReporter` and `EqualizerBands` are in `CorePremiumModule` under `app/src/core`. That folder is part of the `core` flavour only, so the `play` flavour must bind all three itself, in a module under `app/src/play` or in the premium module. A missing binding fails the Hilt step of the `play` build, never at run time.
+The core versions of `PremiumGate`, `CrashReporter`, `EqualizerBands` and `CrossfadeLength` are in `CorePremiumModule` under `app/src/core`. That folder is part of the `core` flavour only, so the `play` flavour must bind all four itself, in a module under `app/src/play` or in the premium module. A missing binding fails the Hilt step of the `play` build, never at run time.
 
 ```kotlin
 @Module
@@ -25,6 +26,9 @@ internal abstract class PlayPremiumModule {
 
     @Binds
     abstract fun bindEqualizerBands(bands: TenEqualizerBands): EqualizerBands
+
+    @Binds
+    abstract fun bindCrossfadeLength(length: CrossfadeSetting): CrossfadeLength
 }
 ```
 

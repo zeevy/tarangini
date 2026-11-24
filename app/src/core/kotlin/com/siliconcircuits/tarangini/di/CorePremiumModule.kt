@@ -7,6 +7,7 @@
 package com.siliconcircuits.tarangini.di
 
 import com.siliconcircuits.tarangini.core.domain.premium.CrashReporter
+import com.siliconcircuits.tarangini.core.domain.premium.CrossfadeLength
 import com.siliconcircuits.tarangini.core.domain.premium.EqualizerBands
 import com.siliconcircuits.tarangini.core.domain.premium.PremiumGate
 import dagger.Binds
@@ -26,4 +27,7 @@ internal abstract class CorePremiumModule {
 
     @Binds
     abstract fun bindEqualizerBands(bands: FiveEqualizerBands): EqualizerBands
+
+    @Binds
+    abstract fun bindCrossfadeLength(length: NoCrossfade): CrossfadeLength
 }
