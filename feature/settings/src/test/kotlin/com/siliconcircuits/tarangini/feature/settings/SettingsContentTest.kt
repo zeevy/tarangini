@@ -13,6 +13,7 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isSelected
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -78,7 +79,7 @@ class SettingsContentTest {
     fun `the rows say what is set, and Rescan and Source code act at once`() {
         show()
 
-        composeRule.onNodeWithText("1 folder is hidden").assertExists()
+        composeRule.onNodeWithText("1 hidden").assertExists()
         composeRule.onNodeWithText("30 seconds").assertExists()
         composeRule.onNodeWithText("1.0").assertExists()
         composeRule.onNodeWithText("Rescan now").performScrollTo().performClick()
@@ -89,15 +90,24 @@ class SettingsContentTest {
     }
 
     @Test
-    fun `the look follows the phone at first, and a pick of Dark is passed on and closes the dialog`() {
+    fun `the look follows the phone at first, and a pick of Night is passed on`() {
         show()
 
-        composeRule.onNodeWithText("Follow the phone").assertExists()
-        composeRule.onNodeWithText("Colours").performClick()
-        composeRule.onNodeWithText("Dark").performClick()
+        composeRule.onNode(hasText("Follow phone") and isSelected()).assertExists()
+        composeRule.onNodeWithText("Night").performClick()
 
         assertEquals(listOf("look DARK"), done)
-        composeRule.onNodeWithText("Light").assertDoesNotExist()
+    }
+
+    @Test
+    fun `with the largest font the looks stand one under another and a pick is passed on`() {
+        RuntimeEnvironment.setFontScale(2f)
+        show()
+
+        composeRule.onNode(hasText("Follow phone") and isSelected()).assertExists()
+        composeRule.onNodeWithText("Daylight").performClick()
+
+        assertEquals(listOf("look LIGHT"), done)
     }
 
     @Test
