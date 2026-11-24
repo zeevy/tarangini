@@ -32,6 +32,7 @@ import androidx.media3.exoplayer.mediacodec.MediaCodecAdapter
 import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
 import androidx.media3.exoplayer.source.MediaSource
 import com.siliconcircuits.tarangini.core.domain.audio.ReplayGain
+import com.siliconcircuits.tarangini.core.playback.audio.CrossfadeSink
 import com.siliconcircuits.tarangini.core.playback.audio.replayGainOf
 import java.nio.ByteBuffer
 
@@ -65,7 +66,8 @@ internal fun Format.forDecoder(decoderName: String?): Format {
 
 /**
  * Makes the renderers of the player. It differs from the default in the audio renderer, and in the
- * audio sink, which runs [audioProcessors] (the equalizer) before the processors of Media3.
+ * audio sink, which runs [audioProcessors] (the equalizer) before the processors of Media3 and has
+ * the [CrossfadeSink] in front of it, fading for [crossfadeUs].
  */
 // A renderers factory is API that may still change.
 @OptIn(UnstableApi::class)
@@ -74,16 +76,20 @@ internal class GaplessRenderersFactory(
     private val sound: LastSound,
     private val audioProcessors: List<AudioProcessor> = emptyList(),
     private val onSongStarts: SongStarts = SongStarts { _, _ -> },
+    private val crossfadeUs: () -> Long = { 0L },
 ) : DefaultRenderersFactory(context) {
     override fun buildAudioSink(
         context: Context,
         enableFloatOutput: Boolean,
         enableAudioTrackPlaybackParams: Boolean,
-    ): AudioSink = DefaultAudioSink.Builder(context)
-        .setEnableFloatOutput(enableFloatOutput)
-        .setEnableAudioOutputPlaybackParameters(enableAudioTrackPlaybackParams)
-        .setAudioProcessors(audioProcessors.toTypedArray())
-        .build()
+    ): AudioSink = CrossfadeSink(
+        DefaultAudioSink.Builder(context)
+            .setEnableFloatOutput(enableFloatOutput)
+            .setEnableAudioOutputPlaybackParameters(enableAudioTrackPlaybackParams)
+            .setAudioProcessors(audioProcessors.toTypedArray())
+            .build(),
+        crossfadeUs,
+    )
 
     override fun buildAudioRenderers(
         context: Context,
@@ -130,6 +136,7 @@ internal class GaplessAudioRenderer(
     eventListener,
     audioSink,
 ) {
+    private val fade = audioSink as? CrossfadeSink
     private val songs = StreamSongs<Any>()
     private val gainOf = LinkedHashMap<Any, ReplayGain>()
     private var reading: Any? = null
@@ -152,6 +159,7 @@ internal class GaplessAudioRenderer(
     // first sound of the next one, so the equalizer can switch at the exact sample.
     override fun onOutputStreamOffsetUsChanged(outputStreamOffsetUs: Long) {
         super.onOutputStreamOffsetUsChanged(outputStreamOffsetUs)
+        fade?.nextSongStarts()
         songStarts(songs.started(outputStreamOffsetUs))
     }
 
@@ -168,6 +176,15 @@ internal class GaplessAudioRenderer(
         }
         onSongStarts.songStarts(item ?: MediaItem.EMPTY, periodUid?.let(gainOf::get))
     }
+
+    /** The length of the song that plays, from the timeline, or null when it is not known. */
+    fun playingLengthUs(): Long? {
+        val period = playing?.let(timeline::getIndexOfPeriod)?.takeIf { it != C.INDEX_UNSET } ?: return null
+        return timeline.getPeriod(period, Timeline.Period()).durationUs.takeIf { it != C.TIME_UNSET }
+    }
+
+    /** The stream offset of the sound that goes out now. */
+    fun outputOffsetUs(): Long = outputStreamOffsetUs
 
     // The format of a stream comes from its file before its first sound, with the tags of the file.
     // For the first song of a queue it comes only after the start was told, so the tags follow.
@@ -202,6 +219,7 @@ internal class GaplessAudioRenderer(
         format: Format,
     ): Boolean {
         sound.heard()
+        if (!isDecodeOnlyBuffer) fade?.let { tellTheEnd(it, bufferPresentationTimeUs) }
         return super.processOutputBuffer(
             positionUs,
             elapsedRealtimeUs,
@@ -216,6 +234,16 @@ internal class GaplessAudioRenderer(
             format,
         )
     }
+}
+
+/**
+ * Tells [sink] how much of the playing song is left when the sound at [timeUs] goes out. The end
+ * comes from the length in the timeline. A file that states a longer length than it has (ADR 0024)
+ * ends before its fade would start, so it gets none and the next song follows with no gap.
+ */
+@OptIn(UnstableApi::class)
+private fun GaplessAudioRenderer.tellTheEnd(sink: CrossfadeSink, timeUs: Long) {
+    sink.songEndsIn { playingLengthUs()?.let { durationUs -> durationUs - (timeUs - outputOffsetUs()) } }
 }
 
 /** Hears of each song whose first sound goes to the processors next, with the tags of its file. */

@@ -38,6 +38,7 @@ import okhttp3.OkHttpClient
  * @param httpClient gives the shared HTTP client when the first stream is opened
  * @param audioProcessors run on the sound before it is played, such as the equalizer
  * @param onSongStarts called on the playback thread when the first sound of a song goes to the processors
+ * @param crossfadeUs the length of the fade into the next song, read on the playback thread; 0 for none
  */
 // The player is built with our own renderers factory, which is API that may still change.
 @OptIn(UnstableApi::class)
@@ -46,11 +47,15 @@ internal fun createPlayer(
     sound: LastSound = LastSound(),
     audioProcessors: List<AudioProcessor> = emptyList(),
     onSongStarts: SongStarts = SongStarts { _, _ -> },
+    crossfadeUs: () -> Long = { 0L },
     httpClient: () -> OkHttpClient,
 ): ExoPlayer {
     val music = AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build()
     val retry = StreamRetryPolicy()
-    val player = ExoPlayer.Builder(context, GaplessRenderersFactory(context, sound, audioProcessors, onSongStarts))
+    val player = ExoPlayer.Builder(
+        context,
+        GaplessRenderersFactory(context, sound, audioProcessors, onSongStarts, crossfadeUs),
+    )
         .setMediaSourceFactory(
             DefaultMediaSourceFactory(context)
                 .setDataSourceFactory(streamDataSourceFactory(context, httpClient))
