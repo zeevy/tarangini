@@ -78,12 +78,17 @@ internal fun PlayerDisplay(
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Column {
-            TopLine(state, actions)
+            TopLine(state, actions, parts.large)
             if (state != null) StatusTags(state, parts.levelling)
         }
         // The visual stands still in a pause, while the player waits for data and after an error.
         val moving = state != null && state.showPause && !state.isBuffering && state.error == null
-        SoundVisualView(mode = parts.mode, shown = if (moving) parts.shown else Still, onCycle = parts.onCycleVisual)
+        SoundVisualView(
+            mode = parts.mode,
+            shown = if (moving) parts.shown else Still,
+            onCycle = parts.onCycleVisual,
+            height = if (parts.large) LargeVisualHeight else VisualHeight,
+        )
         BottomLine(state, actions.onToggleFavourite, onOpenAlbum)
     }
 }

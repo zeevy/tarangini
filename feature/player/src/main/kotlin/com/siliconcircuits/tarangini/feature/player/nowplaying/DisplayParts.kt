@@ -10,11 +10,13 @@ import com.siliconcircuits.tarangini.core.domain.model.VisualMode
 
 /**
  * What the display shows besides the song: the visual and its mode, and whether volume levelling
- * is on for the LEVEL tag. [shown] is read only while the visual draws.
+ * is on for the LEVEL tag. [shown] is read only while the visual draws. [large] is true on a tall
+ * screen such as a tablet held upright: the time and the visual are then bigger.
  */
 internal data class DisplayParts(
     val mode: VisualMode = VisualMode.BARS,
     val levelling: Boolean = false,
     val shown: () -> ShownVisual = { ShownVisual.STILL },
     val onCycleVisual: () -> Unit = {},
+    val large: Boolean = false,
 )

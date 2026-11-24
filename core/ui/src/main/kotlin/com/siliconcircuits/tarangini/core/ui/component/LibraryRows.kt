@@ -10,6 +10,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -51,22 +52,30 @@ import com.siliconcircuits.tarangini.core.ui.theme.lookColors
  * One song in a list: the cover tile, the title, the artist with the album, the length, and a
  * menu. A tap plays it. Every list of songs uses this row, so a song looks and behaves the same
  * everywhere. The row of the song that plays is lit.
+ *
+ * @param inTable true in the songs table of a wide screen: the artist and the album then stand in
+ *   columns of their own, under the titles of [SongTableHeader]
  */
 @Composable
-fun SongRow(song: Song, actions: SongRowActions, modifier: Modifier = Modifier) {
+fun SongRow(song: Song, actions: SongRowActions, modifier: Modifier = Modifier, inTable: Boolean = false) {
     val artist = song.artist.ifEmpty { stringResource(R.string.unknown_artist) }
     val favourites by actions.favourites.collectAsState()
     val isFavourite = song.id in favourites
     val playing by actions.playing.collectAsState()
     LookRow(
         title = song.title,
-        sub = if (song.album.isEmpty()) artist else stringResource(R.string.row_two_parts, artist, song.album),
+        sub = when {
+            inTable -> null
+            song.album.isEmpty() -> artist
+            else -> stringResource(R.string.row_two_parts, artist, song.album)
+        },
         onClick = { actions.onPlay(song) },
         clickLabel = stringResource(R.string.action_play),
         lead = { AlbumArt(song.artworkUri, name = song.album) },
         modifier = modifier,
         meta = formatDuration(song.durationMs).ifEmpty { null },
         isCurrent = song.mediaUri == playing,
+        columns = if (inTable) listOf(artist, song.album) else emptyList(),
     ) {
         if (isFavourite) {
             // The heart says the song is a favourite, and a tap on it takes the mark away.
@@ -78,6 +87,9 @@ fun SongRow(song: Song, actions: SongRowActions, modifier: Modifier = Modifier) 
                     modifier = Modifier.size(FAVOURITE_MARK),
                 )
             }
+        } else if (inTable) {
+            // The heart has its place in a table even when it is not there, so the columns line up.
+            Spacer(Modifier.width(ButtonWidth))
         }
         SongMenu(song, actions, isFavourite)
     }

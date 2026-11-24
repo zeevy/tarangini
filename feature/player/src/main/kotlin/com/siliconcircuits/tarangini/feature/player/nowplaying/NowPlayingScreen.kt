@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -240,6 +241,14 @@ private fun PlayerColumn(
         }
     }
     BoxWithConstraints(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars)) {
+        // A wide and low window, as a phone on its side or a tablet held flat, has the card and Up
+        // next side by side. A tall wide one, as a tablet held upright, has a bigger display.
+        val wide = maxWidth >= WideWindow
+        if (wide && maxWidth > maxHeight) {
+            SideBySide(state, actions, targets, parts, queue, player, list)
+            return@BoxWithConstraints
+        }
+        val shownParts = if (wide && maxHeight >= TallWindow) parts.copy(large = true) else parts
         // The card never takes more than most of the height, so Up next always shows a few rows.
         val cardMax = maxHeight * CARD_SHARE
         Column(
@@ -254,7 +263,7 @@ private fun PlayerColumn(
                     state.toCompact(),
                     actions.onTogglePlay,
                     actions.onNext,
-                    parts.shown,
+                    shownParts.shown,
                     { scope.launch { list.animateScrollToItem(0) } },
                     R.string.player_expand,
                     width.onSizeChanged { compactPx = it.height },
@@ -263,7 +272,7 @@ private fun PlayerColumn(
                 PlayerCard(
                     state,
                     actions,
-                    parts,
+                    shownParts,
                     targets,
                     player.onShuffleAll,
                     width.heightIn(max = cardMax).animateContentSize().onSizeChanged { fullPx = it.height },
@@ -271,6 +280,36 @@ private fun PlayerColumn(
             }
             UpNextCard(queue.state, queue.actions, list, width.weight(1f), hidden = player.removal?.index)
         }
+    }
+}
+
+/** The header and the whole card at the left, Up next at the right, for a wide and low window. */
+@Composable
+private fun SideBySide(
+    state: NowPlayingUiState?,
+    actions: NowPlayingActions,
+    targets: PlayerTargets,
+    parts: DisplayParts,
+    queue: PlayerQueue,
+    player: PlayerExtras,
+    list: LazyListState,
+) {
+    Row(
+        modifier = Modifier.fillMaxSize().padding(start = ScreenEdge, end = ScreenEdge, bottom = ScreenEdge),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            PlayerHeader(state, player, targets.onOpenSearch)
+            // On a phone on its side the card gets the height that is left, as it does above Up next.
+            PlayerCard(state, actions, parts, targets, player.onShuffleAll, Modifier.weight(1f, fill = false))
+        }
+        UpNextCard(
+            queue.state,
+            queue.actions,
+            list,
+            Modifier.weight(1f).fillMaxHeight(),
+            hidden = player.removal?.index,
+        )
     }
 }
 
@@ -426,6 +465,12 @@ private fun StartButtons(onShuffleAll: () -> Unit, onOpenLibrary: () -> Unit) {
 // The sides of the screen. With 8 dp the keys and the chips fit on a phone of 320 dp.
 private val ScreenEdge = 8.dp
 private val WidestCard = 560.dp
+
+// From this width the player uses the room beside or above the card.
+private val WideWindow = 600.dp
+
+// From this height a wide window is held upright, as a tablet in portrait.
+private val TallWindow = 840.dp
 private const val CARD_SHARE = 0.72f
 private const val START_WEIGHT = 1.4f
 

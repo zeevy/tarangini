@@ -191,6 +191,18 @@ class LibraryScreenshotTest {
         }
     }
 
+    @Test
+    @Config(qualifiers = "w1000dp-h800dp-land-mdpi")
+    fun `the songs as a table on a tablet`() = shot("library_songs_tablet") {
+        LibraryContent(lists, songActions, LibraryActions())
+    }
+
+    @Test
+    @Config(qualifiers = "w1000dp-h800dp-land-night-mdpi")
+    fun `the songs as a table on a tablet in the dark look`() = shot("library_songs_tablet_dark") {
+        LibraryContent(lists, songActions, LibraryActions())
+    }
+
     private fun shot(name: String, screen: @Composable () -> Unit) {
         val picture = savedPicture("$name")
         captureRoboImage(picture.path) {
