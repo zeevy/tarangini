@@ -6,29 +6,17 @@
 
 package com.siliconcircuits.tarangini.feature.player.miniplayer
 
-import android.app.Application
-import android.content.ComponentName
-import androidx.activity.ComponentActivity
-import androidx.compose.foundation.background
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onRoot
 import com.github.takahirom.roborazzi.captureRoboImage
-import com.siliconcircuits.tarangini.core.testing.RegisterComponentActivityRule
+import com.siliconcircuits.tarangini.core.domain.audio.VisualFrame
 import com.siliconcircuits.tarangini.core.testing.savedPicture
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
-import java.io.File
-import org.junit.Assert.assertTrue
-import org.junit.Rule
+import com.siliconcircuits.tarangini.feature.player.nowplaying.CompactSong
+import com.siliconcircuits.tarangini.feature.player.nowplaying.ShownVisual
+import kotlin.math.sin
 import org.junit.Test
-import org.junit.rules.RuleChain
-import org.junit.rules.TestWatcher
-import org.junit.runner.Description
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
-import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
@@ -37,24 +25,21 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(qualifiers = "w320dp-h640dp-xhdpi")
 class MiniPlayerScreenshotTest {
-    private val composeRule = createAndroidComposeRule<ComponentActivity>()
-
-    private val registerActivity = RegisterComponentActivityRule()
-
-    @get:Rule
-    val rules: RuleChain = RuleChain.outerRule(registerActivity).around(composeRule)
-
-    private val song = MiniPlayerUiState(
+    private val song = CompactSong(
         title = "A very long title of a song that does not fit on one line",
         artist = "An artist with a long name that does not fit",
-        artworkUri = null,
+        positionMs = 65_000,
+        durationMs = 185_000,
         showPause = true,
         isBuffering = false,
-        progress = 0.4f,
     )
     private val paused = song.copy(title = "Bhairavi", artist = "Ravi Shankar", showPause = false)
-    private val buffering =
-        MiniPlayerUiState("Radio Mirchi", null, null, showPause = true, isBuffering = true, progress = null)
+    private val station = CompactSong("Radio Mirchi", "A song on air", 0, null, showPause = true, isBuffering = true)
+    private val sound = ShownVisual(
+        bands = List(VisualFrame.BAND_COUNT) { (0.7f + 0.25f * sin(it * 0.8f)).coerceIn(0f, 1f) },
+        peaks = List(VisualFrame.BAND_COUNT) { 1f },
+        wave = List(VisualFrame.WAVE_POINTS) { 0f },
+    )
 
     @Test
     fun `playing`() = capture("mini_player_playing", song)
@@ -67,7 +52,11 @@ class MiniPlayerScreenshotTest {
     fun `paused`() = capture("mini_player_paused", paused)
 
     @Test
-    fun `buffering`() = capture("mini_player_buffering", buffering)
+    @Config(qualifiers = "+night")
+    fun `paused in the dark look`() = capture("mini_player_paused_dark", paused)
+
+    @Test
+    fun `a station that loads`() = capture("mini_player_buffering", station)
 
     @Test
     fun `playing with the largest font`() {
@@ -75,17 +64,16 @@ class MiniPlayerScreenshotTest {
         capture("mini_player_largest_font", song)
     }
 
-    private fun capture(name: String, state: MiniPlayerUiState) {
-        val picture = savedPicture("$name")
-        // The line of the buffering state moves for ever. The clock is held, so the picture is of
-        // one fixed moment and the test does not wait for the line to stop.
-        composeRule.mainClock.autoAdvance = false
-        composeRule.setContent {
-            TaranginiTheme {
-                MiniPlayerBar(state, {}, {}, {}, Modifier.background(MaterialTheme.colorScheme.background))
-            }
+    @Test
+    @Config(qualifiers = "+night")
+    fun `playing with the largest font in the dark look`() {
+        RuntimeEnvironment.setFontScale(2f)
+        capture("mini_player_largest_font_dark", song)
+    }
+
+    private fun capture(name: String, state: CompactSong) {
+        captureRoboImage(savedPicture(name).path) {
+            TaranginiTheme { MiniPlayerBar(state, {}, {}, {}, shown = { sound }) }
         }
-        composeRule.mainClock.advanceTimeByFrame()
-        composeRule.onRoot().captureRoboImage(picture.path)
     }
 }

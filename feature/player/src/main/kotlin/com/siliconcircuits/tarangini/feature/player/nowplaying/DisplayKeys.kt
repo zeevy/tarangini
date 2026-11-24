@@ -188,7 +188,7 @@ private fun TimeButton(state: NowPlayingUiState?) {
 
 /** The time as the display shows it: played, left, or a word for a live item. */
 @Composable
-internal fun shownTime(state: NowPlayingUiState?, left: Boolean): String {
+private fun shownTime(state: NowPlayingUiState?, left: Boolean): String {
     val length = state?.durationMs
     return when {
         state == null -> ZERO

@@ -82,9 +82,16 @@ class TaranginiShellMiniPlayerTest {
     }
 
     @Test
-    fun `the mini player stays on a screen with no bottom bar`() {
-        composeRule.onNodeWithText("Settings").performClick()
+    fun `Settings has no mini player, and it comes back on the way out`() {
+        composeRule.onNode(hasText("Library") and isSelectable()).performClick()
+        composeRule.onNodeWithTag("mini").assertIsDisplayed()
+        composeRule.onNode(hasText("Player") and isSelectable()).performClick()
 
+        composeRule.onNodeWithText("Settings").performClick()
+        composeRule.onNodeWithTag("mini").assertDoesNotExist()
+
+        composeRule.onNodeWithContentDescription("Back").performClick()
+        composeRule.onNode(hasText("Library") and isSelectable()).performClick()
         composeRule.onNodeWithTag("mini").assertIsDisplayed()
     }
 }

@@ -13,7 +13,6 @@
     <string name="source_folder">Playing from folder</string>
     <string name="source_favourites">Playing from</string>
     <string name="source_favourites_name">Favourites</string>
-    <string name="mini_player_open">Open the player</string>
     <string name="player_loading">Loading</string>
     <string name="player_error_network">No connection to the station. Check the network.</string>
     <string name="player_error_file">This file is not there any more.</string>
@@ -93,4 +92,5 @@
     <string name="up_next_undo">Undo</string>
     <string name="up_next_saved">Saved as %1$s</string>
     <string name="up_next_not_saved">The queue could not be saved.</string>
+    <string name="mini_player_open_song">%1$s, %2$s. Open the player</string>
 </resources>

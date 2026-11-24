@@ -6,8 +6,13 @@
 
 package com.siliconcircuits.tarangini.feature.settings.navigation
 
+import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hasRoute
 import kotlinx.serialization.Serializable
 
 /** The Settings screen. It opens on top of a tab and has no tab of its own. */
 @Serializable
 data object SettingsRoute
+
+/** True on Settings and the screens it opens, where the mini player is not shown. */
+fun NavDestination.isSettingsScreen(): Boolean = hasRoute<SettingsRoute>() || hasRoute<LicencesRoute>()

@@ -251,10 +251,12 @@ private fun PlayerColumn(
             PlayerHeader(state, player, targets.onOpenSearch, width)
             if (compact && state != null) {
                 CompactCard(
-                    state,
-                    actions,
+                    state.toCompact(),
+                    actions.onTogglePlay,
+                    actions.onNext,
                     parts.shown,
                     { scope.launch { list.animateScrollToItem(0) } },
+                    R.string.player_expand,
                     width.onSizeChanged { compactPx = it.height },
                 )
             } else {
