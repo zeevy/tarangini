@@ -116,7 +116,7 @@ class PlaylistContentTest {
         }
 
         composeRule.onNodeWithText("Drive").performClick()
-        composeRule.onNodeWithText("New playlist").performClick()
+        composeRule.onNodeWithContentDescription("New playlist").performClick()
         composeRule.onNodeWithText("Name").performTextInput("Morning")
         composeRule.onNodeWithText("Create").performClick()
 
@@ -142,7 +142,7 @@ class PlaylistContentTest {
             }
         }
 
-        composeRule.onNodeWithText("Import a playlist file").performClick()
+        composeRule.onNodeWithContentDescription("Import a playlist file").performClick()
 
         composeRule.onNodeWithText("1 of 2 songs were found in your library.").assertIsDisplayed()
         composeRule.onNodeWithText("Rock/gone.mp3").assertIsDisplayed()
@@ -150,6 +150,20 @@ class PlaylistContentTest {
         composeRule.onNodeWithText("OK").performClick()
 
         composeRule.onNodeWithText("Rock/gone.mp3").assertDoesNotExist()
+    }
+
+    @Test
+    fun `with no playlist the card says so and offers a new one`() {
+        composeRule.setContent {
+            TaranginiTheme { PlaylistsContent(emptyList(), onOpenPlaylist = {}, onCreate = { done += "create $it" }) }
+        }
+
+        composeRule.onNodeWithText("No playlists yet").assertIsDisplayed()
+        composeRule.onNodeWithText("New playlist").performClick()
+        composeRule.onNodeWithText("Name").performTextInput("Evening")
+        composeRule.onNodeWithText("Create").performClick()
+
+        assertEquals(listOf("create Evening"), done)
     }
 
     @Test

@@ -7,35 +7,46 @@
 package com.siliconcircuits.tarangini.feature.library
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.siliconcircuits.tarangini.core.domain.model.Album
@@ -46,22 +57,24 @@ import com.siliconcircuits.tarangini.core.domain.model.Playlist
 import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.domain.model.SongSort
 import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
-import com.siliconcircuits.tarangini.core.ui.component.AlbumRow
+import com.siliconcircuits.tarangini.core.ui.component.AlbumTile
 import com.siliconcircuits.tarangini.core.ui.component.ArtistRow
 import com.siliconcircuits.tarangini.core.ui.component.FolderRow
+import com.siliconcircuits.tarangini.core.ui.component.LedChip
+import com.siliconcircuits.tarangini.core.ui.component.ListCard
 import com.siliconcircuits.tarangini.core.ui.component.MessageState
+import com.siliconcircuits.tarangini.core.ui.component.ScreenHeader
 import com.siliconcircuits.tarangini.core.ui.component.SongRow
 import com.siliconcircuits.tarangini.core.ui.component.SongRowActions
-import com.siliconcircuits.tarangini.core.ui.theme.Spacing
-import com.siliconcircuits.tarangini.core.ui.theme.clearTopBarColors
 import com.siliconcircuits.tarangini.feature.library.component.ListBody
 import com.siliconcircuits.tarangini.feature.library.component.PagedColumn
+import com.siliconcircuits.tarangini.feature.library.component.PagedGrid
 import com.siliconcircuits.tarangini.feature.library.genre.GenresTab
 import com.siliconcircuits.tarangini.feature.library.list.PagedItems
 import com.siliconcircuits.tarangini.feature.library.permission.AudioPermissionGate
 import com.siliconcircuits.tarangini.feature.library.playlist.PlaylistsTab
 
-/** The lists of the Library tab. The order here is the order of the tabs on screen. */
+/** The lists of the Library tab. The order here is the order of the chips on screen. */
 internal enum class LibraryTab(val title: Int) {
     SONGS(R.string.library_tab_songs),
     ALBUMS(R.string.library_tab_albums),
@@ -71,11 +84,15 @@ internal enum class LibraryTab(val title: Int) {
     PLAYLISTS(R.string.library_tab_playlists),
 }
 
+/** How many songs, albums and artists the library has, for the top line of each list. */
+internal data class ListCounts(val songs: Int, val albums: Int, val artists: Int)
+
 /**
  * What the four lists show now.
  *
  * @property folders the top folders, or null until they are read
  * @property sort the order of the songs list
+ * @property counts the sizes of the lists, or null until they are read
  */
 internal data class LibraryState(
     val songs: PagedItems<Song> = PagedItems(),
@@ -83,6 +100,7 @@ internal data class LibraryState(
     val artists: PagedItems<Artist> = PagedItems(),
     val folders: List<Folder>? = null,
     val sort: SongSort = SongSort.TITLE,
+    val counts: ListCounts? = null,
 )
 
 /** What the Library tab can do besides the actions of a song row. */
@@ -97,6 +115,8 @@ internal class LibraryActions(
     val onRescan: () -> Unit = {},
     val onRetry: () -> Unit = {},
     val onSearch: () -> Unit = {},
+    val onSettings: () -> Unit = {},
+    val onShuffleAll: () -> Unit = {},
 )
 
 /** The Library tab. It shows the lists once the audio permission is there, and asks for it before. */
@@ -109,11 +129,12 @@ internal fun LibraryScreen(
     onOpenPlaylist: (Playlist) -> Unit,
     onSearch: () -> Unit,
     modifier: Modifier = Modifier,
+    onSettings: () -> Unit = {},
 ) {
     // The lists are their own function, so the ViewModel is made only once the permission is there.
     // Nothing is read or scanned before.
     AudioPermissionGate(modifier = modifier) {
-        LibraryLists(onOpenAlbum, onOpenArtist, onOpenGenre, onOpenFolder, onOpenPlaylist, onSearch)
+        LibraryLists(onOpenAlbum, onOpenArtist, onOpenGenre, onOpenFolder, onOpenPlaylist, onSearch, onSettings)
     }
 }
 
@@ -125,11 +146,12 @@ private fun LibraryLists(
     onOpenFolder: (Folder) -> Unit,
     onOpenPlaylist: (Playlist) -> Unit,
     onSearch: () -> Unit,
+    onSettings: () -> Unit,
     viewModel: LibraryViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     // The actions are kept, so a new page of rows does not draw every row on screen again.
-    val actions = remember(viewModel, onOpenAlbum, onOpenArtist, onOpenFolder, onSearch) {
+    val actions = remember(viewModel, onOpenAlbum, onOpenArtist, onOpenFolder, onSearch, onSettings) {
         LibraryActions(
             onSort = viewModel::setSort,
             onMoreSongs = viewModel.songs::loadMore,
@@ -141,18 +163,26 @@ private fun LibraryLists(
             onRescan = viewModel::rescan,
             onRetry = viewModel::retry,
             onSearch = onSearch,
+            onSettings = onSettings,
+            onShuffleAll = viewModel::shuffleAll,
         )
     }
     LibraryContent(
         lists = state,
         songActions = viewModel.songActions,
         actions = actions,
-        playlists = { PlaylistsTab(onOpenPlaylist) },
-        genres = { GenresTab(onOpenGenre) },
+        playlists = { PlaylistsTab(onOpenPlaylist, it) },
+        genres = { GenresTab(onOpenGenre, it) },
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class) // TopAppBar and the tab row are still marked experimental in Material 3.
+/**
+ * The lists of the library: the header, a row of chips with lamps to pick the list, and the list
+ * on its own card with its size and tools at the top.
+ *
+ * @param genres the Genres list on its card; it is given the modifier that sizes the card
+ * @param playlists the Playlists list on its card, the same way
+ */
 @Composable
 internal fun LibraryContent(
     lists: LibraryState,
@@ -160,100 +190,166 @@ internal fun LibraryContent(
     actions: LibraryActions,
     modifier: Modifier = Modifier,
     firstTab: LibraryTab = LibraryTab.SONGS,
-    genres: @Composable () -> Unit = {},
-    playlists: @Composable () -> Unit = {},
+    genres: @Composable (Modifier) -> Unit = {},
+    playlists: @Composable (Modifier) -> Unit = {},
 ) {
     var tab by rememberSaveable { mutableStateOf(firstTab) }
-    // One scroll place per tab, kept here, so a tab comes back where it was left.
-    val songsScroll = rememberLazyListState()
-    val albumsScroll = rememberLazyListState()
-    val artistsScroll = rememberLazyListState()
-    val foldersScroll = rememberLazyListState()
-    Scaffold(
-        modifier = modifier.background(MaterialTheme.colorScheme.background),
-        containerColor = Color.Transparent,
-        contentColor = MaterialTheme.colorScheme.onBackground,
-        topBar = {
-            TopAppBar(
-                colors = clearTopBarColors(),
-                title = { Text(stringResource(R.string.library_title)) },
-                actions = {
-                    IconButton(onClick = actions.onSearch) {
-                        Icon(
-                            painter = painterResource(CoreUiR.drawable.ic_search),
-                            contentDescription = stringResource(CoreUiR.string.action_search),
-                        )
-                    }
-                    if (tab == LibraryTab.SONGS) SortMenu(lists.sort, actions.onSort)
-                },
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .windowInsetsPadding(WindowInsets.statusBars)
+            .padding(horizontal = 10.dp),
+    ) {
+        ScreenHeader(title = stringResource(R.string.library_title)) {
+            IconButton(onClick = actions.onSearch) {
+                Icon(painterResource(CoreUiR.drawable.ic_search), stringResource(CoreUiR.string.action_search))
+            }
+            IconButton(onClick = actions.onSettings) {
+                Icon(painterResource(CoreUiR.drawable.ic_settings), stringResource(R.string.library_settings))
+            }
+        }
+        ListChips(tab) { tab = it }
+        val card = Modifier.weight(1f).fillMaxWidth().padding(top = 4.dp, bottom = 10.dp)
+        LibraryList(tab, lists, songActions, actions, genres, playlists, card)
+    }
+}
+
+/** The chips that pick a list. They scroll, so six fit a narrow screen with a large font. */
+@Composable
+private fun ListChips(tab: LibraryTab, onPick: (LibraryTab) -> Unit) {
+    val name = stringResource(R.string.library_lists)
+    val lit = remember { BringIntoViewRequester() }
+    // A list far to the right, such as Playlists after a restore, scrolls its chip into sight.
+    LaunchedEffect(tab) { lit.bringIntoView() }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .selectableGroup()
+            .semantics { contentDescription = name },
+    ) {
+        LibraryTab.entries.forEach { entry ->
+            LedChip(
+                text = stringResource(entry.title),
+                lit = entry == tab,
+                onClick = { onPick(entry) },
+                modifier = if (entry == tab) Modifier.bringIntoViewRequester(lit) else Modifier,
             )
-        },
-    ) { innerPadding ->
-        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-            // The tab row scrolls, so four tabs fit a narrow screen with a large font.
-            PrimaryScrollableTabRow(
-                selectedTabIndex = tab.ordinal,
-                containerColor = Color.Transparent,
-                edgePadding = Spacing.none,
-            ) {
-                LibraryTab.entries.forEach { entry ->
-                    Tab(
-                        selected = entry == tab,
-                        onClick = { tab = entry },
-                        text = { Text(stringResource(entry.title)) },
-                    )
-                }
-            }
-            when (tab) {
-                LibraryTab.SONGS -> TabBody(lists.songs, actions) {
-                    PagedColumn(lists.songs, Song::id, actions.onMoreSongs, state = songsScroll) {
-                        SongRow(it, songActions)
-                    }
-                }
-
-                LibraryTab.ALBUMS -> TabBody(lists.albums, actions) {
-                    PagedColumn(lists.albums, Album::id, actions.onMoreAlbums, state = albumsScroll) { album ->
-                        AlbumRow(album, onClick = { actions.onOpenAlbum(album) })
-                    }
-                }
-
-                LibraryTab.ARTISTS -> TabBody(lists.artists, actions) {
-                    PagedColumn(lists.artists, Artist::id, actions.onMoreArtists, state = artistsScroll) { artist ->
-                        ArtistRow(artist, onClick = { actions.onOpenArtist(artist) })
-                    }
-                }
-
-                LibraryTab.FOLDERS -> TabBody(PagedItems(lists.folders.orEmpty(), lists.folders == null), actions) {
-                    LazyColumn(state = foldersScroll, modifier = Modifier.fillMaxSize()) {
-                        items(items = lists.folders.orEmpty(), key = Folder::id) { folder ->
-                            FolderRow(folder, onClick = { actions.onOpenFolder(folder) })
-                        }
-                    }
-                }
-
-                // The playlists and the genres have their own state, so a test of the other tabs needs none of it.
-                LibraryTab.PLAYLISTS -> playlists()
-
-                LibraryTab.GENRES -> genres()
-            }
         }
     }
 }
 
-/** The body of one tab: the list, or what stands in for it while there is nothing to list. */
 @Composable
-private fun TabBody(list: PagedItems<*>, actions: LibraryActions, content: @Composable () -> Unit) {
-    ListBody(list.isLoading, failed = list.failed && list.items.isEmpty(), onRetry = actions.onRetry) {
-        if (list.items.isEmpty()) {
-            MessageState(
-                title = stringResource(R.string.library_empty_title),
-                text = stringResource(R.string.library_empty_text),
-                icon = painterResource(CoreUiR.drawable.ic_library),
-                actionLabel = stringResource(R.string.library_empty_scan),
-                onAction = actions.onRescan,
-            )
-        } else {
-            content()
+private fun LibraryList(
+    tab: LibraryTab,
+    lists: LibraryState,
+    songActions: SongRowActions,
+    actions: LibraryActions,
+    genres: @Composable (Modifier) -> Unit,
+    playlists: @Composable (Modifier) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    // One scroll place per list, kept here, so a list comes back where it was left.
+    val songsScroll = rememberLazyListState()
+    val albumsScroll = rememberLazyGridState()
+    val artistsScroll = rememberLazyListState()
+    val foldersScroll = rememberLazyListState()
+    when (tab) {
+        LibraryTab.SONGS -> ListCard(
+            count = countText(R.plurals.library_count_songs, lists.counts?.songs, lists.songs),
+            modifier = modifier,
+            tools = {
+                IconButton(onClick = actions.onShuffleAll) {
+                    Icon(painterResource(CoreUiR.drawable.ic_shuffle), stringResource(R.string.library_shuffle_all))
+                }
+                SortMenu(lists.sort, actions.onSort)
+            },
+        ) {
+            TabBody(lists.songs, actions) {
+                PagedColumn(lists.songs, Song::id, actions.onMoreSongs, state = songsScroll) {
+                    SongRow(it, songActions)
+                }
+            }
+        }
+
+        LibraryTab.ALBUMS -> ListCard(
+            countText(R.plurals.library_count_albums, lists.counts?.albums, lists.albums),
+            modifier,
+        ) {
+            TabBody(lists.albums, actions) {
+                PagedGrid(lists.albums, Album::id, actions.onMoreAlbums, state = albumsScroll) { album ->
+                    AlbumTile(album, onClick = { actions.onOpenAlbum(album) })
+                }
+            }
+        }
+
+        LibraryTab.ARTISTS -> ListCard(
+            countText(R.plurals.library_count_artists, lists.counts?.artists, lists.artists),
+            modifier,
+        ) {
+            TabBody(lists.artists, actions) {
+                PagedColumn(lists.artists, Artist::id, actions.onMoreArtists, state = artistsScroll) { artist ->
+                    ArtistRow(artist, onClick = { actions.onOpenArtist(artist) })
+                }
+            }
+        }
+
+        LibraryTab.FOLDERS -> {
+            val folders = lists.folders.orEmpty()
+            ListCard(
+                sizeText(R.plurals.library_count_folders, lists.folders),
+                modifier,
+            ) {
+                TabBody(PagedItems(folders, lists.folders == null), actions) {
+                    LazyColumn(state = foldersScroll, modifier = Modifier.fillMaxSize()) {
+                        items(items = folders, key = Folder::id) { folder ->
+                            FolderRow(folder, onClick = { actions.onOpenFolder(folder) })
+                        }
+                    }
+                }
+            }
+        }
+
+        // The playlists and the genres have their own state, so a test of the other lists needs none of it.
+        LibraryTab.PLAYLISTS -> playlists(modifier)
+
+        LibraryTab.GENRES -> genres(modifier)
+    }
+}
+
+/** The size of a list that is read in one go, for its top line. It is blank until the list is read. */
+@Composable
+internal fun sizeText(plural: Int, list: List<*>?): String =
+    list?.let { pluralStringResource(plural, it.size, it.size.toString()) }.orEmpty()
+
+/**
+ * The size of a paged list for its top line. Until the size is read, the rows read so far stand
+ * in, with a plus when there are more.
+ */
+@Composable
+internal fun countText(plural: Int, total: Int?, list: PagedItems<*>): String {
+    val count = total ?: list.items.size
+    val shown = if (total == null && list.hasMore) "$count+" else count.toString()
+    return pluralStringResource(plural, count, shown)
+}
+
+/** The body of one list: the rows, or what stands in for them while there is nothing to list. */
+@Composable
+private fun ColumnScope.TabBody(list: PagedItems<*>, actions: LibraryActions, content: @Composable () -> Unit) {
+    Box(Modifier.weight(1f, fill = false)) {
+        ListBody(list.isLoading, failed = list.failed && list.items.isEmpty(), onRetry = actions.onRetry) {
+            if (list.items.isEmpty()) {
+                MessageState(
+                    title = stringResource(R.string.library_empty_title),
+                    text = stringResource(R.string.library_empty_text),
+                    icon = painterResource(CoreUiR.drawable.ic_library),
+                    actionLabel = stringResource(R.string.library_empty_scan),
+                    onAction = actions.onRescan,
+                )
+            } else {
+                content()
+            }
         }
     }
 }

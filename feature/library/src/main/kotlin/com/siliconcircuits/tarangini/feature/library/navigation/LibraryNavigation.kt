@@ -30,8 +30,9 @@ import com.siliconcircuits.tarangini.feature.library.playlist.PlaylistScreen
  * comes back to it when the person returns to the tab.
  *
  * @param onSearch opens the search screen, which is not part of this tab
+ * @param onSettings opens Settings, which is not part of this tab either
  */
-fun NavGraphBuilder.libraryGraph(navController: NavController, onSearch: () -> Unit) {
+fun NavGraphBuilder.libraryGraph(navController: NavController, onSearch: () -> Unit, onSettings: () -> Unit = {}) {
     navigation<LibraryRoute>(startDestination = LibraryListsRoute) {
         composable<LibraryListsRoute> { entry ->
             LibraryScreen(
@@ -41,6 +42,7 @@ fun NavGraphBuilder.libraryGraph(navController: NavController, onSearch: () -> U
                 onOpenFolder = { navController.open(entry, it.route()) },
                 onOpenPlaylist = { navController.open(entry, PlaylistRoute(it.id, it.name.take(MAX_TITLE))) },
                 onSearch = { if (entry.isShown()) onSearch() },
+                onSettings = { if (entry.isShown()) onSettings() },
             )
         }
         composable<AlbumRoute> { entry -> AlbumScreen(onBack = { navController.back(entry) }) }
@@ -71,8 +73,9 @@ fun NavController.navigateToArtist(artist: Artist) {
     navigate(artist.route()) { launchSingleTop = true }
 }
 
-fun NavGraphBuilder.favouritesScreen() {
-    composable<FavouritesRoute> { FavouritesScreen() }
+/** The Favourites tab. [onSearch] opens the search screen. */
+fun NavGraphBuilder.favouritesScreen(onSearch: () -> Unit = {}) {
+    composable<FavouritesRoute> { entry -> FavouritesScreen(onSearch = { if (entry.isShown()) onSearch() }) }
 }
 
 // A second tap that comes while the screen already changes is dropped. Without this, two fast

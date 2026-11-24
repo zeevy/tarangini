@@ -39,6 +39,7 @@ import com.siliconcircuits.tarangini.feature.library.R
 import com.siliconcircuits.tarangini.feature.library.component.DetailScaffold
 import com.siliconcircuits.tarangini.feature.library.component.ListBody
 import com.siliconcircuits.tarangini.feature.library.component.PagedColumn
+import com.siliconcircuits.tarangini.feature.library.countText
 import com.siliconcircuits.tarangini.feature.library.list.PagedItems
 import com.siliconcircuits.tarangini.feature.library.permission.AudioPermissionGate
 
@@ -94,6 +95,7 @@ internal fun PlaylistContent(
     DetailScaffold(
         title = name,
         onBack = onBack,
+        count = countText(R.plurals.library_count_songs, total = null, songs),
         modifier = modifier,
         actions = { PlaylistBarActions(name, hasSongs = songs.items.isNotEmpty(), actions, files.onExport) },
     ) {

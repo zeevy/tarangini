@@ -7,71 +7,52 @@
 package com.siliconcircuits.tarangini.feature.library.component
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
-import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
-import com.siliconcircuits.tarangini.core.ui.component.BackButton
-import com.siliconcircuits.tarangini.core.ui.theme.clearTopBarColors
-import com.siliconcircuits.tarangini.feature.library.R
+import androidx.compose.ui.unit.dp
+import com.siliconcircuits.tarangini.core.ui.component.ListCard
+import com.siliconcircuits.tarangini.core.ui.component.ScreenHeader
 
 /**
- * The frame of a screen that opens from a list: a top bar with a back
- * button, a [title] and a smaller line under it, and the [content] below.
+ * The frame of a screen that opens from a list: a header with a back button, the [title] and the
+ * [actions], an optional [hero] card such as the cover of an album, and the list on its own card
+ * with the [count] and the [tools] at its top.
  */
-@OptIn(ExperimentalMaterial3Api::class) // TopAppBar is still marked experimental in Material 3.
 @Composable
 internal fun DetailScaffold(
     title: String,
     onBack: () -> Unit,
+    count: String,
     modifier: Modifier = Modifier,
-    subtitle: String? = null,
     actions: @Composable RowScope.() -> Unit = {},
-    content: @Composable () -> Unit,
+    tools: @Composable RowScope.() -> Unit = {},
+    hero: (@Composable () -> Unit)? = null,
+    content: @Composable ColumnScope.() -> Unit,
 ) {
-    Scaffold(
-        modifier = modifier.background(MaterialTheme.colorScheme.background),
-        containerColor = Color.Transparent,
-        contentColor = MaterialTheme.colorScheme.onBackground,
-        topBar = {
-            TopAppBar(
-                colors = clearTopBarColors(),
-                title = {
-                    Column {
-                        Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        if (subtitle != null) {
-                            Text(
-                                text = subtitle,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
-                },
-                navigationIcon = {
-                    BackButton(onClick = onBack)
-                },
-                actions = actions,
-            )
-        },
-    ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) { content() }
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .windowInsetsPadding(WindowInsets.statusBars)
+            .padding(horizontal = 10.dp),
+    ) {
+        ScreenHeader(title = title, onBack = onBack, actions = actions)
+        hero?.invoke()
+        ListCard(
+            count = count,
+            modifier = Modifier.weight(1f).fillMaxWidth().padding(top = 8.dp, bottom = 10.dp),
+            tools = tools,
+            content = content,
+        )
     }
 }

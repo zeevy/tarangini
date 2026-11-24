@@ -14,6 +14,7 @@ import com.siliconcircuits.tarangini.core.domain.model.Artist
 import com.siliconcircuits.tarangini.core.domain.model.Folder
 import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.domain.model.SongSort
+import com.siliconcircuits.tarangini.core.domain.repository.LibraryLetters
 import com.siliconcircuits.tarangini.core.domain.repository.LibraryRepository
 import com.siliconcircuits.tarangini.core.domain.repository.SettingsRepository
 import com.siliconcircuits.tarangini.feature.library.list.PagedList
@@ -33,12 +34,14 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 internal class LibraryViewModel @Inject constructor(
     private val library: LibraryRepository,
+    private val letters: LibraryLetters,
     private val settings: SettingsRepository,
     private val scanner: LibraryScanner,
-    actions: SongActions,
+    private val actions: SongActions,
 ) : ViewModel() {
     private val sort = MutableStateFlow(SongSort.TITLE)
     private val topFolders = MutableStateFlow<List<Folder>?>(null)
+    private val counts = MutableStateFlow<ListCounts?>(null)
 
     val songs = PagedList(viewModelScope, Song::id) { library.songs(sort.value, it) }
     val albums = PagedList(viewModelScope, Album::id, library::albums)
@@ -46,7 +49,9 @@ internal class LibraryViewModel @Inject constructor(
 
     /** What the four lists show now. */
     val state: StateFlow<LibraryState> =
-        combine(songs.state, albums.state, artists.state, topFolders, sort, ::LibraryState)
+        combine(songs.state, albums.state, artists.state, topFolders, sort) { songs, albums, artists, folders, sort ->
+            LibraryState(songs, albums, artists, folders, sort)
+        }.combine(counts) { state, counts -> state.copy(counts = counts) }
             .stateIn(viewModelScope, SharingStarted.Eagerly, LibraryState())
 
     /** A tap plays the song with all songs, in the order shown, as the queue. */
@@ -70,6 +75,11 @@ internal class LibraryViewModel @Inject constructor(
         viewModelScope.launch { settings.setSongSort(sort) }
     }
 
+    /** Plays every song of the library in a random order. */
+    fun shuffleAll() {
+        actions.shuffle(viewModelScope) { library.songs(SongSort.TITLE, it) }
+    }
+
     /** Looks for new and deleted files now. The lists follow by themselves. */
     fun rescan() {
         // A scan that fails must not end the screen. The scanner keeps what went wrong in its state.
@@ -85,6 +95,14 @@ internal class LibraryViewModel @Inject constructor(
         songs.refresh()
         albums.refresh()
         artists.refresh()
+        // The letters count the same rows as the lists, so their sums are the sizes of the lists.
+        counts.value = attempt {
+            ListCounts(
+                letters.ofSongs().sumOf { it.count },
+                letters.ofAlbums().sumOf { it.count },
+                letters.ofArtists().sumOf { it.count },
+            )
+        }.getOrNull() ?: counts.value
         // Folders that cannot be read show as none, with the button to look again.
         topFolders.value = attempt { library.folders(parentId = null) }.getOrElse { topFolders.value.orEmpty() }
     }

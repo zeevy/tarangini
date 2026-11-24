@@ -6,11 +6,18 @@
 
 package com.siliconcircuits.tarangini.feature.library.component
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
@@ -26,6 +33,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
 import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
 import com.siliconcircuits.tarangini.core.ui.component.MessageState
 import com.siliconcircuits.tarangini.feature.library.R
@@ -51,22 +59,58 @@ internal fun <T : Any> PagedColumn(
 ) {
     val nearEnd by remember(state) {
         derivedStateOf {
-            val total = state.layoutInfo.totalItemsCount
-            val lastShown = state.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-            // Before the first layout nothing is known, and that is not the end of the list.
-            total > 0 && lastShown >= total - LOAD_AHEAD
+            isNearEnd(state.layoutInfo.totalItemsCount, state.layoutInfo.visibleItemsInfo.lastOrNull()?.index)
         }
     }
-    val loadMore by rememberUpdatedState(onLoadMore)
-    // The number of rows is a key, so a page that did not fill the screen asks for the next one.
-    LaunchedEffect(nearEnd, list.items.size, list.hasMore) {
-        if (nearEnd && list.hasMore) loadMore()
-    }
+    LoadAhead(nearEnd, list, onLoadMore)
     LazyColumn(state = state, modifier = modifier.fillMaxSize()) {
         header()
         items(items = list.items, key = key) { row(it) }
     }
 }
+
+/**
+ * A long list as a grid of two or more columns, such as the albums. It asks for its next page a
+ * little before the person reaches the end, as [PagedColumn] does.
+ */
+@Composable
+internal fun <T : Any> PagedGrid(
+    list: PagedItems<T>,
+    key: (T) -> Any,
+    onLoadMore: () -> Unit,
+    modifier: Modifier = Modifier,
+    state: LazyGridState = rememberLazyGridState(),
+    tile: @Composable (T) -> Unit,
+) {
+    val nearEnd by remember(state) {
+        derivedStateOf {
+            isNearEnd(state.layoutInfo.totalItemsCount, state.layoutInfo.visibleItemsInfo.lastOrNull()?.index)
+        }
+    }
+    LoadAhead(nearEnd, list, onLoadMore)
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(TILE_WIDTH),
+        state = state,
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(6.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        items(items = list.items, key = key) { tile(it) }
+    }
+}
+
+@Composable
+private fun LoadAhead(nearEnd: Boolean, list: PagedItems<*>, onLoadMore: () -> Unit) {
+    val loadMore by rememberUpdatedState(onLoadMore)
+    // The number of rows is a key, so a page that did not fill the screen asks for the next one.
+    LaunchedEffect(nearEnd, list.items.size, list.hasMore) {
+        if (nearEnd && list.hasMore) loadMore()
+    }
+}
+
+// Before the first layout nothing is known, and that is not the end of the list.
+private fun isNearEnd(total: Int, lastShown: Int?): Boolean = total > 0 && (lastShown ?: 0) >= total - LOAD_AHEAD
 
 /**
  * The body of a list by what is known of it: a spinner until the first
@@ -99,3 +143,6 @@ private fun Loading(modifier: Modifier = Modifier) {
 }
 
 private const val LOAD_AHEAD = 20
+
+// Two tiles side by side on a phone, more on a wide screen.
+private val TILE_WIDTH = 120.dp

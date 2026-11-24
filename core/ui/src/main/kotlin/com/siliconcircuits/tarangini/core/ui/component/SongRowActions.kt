@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.StateFlow
  * @property favourites the ids of the favourite songs; a row marks itself when its song is among them
  * @property onSetFavourite marks the song as a favourite (true) or takes the mark away
  * @property playlists what "Add to playlist" needs; without it the menu has no such entry
+ * @property playing the queue id of the song that plays now, so its row is lit; null when none plays
  */
 class SongRowActions(
     val onPlay: (Song) -> Unit,
@@ -27,4 +28,5 @@ class SongRowActions(
     val favourites: StateFlow<Set<Long>> = MutableStateFlow(emptySet()),
     val onSetFavourite: (Song, Boolean) -> Unit = { _, _ -> },
     val playlists: PlaylistPick? = null,
+    val playing: StateFlow<String?> = MutableStateFlow(null),
 )

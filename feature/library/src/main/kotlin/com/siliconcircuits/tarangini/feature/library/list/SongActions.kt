@@ -19,6 +19,8 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -53,7 +55,17 @@ internal class SongActions @Inject constructor(
                 scope.launch { attempt { favourites.setFavourite(song.id, favourite) } }
             },
             playlists = playlists.pickIn(scope),
+            playing = playback.state.map { it.currentItem?.id }.distinctUntilChanged()
+                .stateIn(scope, SharingStarted.WhileSubscribed(STOP_AFTER_MS), null),
         )
+    }
+
+    /** Plays the whole list that [read] gives in a random order, from its first song. */
+    fun shuffle(scope: CoroutineScope, source: QueueSource? = null, read: suspend (Page) -> List<Song>) {
+        scope.launch {
+            val uris = attempt { wholeList(read) }.getOrDefault(emptyList())
+            if (uris.isNotEmpty()) playback.play(uris.shuffled(), 0, source)
+        }
     }
 
     /**
@@ -77,3 +89,6 @@ internal class SongActions @Inject constructor(
         return uris
     }
 }
+
+// The row lamp stops following the player a short while after the last list closes.
+private const val STOP_AFTER_MS = 5_000L

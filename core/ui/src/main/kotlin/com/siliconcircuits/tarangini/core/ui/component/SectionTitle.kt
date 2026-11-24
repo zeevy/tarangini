@@ -11,17 +11,28 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
-import com.siliconcircuits.tarangini.core.ui.theme.Spacing
+import androidx.compose.ui.semantics.text
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.siliconcircuits.tarangini.core.ui.theme.lookColors
 
-/** A small title above a group of rows. A screen reader takes it as a heading. */
+/** A small title in capitals above a group of rows in a list card. A screen reader takes it as a heading. */
 @Composable
 fun SectionTitle(text: String, modifier: Modifier = Modifier) {
     Text(
-        text = text,
-        modifier = modifier.padding(horizontal = Spacing.medium, vertical = Spacing.small).semantics { heading() },
-        style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.primary,
+        text = text.uppercase(),
+        modifier = modifier.padding(start = 8.dp, end = 8.dp, top = 12.dp, bottom = 4.dp).clearAndSetSemantics {
+            // A screen reader gets the words as they are written, not in capitals.
+            heading()
+            this.text = AnnotatedString(text)
+        },
+        style = MaterialTheme.typography.labelSmall,
+        fontWeight = FontWeight.ExtraBold,
+        letterSpacing = 0.9.sp,
+        color = lookColors.listMuted,
     )
 }

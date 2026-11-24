@@ -10,6 +10,7 @@ import android.app.Application
 import android.content.ComponentName
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -27,6 +28,7 @@ import com.siliconcircuits.tarangini.core.ui.component.SongRowActions
 import com.siliconcircuits.tarangini.core.ui.theme.TaranginiTheme
 import com.siliconcircuits.tarangini.feature.library.album.AlbumContent
 import com.siliconcircuits.tarangini.feature.library.artist.ArtistContent
+import com.siliconcircuits.tarangini.feature.library.favourites.FavouritesActions
 import com.siliconcircuits.tarangini.feature.library.favourites.FavouritesContent
 import com.siliconcircuits.tarangini.feature.library.folder.FolderContent
 import com.siliconcircuits.tarangini.feature.library.genre.GenreContent
@@ -65,7 +67,11 @@ class AccessibilityOfListsTest {
 
     private fun show(screen: @Composable () -> Unit) = composeRule.setContent { TaranginiTheme { screen() } }
 
-    private fun showLibrary(playlists: @Composable () -> Unit = {}, firstTab: LibraryTab = LibraryTab.SONGS) = show {
+    private fun showLibrary(
+        playlists: @Composable (Modifier) -> Unit = {
+        },
+        firstTab: LibraryTab = LibraryTab.SONGS,
+    ) = show {
         LibraryContent(
             LibraryState(songs = songs),
             songActions,
@@ -77,7 +83,7 @@ class AccessibilityOfListsTest {
 
     @Test
     fun `the Favourites tab passes the checks`() {
-        show { FavouritesContent(songs, songActions, onMoreSongs = {}, onRetry = {}) }
+        show { FavouritesContent(songs, songActions, FavouritesActions()) }
 
         composeRule.checkAccessibility()
     }
@@ -153,10 +159,10 @@ class AccessibilityOfListsTest {
     @Test
     fun `the dialog for the name of a playlist passes the checks`() {
         showLibrary(firstTab = LibraryTab.PLAYLISTS, playlists = {
-            PlaylistsContent(listOf(Playlist(1, "Drive", 2)), onOpenPlaylist = {}, onCreate = {})
+            PlaylistsContent(listOf(Playlist(1, "Drive", 2)), onOpenPlaylist = {}, onCreate = {}, modifier = it)
         })
 
-        composeRule.onNodeWithText("New playlist").performClick()
+        composeRule.onNodeWithContentDescription("New playlist").performClick()
         // With a name the Create button is on; a button that is off is allowed to be dim.
         composeRule.onNodeWithText("Name").performTextInput("Morning")
 
@@ -184,9 +190,9 @@ class AccessibilityOfListsTest {
     fun `the dialog for the name of a playlist with the largest font`() {
         RuntimeEnvironment.setFontScale(LARGEST_FONT)
         showLibrary(firstTab = LibraryTab.PLAYLISTS, playlists = {
-            PlaylistsContent(listOf(Playlist(1, "Drive", 2)), onOpenPlaylist = {}, onCreate = {})
+            PlaylistsContent(listOf(Playlist(1, "Drive", 2)), onOpenPlaylist = {}, onCreate = {}, modifier = it)
         })
-        composeRule.onNodeWithText("New playlist").performClick()
+        composeRule.onNodeWithContentDescription("New playlist").performClick()
 
         shot("library_playlist_name_largest_font")
     }

@@ -97,7 +97,8 @@ class MainFlowTest {
         // Favourite: the row gets the heart, the session the filled heart and a Favourites entry.
         menuOf(song, "Add to favourites")
         waitFor("the heart on the row of $song") {
-            composeRule.onAllNodesWithContentDescription("Favourite", useUnmergedTree = true)
+            // The heart is a button whose name starts with "Favourite." and says what a tap does.
+            composeRule.onAllNodesWithContentDescription("Favourite.", substring = true, useUnmergedTree = true)
                 .fetchSemanticsNodes().isNotEmpty()
         }
         waitFor("the filled heart in the session") {

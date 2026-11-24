@@ -20,9 +20,11 @@ import com.siliconcircuits.tarangini.core.ui.component.AlbumRow
 import com.siliconcircuits.tarangini.core.ui.component.SectionTitle
 import com.siliconcircuits.tarangini.core.ui.component.SongRow
 import com.siliconcircuits.tarangini.core.ui.component.SongRowActions
+import com.siliconcircuits.tarangini.feature.library.R
 import com.siliconcircuits.tarangini.feature.library.component.DetailScaffold
 import com.siliconcircuits.tarangini.feature.library.component.ListBody
 import com.siliconcircuits.tarangini.feature.library.component.PagedColumn
+import com.siliconcircuits.tarangini.feature.library.countText
 import com.siliconcircuits.tarangini.feature.library.list.PagedItems
 import com.siliconcircuits.tarangini.feature.library.permission.AudioPermissionGate
 
@@ -67,6 +69,7 @@ internal fun ArtistContent(
     DetailScaffold(
         title = name.ifEmpty { stringResource(CoreUiR.string.unknown_artist) },
         onBack = onBack,
+        count = countText(R.plurals.library_count_songs, total = null, songs),
         modifier = modifier,
     ) {
         ListBody(songs.isLoading, failed = songs.failed && songs.items.isEmpty(), onRetry = onRetry) {

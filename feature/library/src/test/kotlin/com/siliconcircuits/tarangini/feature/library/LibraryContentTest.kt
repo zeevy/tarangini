@@ -9,9 +9,11 @@ package com.siliconcircuits.tarangini.feature.library
 import android.app.Application
 import android.content.ComponentName
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -68,11 +70,13 @@ class LibraryContentTest {
     }
 
     @Test
-    fun `a row says the title, the artist and the length, and a tap plays the song`() {
+    fun `a row says the title, the artist with the album and the length, and a tap plays the song`() {
         show()
 
-        composeRule.onNodeWithText("Ravi · 3:05").assertIsDisplayed()
-        composeRule.onNodeWithText("Unknown artist · 3:05").assertIsDisplayed()
+        composeRule.onNodeWithText("Ravi · Album").assertIsDisplayed()
+        composeRule.onNodeWithText("Unknown artist · Album").assertIsDisplayed()
+        composeRule.onAllNodesWithText("3:05").assertCountEquals(2)
+        composeRule.onNodeWithText("2 songs").assertIsDisplayed()
         composeRule.onNodeWithText("Bhairavi").performClick()
 
         assertEquals(listOf("play Bhairavi"), done)
@@ -108,7 +112,9 @@ class LibraryContentTest {
 
         composeRule.onNodeWithText("Albums").performClick()
         composeRule.onNodeWithText("Albums").assertIsSelected()
-        composeRule.onNodeWithText("Ravi · 1 song").assertIsDisplayed()
+        // An album is a tile of the grid: its cover, its title and its artist.
+        composeRule.onNodeWithText("1 album").assertIsDisplayed()
+        composeRule.onNodeWithText("Ravi").assertIsDisplayed()
         composeRule.onNodeWithText("Morning").performClick()
         assertEquals("Morning", opened?.title)
 

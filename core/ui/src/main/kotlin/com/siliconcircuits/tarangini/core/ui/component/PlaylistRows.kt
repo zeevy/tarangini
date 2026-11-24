@@ -30,15 +30,14 @@ import com.siliconcircuits.tarangini.core.ui.R
 /** One playlist in a list: its name and how many songs it has. A tap opens it. */
 @Composable
 fun PlaylistRow(playlist: Playlist, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    ListItem(
-        colors = clearRowColors(),
-        headlineContent = { OneLine(playlist.name) },
-        supportingContent = {
-            Text(pluralStringResource(R.plurals.song_count, playlist.songCount, playlist.songCount))
-        },
-        leadingContent = { Icon(painter = painterResource(R.drawable.ic_queue), contentDescription = null) },
-        modifier = modifier.clickable(onClickLabel = stringResource(R.string.action_open), onClick = onClick),
-    )
+    LookRow(
+        title = playlist.name,
+        sub = pluralStringResource(R.plurals.song_count, playlist.songCount, playlist.songCount),
+        onClick = onClick,
+        clickLabel = stringResource(R.string.action_open),
+        lead = { IconTile(painterResource(R.drawable.ic_queue)) },
+        modifier = modifier,
+    ) { OpenArrow() }
 }
 
 /**
@@ -55,34 +54,33 @@ fun PlaylistSongRow(
     modifier: Modifier = Modifier,
 ) {
     var open by remember { mutableStateOf(false) }
-    ListItem(
-        colors = clearRowColors(),
-        headlineContent = { OneLine(song.title) },
-        supportingContent = {
-            OneLine(song.artist.ifEmpty { stringResource(R.string.unknown_artist) })
-        },
-        leadingContent = { AlbumArt(song.artworkUri) },
-        trailingContent = {
-            Box {
-                IconButton(onClick = { open = true }) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_more),
-                        contentDescription = stringResource(R.string.song_menu, song.title),
+    LookRow(
+        title = song.title,
+        sub = song.artist.ifEmpty { stringResource(R.string.unknown_artist) },
+        onClick = onPlay,
+        clickLabel = stringResource(R.string.action_play),
+        lead = { AlbumArt(song.artworkUri, name = song.album) },
+        modifier = modifier,
+        meta = formatDuration(song.durationMs).ifEmpty { null },
+    ) {
+        Box {
+            IconButton(onClick = { open = true }) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_more),
+                    contentDescription = stringResource(R.string.song_menu, song.title),
+                )
+            }
+            DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+                menu.forEach { (label, action) ->
+                    DropdownMenuItem(
+                        text = { Text(label) },
+                        onClick = {
+                            open = false
+                            action()
+                        },
                     )
                 }
-                DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-                    menu.forEach { (label, action) ->
-                        DropdownMenuItem(
-                            text = { Text(label) },
-                            onClick = {
-                                open = false
-                                action()
-                            },
-                        )
-                    }
-                }
             }
-        },
-        modifier = modifier.clickable(onClickLabel = stringResource(R.string.action_play), onClick = onPlay),
-    )
+        }
+    }
 }

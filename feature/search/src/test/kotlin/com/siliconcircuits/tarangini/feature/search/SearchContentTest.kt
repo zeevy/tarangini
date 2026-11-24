@@ -18,12 +18,15 @@ import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotFocused
+import androidx.compose.ui.test.hasScrollToNodeAction
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeUp
@@ -133,6 +136,8 @@ class SearchContentTest {
 
         composeRule.onNodeWithText("Morning raga").performClick()
         composeRule.onNodeWithText("Morning").performClick()
+        // The rows are tall, so the last group can lie below the screen.
+        composeRule.onNode(hasScrollToNodeAction()).performScrollToNode(hasText("Morning Star"))
         composeRule.onNodeWithText("Morning Star").performClick()
 
         assertEquals(listOf("play Morning raga"), done)

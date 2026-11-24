@@ -6,6 +6,11 @@
 -->
 <resources>
     <string name="search_hint">Songs, albums, artists</string>
+    <string name="search_field">Search songs, albums and artists</string>
+    <plurals name="search_results">
+        <item quantity="one">%d result</item>
+        <item quantity="other">%d results</item>
+    </plurals>
     <string name="search_clear">Clear the search text</string>
     <string name="search_start_title">Search your music</string>
     <string name="search_start_text">Type a part of a title, an artist or an album.</string>

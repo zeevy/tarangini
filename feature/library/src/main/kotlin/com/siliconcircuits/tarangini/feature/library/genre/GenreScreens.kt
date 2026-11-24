@@ -16,22 +16,29 @@ import com.siliconcircuits.tarangini.core.domain.model.Genre
 import com.siliconcircuits.tarangini.core.domain.model.Song
 import com.siliconcircuits.tarangini.core.ui.R as CoreUiR
 import com.siliconcircuits.tarangini.core.ui.component.GenreRow
+import com.siliconcircuits.tarangini.core.ui.component.ListCard
 import com.siliconcircuits.tarangini.core.ui.component.SongRow
 import com.siliconcircuits.tarangini.core.ui.component.SongRowActions
+import com.siliconcircuits.tarangini.feature.library.R
 import com.siliconcircuits.tarangini.feature.library.component.DetailScaffold
 import com.siliconcircuits.tarangini.feature.library.component.ListBody
 import com.siliconcircuits.tarangini.feature.library.component.PagedColumn
+import com.siliconcircuits.tarangini.feature.library.countText
 import com.siliconcircuits.tarangini.feature.library.list.PagedItems
 import com.siliconcircuits.tarangini.feature.library.permission.AudioPermissionGate
 
 /** The Genres page of the Library tab. */
 @Composable
-internal fun GenresTab(onOpenGenre: (Genre) -> Unit, viewModel: GenresViewModel = hiltViewModel()) {
+internal fun GenresTab(
+    onOpenGenre: (Genre) -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: GenresViewModel = hiltViewModel(),
+) {
     val genres by viewModel.genres.state.collectAsStateWithLifecycle()
-    GenresContent(genres, onOpenGenre, onMore = viewModel.genres::loadMore, onRetry = viewModel.genres::refresh)
+    GenresContent(genres, onOpenGenre, modifier, viewModel.genres::loadMore, viewModel.genres::refresh)
 }
 
-/** Every genre by name, each with the number of its songs. */
+/** Every genre by name, each with the number of its songs, on a list card. */
 @Composable
 internal fun GenresContent(
     genres: PagedItems<Genre>,
@@ -40,9 +47,11 @@ internal fun GenresContent(
     onMore: () -> Unit = {},
     onRetry: () -> Unit = {},
 ) {
-    ListBody(genres.isLoading, failed = genres.failed && genres.items.isEmpty(), onRetry = onRetry) {
-        PagedColumn(list = genres, key = Genre::id, onLoadMore = onMore, modifier = modifier) { genre ->
-            GenreRow(genre, onClick = { onOpenGenre(genre) })
+    ListCard(countText(R.plurals.library_count_genres, total = null, genres), modifier) {
+        ListBody(genres.isLoading, failed = genres.failed && genres.items.isEmpty(), onRetry = onRetry) {
+            PagedColumn(list = genres, key = Genre::id, onLoadMore = onMore) { genre ->
+                GenreRow(genre, onClick = { onOpenGenre(genre) })
+            }
         }
     }
 }
@@ -80,6 +89,7 @@ internal fun GenreContent(
     DetailScaffold(
         title = name.ifEmpty { stringResource(CoreUiR.string.unknown_genre) },
         onBack = onBack,
+        count = countText(R.plurals.library_count_songs, total = null, songs),
         modifier = modifier,
     ) {
         ListBody(songs.isLoading, failed = songs.failed && songs.items.isEmpty(), onRetry = onRetry) {
